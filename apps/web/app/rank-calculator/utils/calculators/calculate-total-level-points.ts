@@ -2,7 +2,10 @@ import { totalLevelMilestonePoints } from '../../config/points';
 
 // View the function graph below
 // https://www.desmos.com/calculator/pvb3brafeg
-export function calculateTotalLevelPoints(totalLevel: number) {
+export function calculateTotalLevelPoints(
+  totalLevel: number,
+  _scaling: number,
+) {
   if (!totalLevel) {
     return 0;
   }
