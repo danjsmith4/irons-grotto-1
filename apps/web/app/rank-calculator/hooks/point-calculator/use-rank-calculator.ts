@@ -1,5 +1,4 @@
 import { CommonPointCalculatorData } from '@/app/schemas/rank-calculator';
-import { calculateRankThresholds } from '@/app/rank-calculator/utils/calculate-rank-thresholds';
 import { useWatch } from 'react-hook-form';
 import { useCollectionLogPointCalculator } from './collection-log/use-collection-log-point-calculator';
 import { useNotableItemsPointCalculator } from './notable-items/use-notable-items-point-calculator';
@@ -9,7 +8,7 @@ import { useRank } from '../use-rank';
 import { RankCalculatorSchema } from '../../[player]/submit-rank-calculator-validation';
 import { RankData } from '../../utils/calculators/calculate-rank';
 import { calculateTotalPoints } from '../../utils/calculators/calculate-total-points';
-import { useMaximumAvailablePoints } from './use-maximum-available-points';
+import { rankThresholds } from '@/config/ranks';
 
 export type RankCalculatorData = CommonPointCalculatorData & RankData;
 
@@ -36,10 +35,6 @@ export function useRankCalculator() {
   );
 
   const { rank, nextRank } = useRank(pointsAwarded);
-
-  const maximumAvailablePoints = useMaximumAvailablePoints();
-
-  const rankThresholds = calculateRankThresholds(maximumAvailablePoints);
 
   const currentRankThreshold = rankThresholds[rankStructure][rank]!;
 

@@ -28,7 +28,6 @@ import { clientConstants } from '@/config/constants.client';
 import { rankUpMessagesKey } from '@/config/redis';
 import { discordBotClient } from '@/discord';
 import { redis } from '@/redis';
-import { calculateMaximumAvailablePoints } from '@/app/rank-calculator/utils/calculators/calculate-maximum-available-points';
 import {
   fetchItemDropRates,
   generateRequiredItemList,
@@ -154,15 +153,7 @@ export async function GET(request: NextRequest) {
       totalSkillingPoints,
       totalCombatPoints,
     );
-    const maximumAvailablePoints = calculateMaximumAvailablePoints(
-      items,
-      collectionLogTotal,
-    );
-    const { rank } = calculateRank(
-      maximumAvailablePoints,
-      totalPointsAwarded,
-      rankStructure,
-    );
+    const { rank } = calculateRank(totalPointsAwarded, rankStructure);
 
     if (rank !== currentRank) {
       const hashKey = `${discordId}:${player.toLowerCase()}`;
