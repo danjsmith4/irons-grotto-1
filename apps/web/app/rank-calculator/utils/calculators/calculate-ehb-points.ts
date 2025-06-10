@@ -1,7 +1,7 @@
 import Decimal from 'decimal.js-light';
 
 export function calculateEhbPoints(ehb: number, scaling: number) {
-  const pointsPerEhb = 10;
+  const pointsPerEhb = 1;
   const scaledPoints = new Decimal(ehb)
     .times(pointsPerEhb)
     .times(scaling)

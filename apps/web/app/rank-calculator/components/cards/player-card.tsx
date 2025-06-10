@@ -2,8 +2,6 @@ import { Flex, Separator, Text } from '@radix-ui/themes';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { format } from 'date-fns';
 import { DataCard } from '../data-card';
-import { useCalculatorScaling } from '../../hooks/point-calculator/use-calculator-scaling';
-import { formatPercentage } from '../../utils/format-percentage';
 import { RankCalculatorSchema } from '../../[player]/submit-rank-calculator-validation';
 import { Input } from '../input';
 
@@ -18,7 +16,6 @@ export function PlayerCard() {
   const joinDate = useWatch<RankCalculatorSchema, 'joinDate'>({
     name: 'joinDate',
   });
-  const scaling = useCalculatorScaling();
 
   return (
     <DataCard.Root>
@@ -44,18 +41,6 @@ export function PlayerCard() {
         right={
           <Text aria-label="Join date" size="2">
             {format(joinDate, 'dd MMM yyyy')}
-          </Text>
-        }
-      />
-      <DataCard.Row
-        left={
-          <Text color="gray" size="2">
-            Scaling
-          </Text>
-        }
-        right={
-          <Text aria-label="Point scaling" size="2">
-            {formatPercentage(scaling)}
           </Text>
         }
       />
