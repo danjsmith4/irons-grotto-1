@@ -1,34 +1,64 @@
-import { DiaryLocation, DiaryTier } from '@/app/schemas/osrs';
+import {
+  CombatAchievementTier,
+  DiaryLocation,
+  DiaryTier,
+  maximumTotalLevel,
+} from '@/app/schemas/osrs';
 
 export const achievementDiaryTierPoints = {
-  get None() {
-    return this.Elite * 0;
-  },
-  get Easy() {
-    return this.Elite * 0.1;
-  },
-  get Medium() {
-    return this.Elite * 0.3;
-  },
-  get Hard() {
-    return this.Elite * 0.6;
-  },
-  get Elite() {
-    return 1000;
-  },
+  None: 0,
+  Easy: 15,
+  Medium: 25,
+  Hard: 50,
+  Elite: 75,
 } satisfies Record<DiaryTier, number>;
 
 export const pointsConfig = {
-  notableItemsPointsPerHour: 3,
+  notableItemsPointsPerHour: 1,
   sailingOffset: 4000,
-  maxCapePoints: 7000,
-  achievementDiaryCapePoints: 1000,
+  maxCapePoints: 3000,
+  achievementDiaryCapePoints: 300,
   maximumTotalLevelPoints: 50000,
   maximumAchievementDiaryPoints:
     DiaryLocation.options.length * achievementDiaryTierPoints.Elite,
   maximumCombatAchievementPoints: 50000,
-  bloodTorvaPoints: 6500,
+  bloodTorvaPoints: 250,
   dizanasQuiverPoints: 6500,
   infernalCapePoints: 7000,
   fireCapePoints: 500,
 } as const satisfies Record<string, number>;
+
+export const collectionLogSlotMilestonePoints = {
+  100: 4,
+  200: 8,
+  300: 20,
+  400: 40,
+  500: 70,
+  600: 85,
+  700: 100,
+  800: 125,
+  900: 150,
+  1000: 200,
+  1100: 250,
+  1200: 300,
+  1300: 350,
+} satisfies Record<number, number>;
+
+export const totalLevelMilestonePoints = {
+  1250: 75,
+  1500: 150,
+  1750: 250,
+  2000: 500,
+  2200: 775,
+  [maximumTotalLevel]: 1750,
+} as const satisfies Record<number, number>;
+
+export const combatAchievementTierMilestonePoints = {
+  None: 0,
+  Easy: 50,
+  Medium: 150,
+  Hard: 300,
+  Elite: 500,
+  Master: 1000,
+  Grandmaster: 3000,
+} satisfies Record<CombatAchievementTier, number>;

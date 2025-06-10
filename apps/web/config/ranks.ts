@@ -24,7 +24,10 @@ export const StandardRank = Rank.extract([
 
 export type StandardRank = z.infer<typeof StandardRank>;
 
-export const rankThresholds = {
+export const rankThresholds: Record<
+  RankStructure,
+  Partial<Record<Rank, number>>
+> = {
   Standard: {
     Champion: 0,
     Recruit: 500,
@@ -52,4 +55,4 @@ export const rankThresholds = {
   Moderator: {
     Moderator: 0,
   },
-} as const satisfies Record<RankStructure, Partial<Record<Rank, number>>>;
+} as const;
