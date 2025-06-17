@@ -49,7 +49,7 @@ export function PlayerList({ accounts }: PlayerListProps) {
       gap="6"
       direction="column"
     >
-      <Heading size="5">Irons Tavern Rank Calculator</Heading>
+      <Heading size="5">Irons Grotto Rank Calculator</Heading>
       <Flex direction="column" gap="4" width="330px">
         {Object.values(optimisticState).map(
           ({ rsn, joinDate, isNameInvalid }) => (

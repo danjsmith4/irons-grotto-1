@@ -19,7 +19,7 @@ export default async function LoginPage() {
         gap="6"
         direction="column"
       >
-        <Heading size="5">Irons Tavern</Heading>
+        <Heading size="5">Irons Grotto</Heading>
         <Button size="3" type="submit">
           <DiscordLogoIcon />
           Sign in with Discord
