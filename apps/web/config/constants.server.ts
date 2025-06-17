@@ -2,6 +2,16 @@ import 'server-only';
 import { z } from 'zod';
 
 const ServerConfigSchema = z.object({
+  zeplo: z.object({
+    apiKey: z.string(),
+    url: z.string(),
+  }),
+  temple: z.object({
+    groupName: z.string(),
+    groupId: z.string(),
+    groupKey: z.string(),
+    privateGroup: z.string(),
+  }),
   redisUrl: z.string(),
   discord: z.object({
     token: z.string(),
@@ -11,6 +21,16 @@ const ServerConfigSchema = z.object({
 });
 
 export const serverConstants = ServerConfigSchema.parse({
+  zeplo: {
+    apiKey: '',
+    url: '',
+  },
+  temple: {
+    groupName: '',
+    groupId: '',
+    groupKey: '',
+    privateGroup: '',
+  },
   redisUrl: process.env.KV_REST_API_URL,
   discord: {
     token: process.env.DISCORD_TOKEN,
