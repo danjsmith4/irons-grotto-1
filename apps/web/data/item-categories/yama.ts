@@ -7,7 +7,7 @@ export const yama: ItemCategory = {
   items: [
     manualItem({
       name: 'Radiant oathplate armour',
-      image: formatWikiImageUrl('Radiant oathplate armour chathead'),
+      image: formatWikiImageUrl('Purifying_sigil_detail'),
       points: 100,
     }),
   ],
