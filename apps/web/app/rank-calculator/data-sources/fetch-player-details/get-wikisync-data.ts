@@ -9,7 +9,7 @@ export async function getWikiSyncData(player: string) {
       {
         headers: {
           // User agent is required or the API returns a 400
-          'User-Agent': 'Irons-Tavern-Rank-Calculator',
+          'User-Agent': 'Irons-Grotto-Rank-Calculator',
         },
       },
     );

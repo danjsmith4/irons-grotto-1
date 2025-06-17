@@ -27,7 +27,7 @@ export default withSentryConfig<NextConfig>(
     // For all available options, see:
     // https://github.com/getsentry/sentry-webpack-plugin#options
 
-    org: 'irons-tavern',
+    org: 'irons-grotto',
     project: 'javascript-nextjs',
 
     // Only print logs for uploading source maps in CI
