@@ -111,7 +111,12 @@ export function questItem({
     requiredQuests,
   });
 }
-export function baseItem({ image, name, points }: BaseItem) {
+
+export function manualItem({
+  name,
+  image = formatWikiImageUrl(name),
+  points,
+}: OptionalKeys<BaseItem, 'image'>) {
   return BaseItem.parse({
     name,
     points,
