@@ -2,9 +2,9 @@ import { z } from 'zod';
 import { Rank } from './enums';
 import { RankStructure } from '@/app/schemas/rank-calculator';
 
-export const rankNames = {
+export const rankNames: Partial<Record<Rank, string>> = {
   Astral: 'Staff',
-} satisfies Partial<Record<Rank, string>>;
+};
 
 export const StandardRank = Rank.extract([
   'Champion',
