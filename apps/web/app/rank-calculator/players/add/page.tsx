@@ -4,12 +4,12 @@ import { ClanMemberList } from '@/app/schemas/inactivity-checker';
 import { AddPlayerForm } from './add-player-form';
 
 async function getLatestMemberList() {
-  const blobList = await list();
-  const [{ url }] = blobList.blobs.sort(
-    (a, b) => +b.uploadedAt - +a.uploadedAt,
-  );
-
   try {
+    const blobList = await list();
+    const [{ url }] = blobList.blobs.sort(
+      (a, b) => +b.uploadedAt - +a.uploadedAt,
+    );
+
     const response = await fetch(url);
     const data = ClanMemberList.parse(await response.json());
 
