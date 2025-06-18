@@ -1,14 +1,34 @@
 import { formatWikiImageUrl } from '@/app/rank-calculator/utils/format-wiki-url';
 import { ItemCategory } from '@/app/schemas/items';
-import { manualItem } from '../utils/item-builders';
+import { singleItem } from '../utils/item-builders';
 
 export const yama: ItemCategory = {
   image: formatWikiImageUrl('Yami chathead', 'category'),
   items: [
-    manualItem({
-      name: 'Radiant oathplate armour',
-      image: formatWikiImageUrl('Purifying_sigil_detail'),
-      points: 100,
+    singleItem({
+      name: 'Soulflame horn',
+      collectionLogCategory: 'yama',
+      targetDropSources: ['Yama'],
+    }),
+    singleItem({
+      name: 'Oathplate helm',
+      collectionLogCategory: 'yama',
+      targetDropSources: ['Yama'],
+    }),
+    singleItem({
+      name: 'Oathplate chest',
+      collectionLogCategory: 'yama',
+      targetDropSources: ['Yama'],
+    }),
+    singleItem({
+      name: 'Oathplate legs',
+      collectionLogCategory: 'yama',
+      targetDropSources: ['Yama'],
+    }),
+    singleItem({
+      name: 'Yami',
+      collectionLogCategory: 'yama',
+      targetDropSources: ['Yama'],
     }),
   ],
 };
