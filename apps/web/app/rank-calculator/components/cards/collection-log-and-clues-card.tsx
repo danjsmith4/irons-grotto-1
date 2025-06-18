@@ -70,7 +70,7 @@ export function CollectionLogAndCluesCard() {
       <DataCard.Row
         left={
           <Text color="gray" size="2">
-            Slots
+            Collection Log slots
           </Text>
         }
         center={
