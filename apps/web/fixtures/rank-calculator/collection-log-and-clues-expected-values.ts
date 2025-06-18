@@ -1,7 +1,7 @@
 import { CollectionLogAndCluesPointCalculatorData } from '@/app/rank-calculator/hooks/point-calculator/collection-log-and-clues/use-collection-log-and-clues-point-calculator';
 import { CategoryFixture } from '@/cypress/support/types';
 
-export const collectionLogExpectedValues = {
+export const collectionLogAndCluesExpectedValues = {
   earlyGamePlayer: {
     fullScaling: {
       pointsAwarded: 690,
@@ -10,6 +10,14 @@ export const collectionLogExpectedValues = {
       collectionLogSlotPoints: 690,
       bonusMultiplier: 0,
       bonusPointsAwarded: 0,
+      clueScrollTierPoints: {
+        Beginner: 0,
+        Easy: 0,
+        Medium: 0,
+        Hard: 0,
+        Elite: 0,
+        Master: 0,
+      },
     },
     fourMonthScaling: {
       pointsAwarded: 483,
@@ -18,6 +26,14 @@ export const collectionLogExpectedValues = {
       collectionLogSlotPoints: 483,
       bonusMultiplier: 0,
       bonusPointsAwarded: 0,
+      clueScrollTierPoints: {
+        Beginner: 0,
+        Easy: 0,
+        Medium: 0,
+        Hard: 0,
+        Elite: 0,
+        Master: 0,
+      },
     },
     twoMonthScaling: {
       pointsAwarded: 276,
@@ -26,6 +42,14 @@ export const collectionLogExpectedValues = {
       collectionLogSlotPoints: 276,
       bonusMultiplier: 0,
       bonusPointsAwarded: 0,
+      clueScrollTierPoints: {
+        Beginner: 0,
+        Easy: 0,
+        Medium: 0,
+        Hard: 0,
+        Elite: 0,
+        Master: 0,
+      },
     },
     threeWeekScaling: {
       pointsAwarded: 120,
@@ -34,6 +58,14 @@ export const collectionLogExpectedValues = {
       collectionLogSlotPoints: 120,
       bonusMultiplier: 0,
       bonusPointsAwarded: 0,
+      clueScrollTierPoints: {
+        Beginner: 0,
+        Easy: 0,
+        Medium: 0,
+        Hard: 0,
+        Elite: 0,
+        Master: 0,
+      },
     },
     noScaling: {
       pointsAwarded: 69, // Nice
@@ -42,6 +74,14 @@ export const collectionLogExpectedValues = {
       collectionLogSlotPoints: 69, // Nice
       bonusMultiplier: 0,
       bonusPointsAwarded: 0,
+      clueScrollTierPoints: {
+        Beginner: 0,
+        Easy: 0,
+        Medium: 0,
+        Hard: 0,
+        Elite: 0,
+        Master: 0,
+      },
     },
   },
   midGamePlayer: {
@@ -52,6 +92,14 @@ export const collectionLogExpectedValues = {
       collectionLogSlotPoints: 15640,
       bonusMultiplier: 0,
       bonusPointsAwarded: 0,
+      clueScrollTierPoints: {
+        Beginner: 0,
+        Easy: 0,
+        Medium: 0,
+        Hard: 0,
+        Elite: 0,
+        Master: 0,
+      },
     },
     fourMonthScaling: {
       pointsAwarded: 10948,
@@ -60,6 +108,14 @@ export const collectionLogExpectedValues = {
       collectionLogSlotPoints: 10948,
       bonusMultiplier: 0,
       bonusPointsAwarded: 0,
+      clueScrollTierPoints: {
+        Beginner: 0,
+        Easy: 0,
+        Medium: 0,
+        Hard: 0,
+        Elite: 0,
+        Master: 0,
+      },
     },
     twoMonthScaling: {
       pointsAwarded: 6256,
@@ -68,6 +124,14 @@ export const collectionLogExpectedValues = {
       collectionLogSlotPoints: 6256,
       bonusMultiplier: 0,
       bonusPointsAwarded: 0,
+      clueScrollTierPoints: {
+        Beginner: 0,
+        Easy: 0,
+        Medium: 0,
+        Hard: 0,
+        Elite: 0,
+        Master: 0,
+      },
     },
     threeWeekScaling: {
       pointsAwarded: 2737,
@@ -76,6 +140,14 @@ export const collectionLogExpectedValues = {
       collectionLogSlotPoints: 2737,
       bonusMultiplier: 0,
       bonusPointsAwarded: 0,
+      clueScrollTierPoints: {
+        Beginner: 0,
+        Easy: 0,
+        Medium: 0,
+        Hard: 0,
+        Elite: 0,
+        Master: 0,
+      },
     },
     noScaling: {
       pointsAwarded: 1564,
@@ -84,6 +156,14 @@ export const collectionLogExpectedValues = {
       collectionLogSlotPoints: 1564,
       bonusMultiplier: 0,
       bonusPointsAwarded: 0,
+      clueScrollTierPoints: {
+        Beginner: 0,
+        Easy: 0,
+        Medium: 0,
+        Hard: 0,
+        Elite: 0,
+        Master: 0,
+      },
     },
   },
   endGamePlayer: {
@@ -94,6 +174,14 @@ export const collectionLogExpectedValues = {
       collectionLogSlotPoints: 46340,
       bonusMultiplier: 0,
       bonusPointsAwarded: 0,
+      clueScrollTierPoints: {
+        Beginner: 0,
+        Easy: 0,
+        Medium: 0,
+        Hard: 0,
+        Elite: 0,
+        Master: 0,
+      },
     },
     fourMonthScaling: {
       pointsAwarded: 32438,
@@ -102,6 +190,14 @@ export const collectionLogExpectedValues = {
       collectionLogSlotPoints: 32438,
       bonusMultiplier: 0,
       bonusPointsAwarded: 0,
+      clueScrollTierPoints: {
+        Beginner: 0,
+        Easy: 0,
+        Medium: 0,
+        Hard: 0,
+        Elite: 0,
+        Master: 0,
+      },
     },
     twoMonthScaling: {
       pointsAwarded: 18536,
@@ -110,6 +206,14 @@ export const collectionLogExpectedValues = {
       collectionLogSlotPoints: 18536,
       bonusMultiplier: 0,
       bonusPointsAwarded: 0,
+      clueScrollTierPoints: {
+        Beginner: 0,
+        Easy: 0,
+        Medium: 0,
+        Hard: 0,
+        Elite: 0,
+        Master: 0,
+      },
     },
     threeWeekScaling: {
       pointsAwarded: 8109,
@@ -118,6 +222,14 @@ export const collectionLogExpectedValues = {
       collectionLogSlotPoints: 8109,
       bonusMultiplier: 0,
       bonusPointsAwarded: 0,
+      clueScrollTierPoints: {
+        Beginner: 0,
+        Easy: 0,
+        Medium: 0,
+        Hard: 0,
+        Elite: 0,
+        Master: 0,
+      },
     },
     noScaling: {
       pointsAwarded: 4634,
@@ -126,6 +238,14 @@ export const collectionLogExpectedValues = {
       collectionLogSlotPoints: 4634,
       bonusMultiplier: 0,
       bonusPointsAwarded: 0,
+      clueScrollTierPoints: {
+        Beginner: 0,
+        Easy: 0,
+        Medium: 0,
+        Hard: 0,
+        Elite: 0,
+        Master: 0,
+      },
     },
   },
 } satisfies CategoryFixture<CollectionLogAndCluesPointCalculatorData>;

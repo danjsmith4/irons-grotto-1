@@ -1,7 +1,7 @@
 import { render, screen } from '@/test-utils/testing-library';
 import * as formDataMocks from '@/mocks/misc/form-data';
 import { MockFormProvider } from '@/test-utils/mock-form-provider';
-import { collectionLogExpectedValues } from '@/fixtures/rank-calculator/collection-log-expected-values';
+import { collectionLogAndCluesExpectedValues } from '@/fixtures/rank-calculator/collection-log-and-clues-expected-values';
 import { generateScaledPlayerTests } from '@/test-utils/generated-scaled-player-tests';
 import { CollectionLogAndCluesCard } from './collection-log-and-clues-card';
 import { formatPercentage } from '../../utils/format-percentage';
@@ -9,7 +9,7 @@ import { formatNumber } from '../../utils/format-number';
 
 generateScaledPlayerTests(
   formDataMocks,
-  collectionLogExpectedValues,
+  collectionLogAndCluesExpectedValues,
   (formData, expected) => {
     beforeEach(async () => {
       render(

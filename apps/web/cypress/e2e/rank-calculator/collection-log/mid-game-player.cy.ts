@@ -1,10 +1,10 @@
-import { collectionLogExpectedValues } from '@/fixtures/rank-calculator/collection-log-expected-values';
+import { collectionLogAndCluesExpectedValues } from '@/fixtures/rank-calculator/collection-log-and-clues-expected-values';
 import { generateScalingTests } from '@/cypress/support/utils/generate-scaling-tests';
 
 describe('Collection Log - Mid-game player', () => {
   generateScalingTests(
     'cousinofkos',
-    collectionLogExpectedValues.midGamePlayer,
+    collectionLogAndCluesExpectedValues.midGamePlayer,
     (fixture) => {
       cy.findByLabelText(/^total collection log points$/i).should(
         'have.text',
