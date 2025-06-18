@@ -39,6 +39,7 @@ import { calculateTzhaarCapePoints } from '@/app/rank-calculator/utils/calculato
 import { calculateBloodTorvaPoints } from '@/app/rank-calculator/utils/calculators/calculate-blood-torva-points';
 import { calculateDizanasQuiverPoints } from '@/app/rank-calculator/utils/calculators/calculate-dizanas-quiver-points';
 import { itemList } from '@/data/item-list';
+import { calculateClueScrollPoints } from '@/app/rank-calculator/utils/calculators/calculate-clue-scroll-points';
 
 export async function GET(request: NextRequest) {
   try {
@@ -80,6 +81,7 @@ export async function GET(request: NextRequest) {
       combatBonusMultiplier,
       notableItemsBonusMultiplier,
       skillingBonusMultiplier,
+      clueScrollCounts,
     } = playerDetails.data;
 
     if (!hasThirdPartyData) {
@@ -95,10 +97,15 @@ export async function GET(request: NextRequest) {
       collectionLogCount,
       scaling,
     );
+    const { totalPoints: clueScrollPoints } = calculateClueScrollPoints(
+      clueScrollCounts,
+      scaling,
+    );
     const { pointsAwarded: totalCollectionLogPoints } =
       calculateCollectionLogAndCluesPoints(
         collectionLogSlotPoints,
         collectionLogTotal,
+        clueScrollPoints,
         collectionLogBonusMultiplier,
         scaling,
       );
