@@ -23,9 +23,9 @@ export const pointsConfig = {
     DiaryLocation.options.length * achievementDiaryTierPoints.Elite,
   maximumCombatAchievementPoints: 50000,
   bloodTorvaPoints: 250,
-  dizanasQuiverPoints: 6500,
-  infernalCapePoints: 7000,
-  fireCapePoints: 500,
+  dizanasQuiverPoints: 150,
+  infernalCapePoints: 250,
+  fireCapePoints: 50,
 } as const satisfies Record<string, number>;
 
 export const collectionLogSlotMilestonePoints = {
