@@ -87,6 +87,14 @@ export const emptyResponse = {
   skillingBonusMultiplier: 0,
   collectionLogBonusMultiplier: 0,
   notableItemsBonusMultiplier: 0,
+  clueScrollCounts: {
+    Beginner: 0,
+    Easy: 0,
+    Medium: 0,
+    Hard: 0,
+    Elite: 0,
+    Master: 0,
+  },
 } satisfies PlayerDetailsResponse;
 
 export async function fetchPlayerDetails(
@@ -176,6 +184,12 @@ export async function fetchPlayerDetails(
       Overall_level: totalLevel = null,
       Collections: hiscoresCollectionLogCount = null,
       'TzKal-Zuk': zukKillCount = null,
+      Clue_beginner: beginnerClueCount = null,
+      Clue_easy: easyClueCount = null,
+      Clue_medium: mediumClueCount = null,
+      Clue_hard: hardClueCount = null,
+      Clue_elite: eliteClueCount = null,
+      Clue_master: masterClueCount = null,
     } = templePlayerStats ?? {};
     const { ehb, ehp } = calculateEfficiencyData(templePlayerStats);
 
@@ -339,6 +353,14 @@ export async function fetchPlayerDetails(
         combatBonusMultiplier,
         skillingBonusMultiplier,
         notableItemsBonusMultiplier: 0, // Leaving this in for future use, if we decide to add a notable items diary
+        clueScrollCounts: {
+          Beginner: beginnerClueCount ?? 0,
+          Easy: easyClueCount ?? 0,
+          Medium: mediumClueCount ?? 0,
+          Hard: hardClueCount ?? 0,
+          Elite: eliteClueCount ?? 0,
+          Master: masterClueCount ?? 0,
+        },
       },
     };
   } catch (error) {

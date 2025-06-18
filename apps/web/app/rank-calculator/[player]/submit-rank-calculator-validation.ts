@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import {
+  ClueScrollTier,
   CombatAchievementTier,
   DiaryLocation,
   DiaryTier,
@@ -39,6 +40,11 @@ export const RankCalculatorSchema = z.object({
   skillingBonusMultiplier: z.number().min(0).default(0),
   collectionLogBonusMultiplier: z.number().min(0).default(0),
   notableItemsBonusMultiplier: z.number().min(0).default(0),
+  clueScrollCounts: z
+    .record(ClueScrollTier, z.coerce.number().nonnegative())
+    .refine((obj): obj is Required<typeof obj> =>
+      ClueScrollTier.options.every((key) => obj[key] != null),
+    ),
 });
 
 export type RankCalculatorSchema = z.infer<typeof RankCalculatorSchema>;

@@ -1794,3 +1794,14 @@ export const TzHaarCape = z.enum([
 ]);
 
 export type TzHaarCape = z.infer<typeof TzHaarCape>;
+
+export const ClueScrollTier = z.enum([
+  'Beginner',
+  'Easy',
+  'Medium',
+  'Hard',
+  'Elite',
+  'Master',
+]);
+
+export type ClueScrollTier = z.infer<typeof ClueScrollTier>;

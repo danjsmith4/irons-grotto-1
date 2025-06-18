@@ -1,7 +1,7 @@
 import { Box, Flex, ScrollArea } from '@radix-ui/themes';
 import { RankProgressCard } from './cards/rank-progress-card';
 import { CombatCard } from './cards/combat-card';
-import { CollectionLogCard } from './cards/collection-log-card';
+import { CollectionLogAndCluesCard } from './cards/collection-log-and-clues-card';
 import { NotableItemsCard } from './cards/notable-items-card';
 import { usePageHeight } from '../hooks/use-page-height';
 import { ModerationCard } from './cards/moderation-card';
@@ -24,7 +24,7 @@ export function Sidebar() {
             <ModerationCard />
             <RankProgressCard />
             <CombatCard />
-            <CollectionLogCard />
+            <CollectionLogAndCluesCard />
             <NotableItemsCard />
           </aside>
         </Flex>

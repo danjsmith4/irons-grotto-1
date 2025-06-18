@@ -10,7 +10,7 @@ import {
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchPlayerDetails } from '@/app/rank-calculator/data-sources/fetch-player-details/fetch-player-details';
 import { calculateAchievementDiaryPoints } from '@/app/rank-calculator/utils/calculators/calculate-achievement-diary-points';
-import { calculateCollectionLogPoints } from '@/app/rank-calculator/utils/calculators/calculate-collection-log-points';
+import { calculateCollectionLogAndCluesPoints } from '@/app/rank-calculator/utils/calculators/calculate-collection-log-and-clues-points';
 import { calculateCollectionLogSlotPoints } from '@/app/rank-calculator/utils/calculators/calculate-collection-log-slot-points';
 import { calculateCombatAchievementPoints } from '@/app/rank-calculator/utils/calculators/calculate-combat-achievement-points';
 import { calculateCombatPoints } from '@/app/rank-calculator/utils/calculators/calculate-combat-points';
@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
       scaling,
     );
     const { pointsAwarded: totalCollectionLogPoints } =
-      calculateCollectionLogPoints(
+      calculateCollectionLogAndCluesPoints(
         collectionLogSlotPoints,
         collectionLogTotal,
         collectionLogBonusMultiplier,

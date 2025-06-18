@@ -1,6 +1,6 @@
 import { CommonPointCalculatorData } from '@/app/schemas/rank-calculator';
 import { useWatch } from 'react-hook-form';
-import { useCollectionLogPointCalculator } from './collection-log/use-collection-log-point-calculator';
+import { useCollectionLogAndCluesPointCalculator } from './collection-log-and-clues/use-collection-log-and-clues-point-calculator';
 import { useNotableItemsPointCalculator } from './notable-items/use-notable-items-point-calculator';
 import { useSkillingPointCalculator } from './skilling/use-skilling-point-calculator';
 import { useCombatPointCalculator } from './combat/use-combat-point-calculator';
@@ -18,7 +18,7 @@ export function useRankCalculator() {
   });
 
   const { pointsAwarded: totalCollectionLogPoints } =
-    useCollectionLogPointCalculator();
+    useCollectionLogAndCluesPointCalculator();
 
   const { pointsAwarded: totalNotableItemsPoints } =
     useNotableItemsPointCalculator();

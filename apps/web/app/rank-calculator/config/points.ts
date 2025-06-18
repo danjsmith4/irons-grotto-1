@@ -1,4 +1,5 @@
 import {
+  ClueScrollTier,
   CombatAchievementTier,
   DiaryLocation,
   DiaryTier,
@@ -43,6 +44,15 @@ export const collectionLogSlotMilestonePoints = {
   1200: 300,
   1300: 350,
 } satisfies Record<number, number>;
+
+export const clueScrollPoints = {
+  Beginner: 0.1,
+  Easy: 0.1,
+  Medium: 0.2,
+  Hard: 0.25,
+  Elite: 0.75,
+  Master: 1,
+} satisfies Record<ClueScrollTier, number>;
 
 export const totalLevelMilestonePoints = {
   1250: 75,

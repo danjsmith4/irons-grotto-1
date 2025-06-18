@@ -4,13 +4,14 @@ import { useFormContext } from 'react-hook-form';
 import { tavernDiaryTierNameByMultiplier } from '@/config/tavern-diaries';
 import { DataCard } from '../data-card';
 import { EditableText } from '../editable-text';
-import { useCollectionLogPointCalculator } from '../../hooks/point-calculator/collection-log/use-collection-log-point-calculator';
+import { useCollectionLogAndCluesPointCalculator } from '../../hooks/point-calculator/collection-log-and-clues/use-collection-log-and-clues-point-calculator';
 import { formatPercentage } from '../../utils/format-percentage';
 import { getPointsRemainingLabel } from '../../utils/get-points-remaining-label';
 import { formatNumber } from '../../utils/format-number';
 import { RankCalculatorSchema } from '../../[player]/submit-rank-calculator-validation';
+import { ClueScrollTier } from '@/app/schemas/osrs';
 
-export function CollectionLogCard() {
+export function CollectionLogAndCluesCard() {
   const {
     pointsAwarded,
     pointsAwardedPercentage,
@@ -18,7 +19,8 @@ export function CollectionLogCard() {
     collectionLogSlotPoints,
     bonusMultiplier,
     bonusPointsAwarded,
-  } = useCollectionLogPointCalculator();
+    clueScrollTierPoints,
+  } = useCollectionLogAndCluesPointCalculator();
   const {
     getValues,
     formState: { defaultValues },
@@ -38,7 +40,7 @@ export function CollectionLogCard() {
               unoptimized
             />
             <Text role="heading" weight="medium" size="2">
-              Collection Log
+              Collection Log & Clues
             </Text>
           </Flex>
         }
@@ -89,6 +91,35 @@ export function CollectionLogCard() {
           </Text>
         }
       />
+      {ClueScrollTier.options.map((tier) => (
+        <DataCard.Row
+          left={
+            <Text color="gray" size="2">
+              {tier} clues
+            </Text>
+          }
+          center={
+            <EditableText
+              aria-label={`${tier} clue count`}
+              name={`clueScrollCounts.${tier}`}
+              type="number"
+              required
+              min={0}
+              defaultValue={defaultValues?.clueScrollCounts?.[tier]}
+              readOnly
+            />
+          }
+          right={
+            <Text
+              aria-label={`${tier} clue scroll points`}
+              color="gray"
+              size="2"
+            >
+              {formatNumber(clueScrollTierPoints[tier])}
+            </Text>
+          }
+        />
+      ))}
       <DataCard.Row
         left={
           <Text color="gray" size="2">

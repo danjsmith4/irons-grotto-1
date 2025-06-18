@@ -72,6 +72,13 @@ export const TempleOSRSPlayerStats = z.object({
     Uim_ehp: z.number().nonnegative(),
     Collections: z.number().nonnegative(),
     'TzKal-Zuk': z.number().nonnegative(),
+    Clue_all: z.number().nonnegative(),
+    Clue_beginner: z.number().nonnegative(),
+    Clue_easy: z.number().nonnegative(),
+    Clue_medium: z.number().nonnegative(),
+    Clue_hard: z.number().nonnegative(),
+    Clue_elite: z.number().nonnegative(),
+    Clue_master: z.number().nonnegative(),
   }),
 });
 

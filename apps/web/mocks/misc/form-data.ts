@@ -40,6 +40,14 @@ export const earlyGamePlayer = {
   hasMaxCape: false,
   hasBloodTorva: false,
   hasDizanasQuiver: false,
+  clueScrollCounts: {
+    Beginner: 0,
+    Easy: 0,
+    Medium: 0,
+    Hard: 0,
+    Elite: 0,
+    Master: 0,
+  },
 } satisfies Omit<RankCalculatorSchema, 'rank' | 'points'>;
 
 export const midGamePlayer = {
@@ -176,6 +184,14 @@ export const midGamePlayer = {
   hasMaxCape: false,
   hasBloodTorva: false,
   hasDizanasQuiver: false,
+  clueScrollCounts: {
+    Beginner: 0,
+    Easy: 0,
+    Medium: 0,
+    Hard: 0,
+    Elite: 0,
+    Master: 0,
+  },
 } satisfies Omit<RankCalculatorSchema, 'rank' | 'points'>;
 
 export const endGamePlayer = {
@@ -427,4 +443,12 @@ export const endGamePlayer = {
   hasMaxCape: false,
   hasBloodTorva: false,
   hasDizanasQuiver: false,
+  clueScrollCounts: {
+    Beginner: 0,
+    Easy: 0,
+    Medium: 0,
+    Hard: 0,
+    Elite: 0,
+    Master: 0,
+  },
 } satisfies Omit<RankCalculatorSchema, 'rank' | 'points'>;
