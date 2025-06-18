@@ -6,40 +6,43 @@ import { serverConstants } from '@/config/constants.server';
 import { ClanExport } from '@/app/schemas/inactivity-checker';
 
 export async function POST(request: NextRequest) {
-  const updateTemple = request.nextUrl.searchParams.get('updateTemple');
+  const updateTemple =
+    request.nextUrl.searchParams.get('updateTemple') ?? 'true';
   const body = ClanExport.parse(await request.json());
 
-  const { members, leaders } = body.clanMemberMaps.reduce(
-    (acc, member) => {
-      if (clientConstants.ranks.leaders.includes(member.rank)) {
-        return { ...acc, leaders: acc.leaders.concat(member.rsn) };
-      }
+  if (updateTemple === 'true') {
+    const { members, leaders } = body.clanMemberMaps.reduce(
+      (acc, member) => {
+        if (clientConstants.ranks.leaders.includes(member.rank)) {
+          return { ...acc, leaders: acc.leaders.concat(member.rsn) };
+        }
 
-      return { ...acc, members: acc.members.concat(member.rsn) };
-    },
-    { leaders: [] as string[], members: [] as string[] },
-  );
+        return { ...acc, members: acc.members.concat(member.rsn) };
+      },
+      { leaders: [] as string[], members: [] as string[] },
+    );
 
-  const templeUpdateData = {
-    'clan-checkbox': 'on',
-    clan: '100',
-    id: serverConstants.temple.groupId,
-    key: serverConstants.temple.groupKey,
-    name: serverConstants.temple.groupName,
-    leaders: leaders.toString(),
-    members: members.toString(),
-    ...(serverConstants.temple.privateGroup === 'true'
-      ? { 'private-group-checkbox': 'on' }
-      : {}),
-  } satisfies GroupUpdateRequest;
+    const templeUpdateData = {
+      'clan-checkbox': 'on',
+      clan: '100',
+      id: serverConstants.temple.groupId,
+      key: serverConstants.temple.groupKey,
+      name: serverConstants.temple.groupName,
+      leaders: leaders.toString(),
+      members: members.toString(),
+      ...(serverConstants.temple.privateGroup === 'true'
+        ? { 'private-group-checkbox': 'on' }
+        : {}),
+    } satisfies GroupUpdateRequest;
 
-  console.log('Updating member list');
+    console.log('Updating member list');
 
-  // Sync our Temple page with the new member list
-  await fetch(`${clientConstants.temple.baseUrl}/groups/edit.php`, {
-    method: 'POST',
-    body: new URLSearchParams(templeUpdateData),
-  });
+    // Sync our Temple page with the new member list
+    await fetch(`${clientConstants.temple.baseUrl}/groups/edit.php`, {
+      method: 'POST',
+      body: new URLSearchParams(templeUpdateData),
+    });
+  }
 
   await Promise.all([
     // Save the member list to the Vercel blob store to use later
