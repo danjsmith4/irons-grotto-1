@@ -93,6 +93,7 @@ export function CollectionLogAndCluesCard() {
       />
       {ClueScrollTier.options.map((tier) => (
         <DataCard.Row
+          key={tier}
           left={
             <Text color="gray" size="2">
               {tier} clues
