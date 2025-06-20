@@ -37,7 +37,6 @@ export const earlyGamePlayer = {
   notableItemsBonusMultiplier: 0,
   tzhaarCape: 'None',
   hasAchievementDiaryCape: false,
-  hasMaxCape: false,
   hasBloodTorva: false,
   hasDizanasQuiver: false,
   clueScrollCounts: {
@@ -181,7 +180,6 @@ export const midGamePlayer = {
   notableItemsBonusMultiplier: 0,
   tzhaarCape: 'None',
   hasAchievementDiaryCape: false,
-  hasMaxCape: false,
   hasBloodTorva: false,
   hasDizanasQuiver: false,
   clueScrollCounts: {
@@ -440,7 +438,6 @@ export const endGamePlayer = {
   notableItemsBonusMultiplier: 0,
   tzhaarCape: 'None',
   hasAchievementDiaryCape: false,
-  hasMaxCape: false,
   hasBloodTorva: false,
   hasDizanasQuiver: false,
   clueScrollCounts: {

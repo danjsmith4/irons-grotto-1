@@ -34,7 +34,6 @@ import {
 } from '@/app/rank-calculator/data-sources/fetch-dropped-item-info';
 import { buildNotableItemList } from '@/app/rank-calculator/utils/build-notable-item-list';
 import { calculateAchievementDiaryCapePoints } from '@/app/rank-calculator/utils/calculators/calculate-achievement-diary-cape-points';
-import { calculateMaxCapePoints } from '@/app/rank-calculator/utils/calculators/calculate-max-cape-points';
 import { calculateTzhaarCapePoints } from '@/app/rank-calculator/utils/calculators/calculate-tzhaar-cape-points';
 import { calculateBloodTorvaPoints } from '@/app/rank-calculator/utils/calculators/calculate-blood-torva-points';
 import { calculateDizanasQuiverPoints } from '@/app/rank-calculator/utils/calculators/calculate-dizanas-quiver-points';
@@ -76,7 +75,6 @@ export async function GET(request: NextRequest) {
       hasBloodTorva,
       hasDizanasQuiver,
       hasAchievementDiaryCape,
-      hasMaxCape,
       collectionLogBonusMultiplier,
       combatBonusMultiplier,
       notableItemsBonusMultiplier,
@@ -124,13 +122,11 @@ export async function GET(request: NextRequest) {
       hasAchievementDiaryCape,
       scaling,
     );
-    const maxCapePoints = calculateMaxCapePoints(hasMaxCape, scaling);
     const { pointsAwarded: totalSkillingPoints } = calculateSkillingPoints(
       achievementDiariesPoints,
       ehpPoints,
       totalLevelPoints,
       achievementDiaryCapePoints,
-      maxCapePoints,
       skillingBonusMultiplier,
       scaling,
     );

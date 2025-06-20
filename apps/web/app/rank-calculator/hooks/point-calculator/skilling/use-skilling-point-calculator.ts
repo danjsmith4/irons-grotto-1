@@ -11,7 +11,6 @@ import { useEhpPoints } from './use-ehp-points';
 import { useTotalLevelPoints } from './use-total-level-points';
 import { useCalculatorScaling } from '../use-calculator-scaling';
 import { useAchievementDiaryCapePoints } from './use-achievement-diary-cape-points';
-import { useMaxCapePoints } from './use-max-cape-points';
 
 export interface SkillingPointCalculatorData
   extends CommonPointCalculatorData,
@@ -20,7 +19,6 @@ export interface SkillingPointCalculatorData
   totalLevelPoints: number;
   achievementDiariesPoints: Record<DiaryLocation, number>;
   achievementDiaryCapePoints: number;
-  maxCapePoints: number;
 }
 
 export function useSkillingPointCalculator() {
@@ -38,7 +36,6 @@ export function useSkillingPointCalculator() {
   const ehpPoints = useEhpPoints();
   const totalLevelPoints = useTotalLevelPoints();
   const achievementDiaryCapePoints = useAchievementDiaryCapePoints();
-  const maxCapePoints = useMaxCapePoints();
   const scaling = useCalculatorScaling();
   const {
     pointsAwarded,
@@ -50,7 +47,6 @@ export function useSkillingPointCalculator() {
     ehpPoints,
     totalLevelPoints,
     achievementDiaryCapePoints,
-    maxCapePoints,
     bonusMultiplier,
     scaling,
   );
@@ -63,7 +59,6 @@ export function useSkillingPointCalculator() {
     totalLevelPoints,
     achievementDiariesPoints,
     achievementDiaryCapePoints,
-    maxCapePoints,
     bonusPointsAwarded,
     bonusMultiplier,
   } satisfies SkillingPointCalculatorData;

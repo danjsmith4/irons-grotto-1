@@ -82,7 +82,6 @@ export const emptyResponse = {
   hasBloodTorva: false,
   hasDizanasQuiver: false,
   hasAchievementDiaryCape: false,
-  hasMaxCape: false,
   combatBonusMultiplier: 0,
   skillingBonusMultiplier: 0,
   collectionLogBonusMultiplier: 0,
@@ -297,8 +296,6 @@ export async function fetchPlayerDetails(
       ? isAchievementDiaryCapeAchieved(achievementDiaries)
       : false;
 
-    const hasMaxCape = totalLevel === maximumTotalLevel;
-
     const discordRoles = await fetchUserDiscordRoles(userId);
     const {
       collectionLogBonusMultiplier,
@@ -342,7 +339,6 @@ export async function fetchPlayerDetails(
         hasAchievementDiaryCape:
           (hasAchievementDiaryCape || savedData?.hasAchievementDiaryCape) ??
           false,
-        hasMaxCape: (hasMaxCape || savedData?.hasMaxCape) ?? false,
         hasTemplePlayerStats: !!templePlayerStats,
         hasTempleCollectionLog: !!templeCollectionLog,
         hasWikiSyncData: !!wikiSyncData,

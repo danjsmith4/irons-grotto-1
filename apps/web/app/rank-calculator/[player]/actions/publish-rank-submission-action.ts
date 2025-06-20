@@ -97,7 +97,6 @@ export const publishRankSubmissionAction = authActionClient
           hasBloodTorva,
           hasDizanasQuiver,
           hasAchievementDiaryCape,
-          hasMaxCape,
         },
       } = playerDetails;
 
@@ -264,10 +263,6 @@ export const publishRankSubmissionAction = authActionClient
           hasWikiSyncData &&
           hasAchievementDiaryCape !== savedData.hasAchievementDiaryCape
             ? !!hasAchievementDiaryCape
-            : null,
-        hasMaxCape:
-          hasTemplePlayerStats && hasMaxCape !== savedData.hasMaxCape
-            ? !!hasMaxCape
             : null,
       } satisfies RankSubmissionDiff;
 

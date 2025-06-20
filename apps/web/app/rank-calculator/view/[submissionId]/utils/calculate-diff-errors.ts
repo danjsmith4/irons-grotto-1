@@ -82,12 +82,5 @@ export function calculateDiffErrors(diff: RankSubmissionDiff) {
     };
   }
 
-  if (diff.hasMaxCape != null) {
-    errors.hasMaxCape = {
-      type: 'value',
-      message: formatCheckboxLabel(diff.hasMaxCape),
-    };
-  }
-
   return errors;
 }

@@ -34,7 +34,6 @@ export const RankCalculatorSchema = z.object({
   tzhaarCape: TzHaarCape,
   hasBloodTorva: z.boolean().default(false),
   hasDizanasQuiver: z.boolean().default(false),
-  hasMaxCape: z.boolean().default(false),
   hasAchievementDiaryCape: z.boolean().default(false),
   combatBonusMultiplier: z.number().min(0).default(0),
   skillingBonusMultiplier: z.number().min(0).default(0),
@@ -50,10 +49,7 @@ export const RankCalculatorSchema = z.object({
 export type RankCalculatorSchema = z.infer<typeof RankCalculatorSchema>;
 
 export const RankCalculatorValidator = RankCalculatorSchema.superRefine(
-  (
-    { hasMaxCape, totalLevel, achievementDiaries, hasAchievementDiaryCape },
-    ctx,
-  ) => {
+  ({ achievementDiaries, hasAchievementDiaryCape }, ctx) => {
     if (
       hasAchievementDiaryCape &&
       !isAchievementDiaryCapeAchieved(achievementDiaries)
@@ -63,14 +59,6 @@ export const RankCalculatorValidator = RankCalculatorSchema.superRefine(
         message:
           'You must have all achievement diaries completed to have the cape.',
         path: ['hasAchievementDiaryCape'],
-      });
-    }
-
-    if (hasMaxCape && totalLevel !== maximumTotalLevel) {
-      ctx.addIssue({
-        code: 'custom',
-        message: `Total level must be ${maximumTotalLevel} if you have a max cape.`,
-        path: ['hasMaxCape'],
       });
     }
   },

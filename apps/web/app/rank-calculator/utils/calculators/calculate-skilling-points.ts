@@ -6,7 +6,6 @@ export function calculateSkillingPoints(
   ehpPoints: number,
   totalLevelPoints: number,
   achievementDiaryCapePoints: number,
-  maxCapePoints: number,
   multiplier: number,
   scaling: number,
 ) {
@@ -16,7 +15,6 @@ export function calculateSkillingPoints(
     achievementDiaryPoints +
     totalLevelPoints +
     achievementDiaryCapePoints +
-    maxCapePoints +
     ehpPoints;
 
   const bonusPointsAwarded = calculateBonusPoints(

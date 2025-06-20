@@ -29,7 +29,6 @@ export function SkillingCard() {
     achievementDiariesPoints,
     ehpPoints,
     achievementDiaryCapePoints,
-    maxCapePoints,
     bonusMultiplier,
     bonusPointsAwarded,
   } = useSkillingPointCalculator();
@@ -38,10 +37,7 @@ export function SkillingCard() {
     getValues,
     setValue,
   } = useFormContext<RankCalculatorSchema>();
-  const [hasMaxCape, hasAchievementDiaryCape] = getValues([
-    'hasMaxCape',
-    'hasAchievementDiaryCape',
-  ]);
+  const hasAchievementDiaryCape = getValues('hasAchievementDiaryCape');
 
   return (
     <DataCard.Root>
@@ -185,19 +181,6 @@ export function SkillingCard() {
             size="2"
           >
             {formatNumber(achievementDiaryCapePoints)}
-          </Text>
-        }
-      />
-      <DataCard.Row
-        left={
-          <ValidationTooltip error={errors.hasMaxCape} color="gray" size="2">
-            <Text>Max cape</Text>
-          </ValidationTooltip>
-        }
-        center={<Checkbox name="hasMaxCape" checked={hasMaxCape} disabled />}
-        right={
-          <Text aria-label="Max cape points" color="gray" size="2">
-            {formatNumber(maxCapePoints)}
           </Text>
         }
       />

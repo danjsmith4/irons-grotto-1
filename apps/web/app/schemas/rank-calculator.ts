@@ -59,7 +59,6 @@ export const RankSubmissionDiff = z.object({
   hasBloodTorva: z.boolean().nullable(),
   hasDizanasQuiver: z.boolean().nullable(),
   hasAchievementDiaryCape: z.boolean().nullable(),
-  hasMaxCape: z.boolean().nullable(),
 });
 
 export type RankSubmissionDiff = z.infer<typeof RankSubmissionDiff>;
