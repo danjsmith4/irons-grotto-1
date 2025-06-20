@@ -21,30 +21,12 @@ export const rankDiscordRoles = {
 } satisfies Record<StandardRank, string>;
 
 export const customDiaryDiscordRoles = {
-  'Collection Log': new Map<CustomDiaryTier, string>([
-    ['Drunkard', '1368972998744477807'],
-    ['Bartender', '1368973172929724517'],
-    ['Landlord', '1368973243876245564'],
-    ['Baron', '1368973306493141042'],
-    ['Duke', '1368973376542212126'],
-  ]),
   Combat: new Map<CustomDiaryTier, string>([
-    ['Drunkard', '1368972199494422590'],
-    ['Bartender', '1368972375806181578'],
-    ['Landlord', '1368972466474717214'],
-    ['Baron', '1368972527522680894'],
-    ['Duke', '1368972613338271744'],
-  ]),
-  Skilling: new Map<CustomDiaryTier, string>([
-    ['Drunkard', '1368972674713387048'],
-    ['Bartender', '1368972745681014784'],
-    ['Landlord', '1368972813494386861'],
-    ['Baron', '1368972884252295369'],
-    ['Duke', '1368972944893542534'],
+    ['Easy', '1385248680357003335'],
+    ['Hard', '1385248881423417407'],
+    ['Master', '1385248972037165086'],
+    ['Grandmaster', '1385249095559549111'],
   ]),
 } as const satisfies Record<CustomDiarySection, Map<CustomDiaryTier, string>>;
 
-export const achievementDiscordRoles = {
-  Grandmaster: '1042811412063465543',
-  'Blood Torva': '1138949636103610489',
-} as const;
+export const achievementDiscordRoles = {} as const;

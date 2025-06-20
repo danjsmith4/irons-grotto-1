@@ -35,10 +35,10 @@ export const RankCalculatorSchema = z.object({
   hasBloodTorva: z.boolean().default(false),
   hasDizanasQuiver: z.boolean().default(false),
   hasAchievementDiaryCape: z.boolean().default(false),
-  combatBonusMultiplier: z.number().min(0).default(0),
-  skillingBonusMultiplier: z.number().min(0).default(0),
-  collectionLogBonusMultiplier: z.number().min(0).default(0),
-  notableItemsBonusMultiplier: z.number().min(0).default(0),
+  combatBonusPoints: z.number().min(0).default(0),
+  skillingBonusPoints: z.number().min(0).default(0),
+  collectionLogBonusPoints: z.number().min(0).default(0),
+  notableItemsBonusPoints: z.number().min(0).default(0),
   clueScrollCounts: z
     .record(ClueScrollTier, z.coerce.number().nonnegative())
     .refine((obj): obj is Required<typeof obj> =>

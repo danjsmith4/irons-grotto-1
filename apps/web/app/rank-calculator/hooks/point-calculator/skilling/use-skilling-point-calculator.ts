@@ -22,11 +22,11 @@ export interface SkillingPointCalculatorData
 }
 
 export function useSkillingPointCalculator() {
-  const bonusMultiplier = useWatch<
+  const bonusPointsAwarded = useWatch<
     RankCalculatorSchema,
-    'skillingBonusMultiplier'
+    'skillingBonusPoints'
   >({
-    name: 'skillingBonusMultiplier',
+    name: 'skillingBonusPoints',
   });
 
   const {
@@ -37,19 +37,15 @@ export function useSkillingPointCalculator() {
   const totalLevelPoints = useTotalLevelPoints();
   const achievementDiaryCapePoints = useAchievementDiaryCapePoints();
   const scaling = useCalculatorScaling();
-  const {
-    pointsAwarded,
-    pointsAwardedPercentage,
-    pointsRemaining,
-    bonusPointsAwarded,
-  } = calculateSkillingPoints(
-    totalAchievementDiaryPointsAwarded,
-    ehpPoints,
-    totalLevelPoints,
-    achievementDiaryCapePoints,
-    bonusMultiplier,
-    scaling,
-  );
+  const { pointsAwarded, pointsAwardedPercentage, pointsRemaining } =
+    calculateSkillingPoints(
+      totalAchievementDiaryPointsAwarded,
+      ehpPoints,
+      totalLevelPoints,
+      achievementDiaryCapePoints,
+      bonusPointsAwarded,
+      scaling,
+    );
 
   return {
     pointsAwarded,
@@ -60,6 +56,5 @@ export function useSkillingPointCalculator() {
     achievementDiariesPoints,
     achievementDiaryCapePoints,
     bonusPointsAwarded,
-    bonusMultiplier,
   } satisfies SkillingPointCalculatorData;
 }

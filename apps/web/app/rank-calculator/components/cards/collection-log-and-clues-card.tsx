@@ -1,7 +1,6 @@
 import { Flex, Progress, Separator, Text } from '@radix-ui/themes';
 import Image from 'next/image';
 import { useFormContext } from 'react-hook-form';
-import { customDiaryTierNameByMultiplier } from '@/config/custom-diaries';
 import { DataCard } from '../data-card';
 import { EditableText } from '../editable-text';
 import { useCollectionLogAndCluesPointCalculator } from '../../hooks/point-calculator/collection-log-and-clues/use-collection-log-and-clues-point-calculator';
@@ -17,8 +16,6 @@ export function CollectionLogAndCluesCard() {
     pointsAwardedPercentage,
     pointsRemaining,
     collectionLogSlotPoints,
-    bonusMultiplier,
-    bonusPointsAwarded,
     clueScrollTierPoints,
   } = useCollectionLogAndCluesPointCalculator();
   const {
@@ -121,23 +118,6 @@ export function CollectionLogAndCluesCard() {
           }
         />
       ))}
-      <DataCard.Row
-        left={
-          <Text color="gray" size="2">
-            Tavern diary tier
-          </Text>
-        }
-        center={
-          <Text aria-label="Collection log diary tier" size="2">
-            {customDiaryTierNameByMultiplier[bonusMultiplier] ?? 'None'}
-          </Text>
-        }
-        right={
-          <Text aria-label="Collection log point bonus multiplier" size="2">
-            {bonusMultiplier ? `+${formatNumber(bonusPointsAwarded)}` : '-'}
-          </Text>
-        }
-      />
       <DataCard.Row
         left={
           <Text color="gray" size="2">

@@ -27,11 +27,11 @@ export function useCollectionLogAndCluesPointCalculator() {
   const clueScrollCounts = useWatch<RankCalculatorSchema, 'clueScrollCounts'>({
     name: 'clueScrollCounts',
   });
-  const bonusMultiplier = useWatch<
+  const bonusPointsAwarded = useWatch<
     RankCalculatorSchema,
-    'collectionLogBonusMultiplier'
+    'collectionLogBonusPoints'
   >({
-    name: 'collectionLogBonusMultiplier',
+    name: 'collectionLogBonusPoints',
   });
 
   const scaling = useCalculatorScaling();
@@ -39,25 +39,20 @@ export function useCollectionLogAndCluesPointCalculator() {
   const { tierPoints: clueScrollTierPoints, totalPoints: clueScrollPoints } =
     calculateClueScrollPoints(clueScrollCounts, scaling);
   console.log(clueScrollPoints);
-  const {
-    pointsAwarded,
-    pointsAwardedPercentage,
-    pointsRemaining,
-    bonusPointsAwarded,
-  } = calculateCollectionLogAndCluesPoints(
-    collectionLogSlotPoints,
-    totalCollectionLogSlots,
-    clueScrollPoints,
-    bonusMultiplier,
-    scaling,
-  );
+  const { pointsAwarded, pointsAwardedPercentage, pointsRemaining } =
+    calculateCollectionLogAndCluesPoints(
+      collectionLogSlotPoints,
+      totalCollectionLogSlots,
+      clueScrollPoints,
+      bonusPointsAwarded,
+      scaling,
+    );
 
   return {
     pointsAwarded,
     pointsAwardedPercentage,
     pointsRemaining,
     collectionLogSlotPoints,
-    bonusMultiplier,
     bonusPointsAwarded,
     clueScrollTierPoints,
   } satisfies CollectionLogAndCluesPointCalculatorData;

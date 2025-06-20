@@ -75,10 +75,10 @@ export async function GET(request: NextRequest) {
       hasBloodTorva,
       hasDizanasQuiver,
       hasAchievementDiaryCape,
-      collectionLogBonusMultiplier,
-      combatBonusMultiplier,
-      notableItemsBonusMultiplier,
-      skillingBonusMultiplier,
+      collectionLogBonusPoints,
+      combatBonusPoints,
+      notableItemsBonusPoints,
+      skillingBonusPoints,
       clueScrollCounts,
     } = playerDetails.data;
 
@@ -104,14 +104,14 @@ export async function GET(request: NextRequest) {
         collectionLogSlotPoints,
         collectionLogTotal,
         clueScrollPoints,
-        collectionLogBonusMultiplier,
+        collectionLogBonusPoints,
         scaling,
       );
     const { pointsAwarded: totalNotableItemsPoints } =
       calculateNotableItemsPoints(
         items,
         acquiredItems,
-        notableItemsBonusMultiplier,
+        notableItemsBonusPoints,
         scaling,
       );
     const { pointsAwarded: achievementDiariesPoints } =
@@ -127,7 +127,7 @@ export async function GET(request: NextRequest) {
       ehpPoints,
       totalLevelPoints,
       achievementDiaryCapePoints,
-      skillingBonusMultiplier,
+      skillingBonusPoints,
       scaling,
     );
     const ehbPoints = calculateEhbPoints(ehb, scaling);
@@ -147,7 +147,7 @@ export async function GET(request: NextRequest) {
       tzhaarCapePoints,
       bloodTorvaPoints,
       dizanasQuiverPoints,
-      combatBonusMultiplier,
+      combatBonusPoints,
       scaling,
     );
     const totalPointsAwarded = calculateTotalPoints(

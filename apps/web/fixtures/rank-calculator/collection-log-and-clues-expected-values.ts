@@ -8,7 +8,6 @@ export const collectionLogAndCluesExpectedValues = {
       pointsAwardedPercentage: 0.0106,
       pointsRemaining: 64110,
       collectionLogSlotPoints: 690,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
       clueScrollTierPoints: {
         Beginner: 0,
@@ -24,7 +23,6 @@ export const collectionLogAndCluesExpectedValues = {
       pointsAwardedPercentage: 0.0106,
       pointsRemaining: 44877,
       collectionLogSlotPoints: 483,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
       clueScrollTierPoints: {
         Beginner: 0,
@@ -40,7 +38,6 @@ export const collectionLogAndCluesExpectedValues = {
       pointsAwardedPercentage: 0.0106,
       pointsRemaining: 25644,
       collectionLogSlotPoints: 276,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
       clueScrollTierPoints: {
         Beginner: 0,
@@ -56,7 +53,6 @@ export const collectionLogAndCluesExpectedValues = {
       pointsAwardedPercentage: 0.0106,
       pointsRemaining: 11220,
       collectionLogSlotPoints: 120,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
       clueScrollTierPoints: {
         Beginner: 0,
@@ -72,7 +68,6 @@ export const collectionLogAndCluesExpectedValues = {
       pointsAwardedPercentage: 0.0106,
       pointsRemaining: 6411,
       collectionLogSlotPoints: 69, // Nice
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
       clueScrollTierPoints: {
         Beginner: 0,
@@ -90,7 +85,6 @@ export const collectionLogAndCluesExpectedValues = {
       pointsAwardedPercentage: 0.2414,
       pointsRemaining: 49160,
       collectionLogSlotPoints: 15640,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
       clueScrollTierPoints: {
         Beginner: 0,
@@ -106,7 +100,6 @@ export const collectionLogAndCluesExpectedValues = {
       pointsAwardedPercentage: 0.2414,
       pointsRemaining: 34412,
       collectionLogSlotPoints: 10948,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
       clueScrollTierPoints: {
         Beginner: 0,
@@ -122,7 +115,6 @@ export const collectionLogAndCluesExpectedValues = {
       pointsAwardedPercentage: 0.2414,
       pointsRemaining: 19664,
       collectionLogSlotPoints: 6256,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
       clueScrollTierPoints: {
         Beginner: 0,
@@ -138,7 +130,6 @@ export const collectionLogAndCluesExpectedValues = {
       pointsAwardedPercentage: 0.2414,
       pointsRemaining: 8603,
       collectionLogSlotPoints: 2737,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
       clueScrollTierPoints: {
         Beginner: 0,
@@ -154,7 +145,6 @@ export const collectionLogAndCluesExpectedValues = {
       pointsAwardedPercentage: 0.2414,
       pointsRemaining: 4916,
       collectionLogSlotPoints: 1564,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
       clueScrollTierPoints: {
         Beginner: 0,
@@ -172,7 +162,6 @@ export const collectionLogAndCluesExpectedValues = {
       pointsAwardedPercentage: 0.7151,
       pointsRemaining: 18460,
       collectionLogSlotPoints: 46340,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
       clueScrollTierPoints: {
         Beginner: 0,
@@ -188,7 +177,6 @@ export const collectionLogAndCluesExpectedValues = {
       pointsAwardedPercentage: 0.7151,
       pointsRemaining: 12922,
       collectionLogSlotPoints: 32438,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
       clueScrollTierPoints: {
         Beginner: 0,
@@ -204,7 +192,6 @@ export const collectionLogAndCluesExpectedValues = {
       pointsAwardedPercentage: 0.7151,
       pointsRemaining: 7384,
       collectionLogSlotPoints: 18536,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
       clueScrollTierPoints: {
         Beginner: 0,
@@ -220,7 +207,6 @@ export const collectionLogAndCluesExpectedValues = {
       pointsAwardedPercentage: 0.7151,
       pointsRemaining: 3231,
       collectionLogSlotPoints: 8109,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
       clueScrollTierPoints: {
         Beginner: 0,
@@ -236,7 +222,6 @@ export const collectionLogAndCluesExpectedValues = {
       pointsAwardedPercentage: 0.7151,
       pointsRemaining: 1846,
       collectionLogSlotPoints: 4634,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
       clueScrollTierPoints: {
         Beginner: 0,

@@ -16,11 +16,11 @@ export function useNotableItemsPointCalculator() {
   const itemFields = useWatch<RankCalculatorSchema, 'acquiredItems'>({
     name: 'acquiredItems',
   });
-  const notableItemsBonusMultiplier = useWatch<
+  const notableItemsBonusPoints = useWatch<
     RankCalculatorSchema,
-    'notableItemsBonusMultiplier'
+    'notableItemsBonusPoints'
   >({
-    name: 'notableItemsBonusMultiplier',
+    name: 'notableItemsBonusPoints',
   });
   const scaling = useCalculatorScaling();
   const { data: notableItems } = useGetItems();
@@ -28,7 +28,7 @@ export function useNotableItemsPointCalculator() {
   return calculateNotableItemsPoints(
     notableItems,
     itemFields,
-    notableItemsBonusMultiplier,
+    notableItemsBonusPoints,
     scaling,
   );
 }

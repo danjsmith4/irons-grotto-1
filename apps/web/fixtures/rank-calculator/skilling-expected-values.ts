@@ -24,7 +24,6 @@ export const skillingExpectedValues = {
       ehpPoints: 3680,
       totalLevelPoints: 22781,
       achievementDiaryCapePoints: 0,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
     },
     fourMonthScaling: {
@@ -48,7 +47,6 @@ export const skillingExpectedValues = {
       ehpPoints: 2576,
       totalLevelPoints: 15946,
       achievementDiaryCapePoints: 0,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
     },
     twoMonthScaling: {
@@ -72,7 +70,6 @@ export const skillingExpectedValues = {
       ehpPoints: 1472,
       totalLevelPoints: 9112,
       achievementDiaryCapePoints: 0,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
     },
     threeWeekScaling: {
@@ -96,7 +93,6 @@ export const skillingExpectedValues = {
       ehpPoints: 644,
       totalLevelPoints: 3986,
       achievementDiaryCapePoints: 0,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
     },
     noScaling: {
@@ -120,7 +116,6 @@ export const skillingExpectedValues = {
       ehpPoints: 368,
       totalLevelPoints: 2278,
       achievementDiaryCapePoints: 0,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
     },
   },
@@ -146,7 +141,6 @@ export const skillingExpectedValues = {
       ehpPoints: 11440,
       totalLevelPoints: 42018,
       achievementDiaryCapePoints: 0,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
     },
     fourMonthScaling: {
@@ -170,7 +164,6 @@ export const skillingExpectedValues = {
       ehpPoints: 8008,
       totalLevelPoints: 29412,
       achievementDiaryCapePoints: 0,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
     },
     twoMonthScaling: {
@@ -194,7 +187,6 @@ export const skillingExpectedValues = {
       ehpPoints: 4576,
       totalLevelPoints: 16807,
       achievementDiaryCapePoints: 0,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
     },
     threeWeekScaling: {
@@ -218,7 +210,6 @@ export const skillingExpectedValues = {
       ehpPoints: 2002,
       totalLevelPoints: 7353,
       achievementDiaryCapePoints: 0,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
     },
     noScaling: {
@@ -242,7 +233,6 @@ export const skillingExpectedValues = {
       ehpPoints: 1144,
       totalLevelPoints: 4201,
       achievementDiaryCapePoints: 0,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
     },
   },
@@ -268,7 +258,6 @@ export const skillingExpectedValues = {
       ehpPoints: 27760,
       totalLevelPoints: 46000,
       achievementDiaryCapePoints: 0,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
     },
     fourMonthScaling: {
@@ -292,7 +281,6 @@ export const skillingExpectedValues = {
       ehpPoints: 19432,
       totalLevelPoints: 32200,
       achievementDiaryCapePoints: 0,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
     },
     twoMonthScaling: {
@@ -316,7 +304,6 @@ export const skillingExpectedValues = {
       ehpPoints: 11104,
       totalLevelPoints: 18400,
       achievementDiaryCapePoints: 0,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
     },
     threeWeekScaling: {
@@ -340,7 +327,6 @@ export const skillingExpectedValues = {
       ehpPoints: 4858,
       totalLevelPoints: 8050,
       achievementDiaryCapePoints: 0,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
     },
     noScaling: {
@@ -364,7 +350,6 @@ export const skillingExpectedValues = {
       ehpPoints: 2776,
       totalLevelPoints: 4600,
       achievementDiaryCapePoints: 0,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
     },
   },

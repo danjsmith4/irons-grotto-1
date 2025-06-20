@@ -12,7 +12,6 @@ export const combatExpectedValues = {
       bloodTorvaPoints: 0,
       dizanasQuiverPoints: 0,
       tzhaarCapePoints: 0,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
     },
     fourMonthScaling: {
@@ -24,7 +23,6 @@ export const combatExpectedValues = {
       bloodTorvaPoints: 0,
       dizanasQuiverPoints: 0,
       tzhaarCapePoints: 0,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
     },
     twoMonthScaling: {
@@ -36,7 +34,6 @@ export const combatExpectedValues = {
       bloodTorvaPoints: 0,
       dizanasQuiverPoints: 0,
       tzhaarCapePoints: 0,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
     },
     threeWeekScaling: {
@@ -48,7 +45,6 @@ export const combatExpectedValues = {
       bloodTorvaPoints: 0,
       dizanasQuiverPoints: 0,
       tzhaarCapePoints: 0,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
     },
     noScaling: {
@@ -60,7 +56,6 @@ export const combatExpectedValues = {
       bloodTorvaPoints: 0,
       dizanasQuiverPoints: 0,
       tzhaarCapePoints: 0,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
     },
   },
@@ -74,7 +69,6 @@ export const combatExpectedValues = {
       bloodTorvaPoints: 0,
       dizanasQuiverPoints: 0,
       tzhaarCapePoints: 0,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
     },
     fourMonthScaling: {
@@ -86,7 +80,6 @@ export const combatExpectedValues = {
       bloodTorvaPoints: 0,
       dizanasQuiverPoints: 0,
       tzhaarCapePoints: 0,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
     },
     twoMonthScaling: {
@@ -98,7 +91,6 @@ export const combatExpectedValues = {
       bloodTorvaPoints: 0,
       dizanasQuiverPoints: 0,
       tzhaarCapePoints: 0,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
     },
     threeWeekScaling: {
@@ -110,7 +102,6 @@ export const combatExpectedValues = {
       bloodTorvaPoints: 0,
       dizanasQuiverPoints: 0,
       tzhaarCapePoints: 0,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
     },
     noScaling: {
@@ -122,7 +113,6 @@ export const combatExpectedValues = {
       bloodTorvaPoints: 0,
       dizanasQuiverPoints: 0,
       tzhaarCapePoints: 0,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
     },
   },
@@ -136,7 +126,6 @@ export const combatExpectedValues = {
       bloodTorvaPoints: 0,
       dizanasQuiverPoints: 0,
       tzhaarCapePoints: 0,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
     },
     fourMonthScaling: {
@@ -148,7 +137,6 @@ export const combatExpectedValues = {
       bloodTorvaPoints: 0,
       dizanasQuiverPoints: 0,
       tzhaarCapePoints: 0,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
     },
     twoMonthScaling: {
@@ -160,7 +148,6 @@ export const combatExpectedValues = {
       bloodTorvaPoints: 0,
       dizanasQuiverPoints: 0,
       tzhaarCapePoints: 0,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
     },
     threeWeekScaling: {
@@ -172,7 +159,6 @@ export const combatExpectedValues = {
       bloodTorvaPoints: 0,
       dizanasQuiverPoints: 0,
       tzhaarCapePoints: 0,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
     },
     noScaling: {
@@ -184,7 +170,6 @@ export const combatExpectedValues = {
       bloodTorvaPoints: 0,
       dizanasQuiverPoints: 0,
       tzhaarCapePoints: 0,
-      bonusMultiplier: 0,
       bonusPointsAwarded: 0,
     },
   },

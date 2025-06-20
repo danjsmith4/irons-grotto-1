@@ -1,23 +1,19 @@
 import { CustomDiarySection } from '@/app/schemas/custom-diaries';
 import { customDiaryDiscordRoles } from '@/config/discord-roles';
-import { customDiaryTierMultipliers } from '@/config/custom-diaries';
+import { customDiaryTierBonusPoints } from '@/config/custom-diaries';
 
-export function calculateCustomDiaryTierMultipliers(
+export function calculateCustomDiaryTierBonusPoints(
   discordRoles: Set<string> | null,
 ) {
   if (!discordRoles) {
     return {
-      collectionLogBonusMultiplier: 0,
-      combatBonusMultiplier: 0,
-      skillingBonusMultiplier: 0,
+      collectionLogBonusPoints: 0,
+      combatBonusPoints: 0,
+      skillingBonusPoints: 0,
     };
   }
 
-  const {
-    'Collection Log': collectionLogBonusMultiplier,
-    Combat: combatBonusMultiplier,
-    Skilling: skillingBonusMultiplier,
-  } = (
+  const { Combat: combatBonusPoints } = (
     Object.keys(
       customDiaryDiscordRoles,
     ) as (keyof typeof customDiaryDiscordRoles)[]
@@ -27,7 +23,7 @@ export function calculateCustomDiaryTierMultipliers(
       [key]: [...customDiaryDiscordRoles[key]].reduce(
         (tierMultiplier, [tier, roleId]) =>
           discordRoles.has(roleId)
-            ? customDiaryTierMultipliers[tier]
+            ? customDiaryTierBonusPoints[tier]
             : tierMultiplier,
         0,
       ),
@@ -36,8 +32,6 @@ export function calculateCustomDiaryTierMultipliers(
   );
 
   return {
-    collectionLogBonusMultiplier,
-    combatBonusMultiplier,
-    skillingBonusMultiplier,
+    combatBonusPoints,
   };
 }

@@ -23,11 +23,11 @@ export interface CombatPointCalculatorData
 }
 
 export function useCombatPointCalculator() {
-  const bonusMultiplier = useWatch<
+  const bonusPointsAwarded = useWatch<
     RankCalculatorSchema,
-    'combatBonusMultiplier'
+    'combatBonusPoints'
   >({
-    name: 'combatBonusMultiplier',
+    name: 'combatBonusPoints',
   });
 
   const scaling = useCalculatorScaling();
@@ -37,20 +37,16 @@ export function useCombatPointCalculator() {
   const bloodTorvaPoints = useBloodTorvaPoints();
   const dizanasQuiverPoints = useDizanasQuiverPoints();
 
-  const {
-    pointsAwarded,
-    pointsAwardedPercentage,
-    pointsRemaining,
-    bonusPointsAwarded,
-  } = calculateCombatPoints(
-    ehbPoints,
-    combatAchievementTierPoints,
-    tzhaarCapePoints,
-    bloodTorvaPoints,
-    dizanasQuiverPoints,
-    bonusMultiplier,
-    scaling,
-  );
+  const { pointsAwarded, pointsAwardedPercentage, pointsRemaining } =
+    calculateCombatPoints(
+      ehbPoints,
+      combatAchievementTierPoints,
+      tzhaarCapePoints,
+      bloodTorvaPoints,
+      dizanasQuiverPoints,
+      bonusPointsAwarded,
+      scaling,
+    );
 
   return {
     pointsAwarded,
@@ -61,7 +57,6 @@ export function useCombatPointCalculator() {
     tzhaarCapePoints,
     bloodTorvaPoints,
     dizanasQuiverPoints,
-    bonusMultiplier,
     bonusPointsAwarded,
   } satisfies CombatPointCalculatorData;
 }

@@ -26,7 +26,6 @@ export function EditableText<T extends FieldValues>({
   const [isEditing, setIsEditing] = useState(false);
   const { register, getFieldState } = useFormContext();
   const value = useWatch<T>({ name });
-  console.log(value);
   const field = register(name, {
     required,
     setValueAs(newValue: unknown) {

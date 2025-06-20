@@ -17,7 +17,7 @@ import {
   CollectionLogAcquiredItemMap,
   isHolidayTrack,
 } from '@/app/schemas/wiki';
-import { maximumTotalLevel, TzHaarCape } from '@/app/schemas/osrs';
+import { TzHaarCape } from '@/app/schemas/osrs';
 import { isItemAcquired } from './utils/is-item-acquired';
 import { getWikiSyncData } from './get-wikisync-data';
 import { fetchTemplePlayerStats } from '../fetch-temple-player-stats';
@@ -33,7 +33,7 @@ import { fetchTempleConstants } from './fetch-temple-constants';
 import { mergeTzhaarCapes } from './utils/merge-tzhaar-capes';
 import { isAchievementDiaryCapeAchieved } from '../../utils/is-achievement-diary-cape-achieved';
 import { fetchUserDiscordRoles } from '../fetch-user-discord-roles';
-import { calculateCustomDiaryTierMultipliers } from '../../utils/calculators/calculate-custom-diary-tier-multipliers';
+import { calculateCustomDiaryTierBonusPoints } from '../../utils/calculators/calculate-custom-diary-tier-multipliers';
 
 export interface PlayerDetailsResponse
   extends Omit<RankCalculatorSchema, 'rank' | 'points'> {
@@ -82,10 +82,10 @@ export const emptyResponse = {
   hasBloodTorva: false,
   hasDizanasQuiver: false,
   hasAchievementDiaryCape: false,
-  combatBonusMultiplier: 0,
-  skillingBonusMultiplier: 0,
-  collectionLogBonusMultiplier: 0,
-  notableItemsBonusMultiplier: 0,
+  combatBonusPoints: 0,
+  skillingBonusPoints: 0,
+  collectionLogBonusPoints: 0,
+  notableItemsBonusPoints: 0,
   clueScrollCounts: {
     Beginner: 0,
     Easy: 0,
@@ -297,11 +297,8 @@ export async function fetchPlayerDetails(
       : false;
 
     const discordRoles = await fetchUserDiscordRoles(userId);
-    const {
-      collectionLogBonusMultiplier,
-      combatBonusMultiplier,
-      skillingBonusMultiplier,
-    } = calculateCustomDiaryTierMultipliers(discordRoles);
+    const { combatBonusPoints } =
+      calculateCustomDiaryTierBonusPoints(discordRoles);
 
     return {
       success: true,
@@ -345,10 +342,10 @@ export async function fetchPlayerDetails(
         hasThirdPartyData,
         isTempleCollectionLogOutdated,
         isMobileOnly: playerRecord.isMobileOnly,
-        collectionLogBonusMultiplier,
-        combatBonusMultiplier,
-        skillingBonusMultiplier,
-        notableItemsBonusMultiplier: 0, // Leaving this in for future use, if we decide to add a notable items diary
+        collectionLogBonusPoints: 0, // Leaving this in for future use, if we decide to add a collection log diary
+        combatBonusPoints,
+        skillingBonusPoints: 0, // Leaving this in for future use, if we decide to add a skilling diary
+        notableItemsBonusPoints: 0, // Leaving this in for future use, if we decide to add a notable items diary
         clueScrollCounts: {
           Beginner: beginnerClueCount ?? 0,
           Easy: easyClueCount ?? 0,
