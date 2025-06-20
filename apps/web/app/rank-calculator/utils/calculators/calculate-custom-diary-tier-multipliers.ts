@@ -1,8 +1,8 @@
-import { TavernDiarySection } from '@/app/schemas/tavern-diaries';
-import { tavernDiaryDiscordRoles } from '@/config/discord-roles';
-import { tavernDiaryTierMultipliers } from '@/config/tavern-diaries';
+import { CustomDiarySection } from '@/app/schemas/custom-diaries';
+import { customDiaryDiscordRoles } from '@/config/discord-roles';
+import { customDiaryTierMultipliers } from '@/config/custom-diaries';
 
-export function calculateTavernDiaryTierMultipliers(
+export function calculateCustomDiaryTierMultipliers(
   discordRoles: Set<string> | null,
 ) {
   if (!discordRoles) {
@@ -19,20 +19,20 @@ export function calculateTavernDiaryTierMultipliers(
     Skilling: skillingBonusMultiplier,
   } = (
     Object.keys(
-      tavernDiaryDiscordRoles,
-    ) as (keyof typeof tavernDiaryDiscordRoles)[]
+      customDiaryDiscordRoles,
+    ) as (keyof typeof customDiaryDiscordRoles)[]
   ).reduce(
     (acc, key) => ({
       ...acc,
-      [key]: [...tavernDiaryDiscordRoles[key]].reduce(
+      [key]: [...customDiaryDiscordRoles[key]].reduce(
         (tierMultiplier, [tier, roleId]) =>
           discordRoles.has(roleId)
-            ? tavernDiaryTierMultipliers[tier]
+            ? customDiaryTierMultipliers[tier]
             : tierMultiplier,
         0,
       ),
     }),
-    {} as Record<TavernDiarySection, number>,
+    {} as Record<CustomDiarySection, number>,
   );
 
   return {

@@ -7,7 +7,7 @@ import {
 } from '@/app/schemas/osrs';
 import Image from 'next/image';
 import { useFormContext } from 'react-hook-form';
-import { tavernDiaryTierNameByMultiplier } from '@/config/tavern-diaries';
+import { customDiaryTierNameByMultiplier } from '@/config/custom-diaries';
 import { DataCard } from '../data-card';
 import { Select } from '../select';
 import { EditableText } from '../editable-text';
@@ -192,7 +192,7 @@ export function SkillingCard() {
         }
         center={
           <Text aria-label="Skilling diary tier" size="2">
-            {tavernDiaryTierNameByMultiplier[bonusMultiplier] ?? 'None'}
+            {customDiaryTierNameByMultiplier[bonusMultiplier] ?? 'None'}
           </Text>
         }
         right={

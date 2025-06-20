@@ -1,7 +1,7 @@
 import { Flex, Progress, Separator, Text } from '@radix-ui/themes';
 import Image from 'next/image';
 import { useFormContext } from 'react-hook-form';
-import { tavernDiaryTierNameByMultiplier } from '@/config/tavern-diaries';
+import { customDiaryTierNameByMultiplier } from '@/config/custom-diaries';
 import { DataCard } from '../data-card';
 import { EditableText } from '../editable-text';
 import { useCollectionLogAndCluesPointCalculator } from '../../hooks/point-calculator/collection-log-and-clues/use-collection-log-and-clues-point-calculator';
@@ -129,7 +129,7 @@ export function CollectionLogAndCluesCard() {
         }
         center={
           <Text aria-label="Collection log diary tier" size="2">
-            {tavernDiaryTierNameByMultiplier[bonusMultiplier] ?? 'None'}
+            {customDiaryTierNameByMultiplier[bonusMultiplier] ?? 'None'}
           </Text>
         }
         right={

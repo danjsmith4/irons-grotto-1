@@ -2,7 +2,7 @@ import { Flex, Progress, Separator, Text } from '@radix-ui/themes';
 import Image from 'next/image';
 import { useFormContext } from 'react-hook-form';
 import { CombatAchievementTier, TzHaarCape } from '@/app/schemas/osrs';
-import { tavernDiaryTierNameByMultiplier } from '@/config/tavern-diaries';
+import { customDiaryTierNameByMultiplier } from '@/config/custom-diaries';
 import { DataCard } from '../data-card';
 import { Select } from '../select';
 import { EditableText } from '../editable-text';
@@ -181,7 +181,7 @@ export function CombatCard() {
         }
         center={
           <Text aria-label="Combat diary tier" size="2">
-            {tavernDiaryTierNameByMultiplier[bonusMultiplier] ?? 'None'}
+            {customDiaryTierNameByMultiplier[bonusMultiplier] ?? 'None'}
           </Text>
         }
         right={
