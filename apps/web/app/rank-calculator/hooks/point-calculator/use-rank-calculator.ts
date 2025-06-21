@@ -34,7 +34,7 @@ export function useRankCalculator() {
     totalCombatPoints,
   );
 
-  const { rank, nextRank } = useRank(pointsAwarded);
+  const { rank, nextRank, throttleReason } = useRank(pointsAwarded);
 
   const currentRankThreshold = rankThresholds[rankStructure][rank]!;
 
@@ -57,5 +57,6 @@ export function useRankCalculator() {
     pointsRemaining,
     rank,
     nextRank,
+    throttleReason,
   } satisfies RankCalculatorData;
 }

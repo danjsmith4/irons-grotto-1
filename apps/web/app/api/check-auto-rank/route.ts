@@ -156,7 +156,12 @@ export async function GET(request: NextRequest) {
       totalSkillingPoints,
       totalCombatPoints,
     );
-    const { rank } = calculateRank(totalPointsAwarded, rankStructure);
+    const { rank } = calculateRank(
+      acquiredItems,
+      combatAchievementTier,
+      totalPointsAwarded,
+      rankStructure,
+    );
 
     if (rank !== currentRank) {
       const hashKey = `${discordId}:${player.toLowerCase()}`;

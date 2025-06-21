@@ -31,6 +31,7 @@ export function RankProgressCard() {
     pointsRemaining,
     nextRank,
     rank,
+    throttleReason,
   } = useRankCalculator();
   const { register, setValue, getValues } = useFormContext();
   const { playerName, rank: currentRank } = useCurrentPlayer();
@@ -96,12 +97,15 @@ export function RankProgressCard() {
                   size="3"
                   weight="medium"
                 >
-                  {getPointsRemainingLabel(pointsRemaining)}
+                  {getPointsRemainingLabel(pointsRemaining, throttleReason)}
                 </Text>
               </Flex>
             }
           />
-          <Progress size="3" value={pointsAwardedPercentage * 100} />
+          <Progress
+            size="3"
+            value={Math.min(100, pointsAwardedPercentage * 100)}
+          />
           <Flex justify="between">
             <Flex gap="2" align="center">
               <Text aria-label="Current rank" color="gray" size="2">

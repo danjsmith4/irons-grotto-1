@@ -10,6 +10,7 @@ export const rankExpectedValues = {
       pointsRemaining: 11219,
       rank: 'Willow' as Rank,
       nextRank: 'Nature' as Rank,
+      throttleReason: null,
     },
     fourMonthScaling: {
       pointsAwarded: 21546,
@@ -17,6 +18,7 @@ export const rankExpectedValues = {
       pointsRemaining: 6454,
       rank: 'Earth' as Rank,
       nextRank: 'Willow' as Rank,
+      throttleReason: null,
     },
     twoMonthScaling: {
       pointsAwarded: 12312,
@@ -24,6 +26,7 @@ export const rankExpectedValues = {
       pointsRemaining: 4688,
       rank: 'Oak' as Rank,
       nextRank: 'Earth' as Rank,
+      throttleReason: null,
     },
     threeWeekScaling: {
       pointsAwarded: 5381,
@@ -31,6 +34,7 @@ export const rankExpectedValues = {
       pointsRemaining: 3619,
       rank: 'Water' as Rank,
       nextRank: 'Oak' as Rank,
+      throttleReason: null,
     },
     noScaling: {
       pointsAwarded: 3078,
@@ -38,6 +42,7 @@ export const rankExpectedValues = {
       pointsRemaining: 5922,
       rank: 'Water' as Rank,
       nextRank: 'Oak' as Rank,
+      throttleReason: null,
     },
   },
   midGamePlayer: {
@@ -47,6 +52,7 @@ export const rankExpectedValues = {
       pointsRemaining: 25372,
       rank: 'Yew' as Rank,
       nextRank: 'Achiever' as Rank,
+      throttleReason: null,
     },
     fourMonthScaling: {
       pointsAwarded: 78139,
@@ -54,6 +60,7 @@ export const rankExpectedValues = {
       pointsRemaining: 1861,
       rank: 'Maple' as Rank,
       nextRank: 'Law' as Rank,
+      throttleReason: null,
     },
     twoMonthScaling: {
       pointsAwarded: 44651,
@@ -61,6 +68,7 @@ export const rankExpectedValues = {
       pointsRemaining: 14349,
       rank: 'Nature' as Rank,
       nextRank: 'Maple' as Rank,
+      throttleReason: null,
     },
     threeWeekScaling: {
       pointsAwarded: 19534,
@@ -68,6 +76,7 @@ export const rankExpectedValues = {
       pointsRemaining: 8466,
       rank: 'Earth' as Rank,
       nextRank: 'Willow' as Rank,
+      throttleReason: null,
     },
     noScaling: {
       pointsAwarded: 11162,
@@ -75,6 +84,7 @@ export const rankExpectedValues = {
       pointsRemaining: 5838,
       rank: 'Oak' as Rank,
       nextRank: 'Earth' as Rank,
+      throttleReason: null,
     },
   },
   endGamePlayer: {
@@ -84,6 +94,7 @@ export const rankExpectedValues = {
       pointsRemaining: 28635,
       rank: 'Diseased' as Rank,
       nextRank: 'Blisterwood' as Rank,
+      throttleReason: null,
     },
     fourMonthScaling: {
       pointsAwarded: 170355,
@@ -91,6 +102,7 @@ export const rankExpectedValues = {
       pointsRemaining: 9645,
       rank: 'Achiever' as Rank,
       nextRank: 'Elite' as Rank,
+      throttleReason: null,
     },
     twoMonthScaling: {
       pointsAwarded: 97346,
@@ -98,6 +110,7 @@ export const rankExpectedValues = {
       pointsRemaining: 8654,
       rank: 'Law' as Rank,
       nextRank: 'Yew' as Rank,
+      throttleReason: null,
     },
     threeWeekScaling: {
       pointsAwarded: 42587,
@@ -105,6 +118,7 @@ export const rankExpectedValues = {
       pointsRemaining: 16413,
       rank: 'Nature' as Rank,
       nextRank: 'Maple' as Rank,
+      throttleReason: null,
     },
     noScaling: {
       pointsAwarded: 24336,
@@ -112,6 +126,7 @@ export const rankExpectedValues = {
       pointsRemaining: 3664,
       rank: 'Earth' as Rank,
       nextRank: 'Willow' as Rank,
+      throttleReason: null,
     },
   },
 } satisfies CategoryFixture<RankCalculatorData>;

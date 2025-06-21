@@ -6,6 +6,20 @@ export function useRank(pointsAwarded: number) {
   const rankStructure = useWatch<RankCalculatorSchema, 'rankStructure'>({
     name: 'rankStructure',
   });
+  const acquiredItems = useWatch<RankCalculatorSchema, 'acquiredItems'>({
+    name: 'acquiredItems',
+  });
+  const combatAchievementTier = useWatch<
+    RankCalculatorSchema,
+    'combatAchievementTier'
+  >({
+    name: 'combatAchievementTier',
+  });
 
-  return calculateRank(pointsAwarded, rankStructure);
+  return calculateRank(
+    acquiredItems,
+    combatAchievementTier,
+    pointsAwarded,
+    rankStructure,
+  );
 }
