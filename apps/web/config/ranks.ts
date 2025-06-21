@@ -61,6 +61,10 @@ export const rankThresholds: Record<
   },
 } as const;
 
+/**
+ * Maps the required items needed to achieve each rank.
+ * The items correspond to the form field on the page.
+ */
 export const rankRequiredItems: Partial<
   Record<Rank, CollectionLogItemName[][]>
 > = {
@@ -70,11 +74,7 @@ export const rankRequiredItems: Partial<
     ['Dexterous prayer scroll', 'Arcane prayer scroll'],
     ['Dexterous prayer scroll', 'Mystic vigour prayer scroll'],
   ],
-  Sergeant: [
-    ['Dragon warhammer'],
-    ['Elder maul'],
-    ['Bandos hilt', 'Godsword shard 1', 'Godsword shard 2', 'Godsword shard 3'],
-  ],
+  Sergeant: [['Dragon warhammer'], ['Elder maul'], ['Bandos hilt']],
 };
 
 export const rankRequiredCombatAchievements: Partial<
