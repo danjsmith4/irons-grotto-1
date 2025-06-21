@@ -39,6 +39,7 @@ import { calculateBloodTorvaPoints } from '@/app/rank-calculator/utils/calculato
 import { calculateDizanasQuiverPoints } from '@/app/rank-calculator/utils/calculators/calculate-dizanas-quiver-points';
 import { itemList } from '@/data/item-list';
 import { calculateClueScrollPoints } from '@/app/rank-calculator/utils/calculators/calculate-clue-scroll-points';
+import { calculateRadiantOathplatePoints } from '@/app/rank-calculator/utils/calculators/calculate-radiant-oathplate-points';
 
 export async function GET(request: NextRequest) {
   try {
@@ -73,6 +74,7 @@ export async function GET(request: NextRequest) {
       rankStructure,
       tzhaarCape,
       hasBloodTorva,
+      hasRadiantOathplate,
       hasDizanasQuiver,
       hasAchievementDiaryCape,
       collectionLogBonusPoints,
@@ -137,6 +139,10 @@ export async function GET(request: NextRequest) {
     );
     const tzhaarCapePoints = calculateTzhaarCapePoints(tzhaarCape, scaling);
     const bloodTorvaPoints = calculateBloodTorvaPoints(hasBloodTorva, scaling);
+    const radiantOathplatePoints = calculateRadiantOathplatePoints(
+      hasRadiantOathplate,
+      scaling,
+    );
     const dizanasQuiverPoints = calculateDizanasQuiverPoints(
       hasDizanasQuiver,
       scaling,
@@ -146,6 +152,7 @@ export async function GET(request: NextRequest) {
       combatAchievementTierPoints,
       tzhaarCapePoints,
       bloodTorvaPoints,
+      radiantOathplatePoints,
       dizanasQuiverPoints,
       combatBonusPoints,
       scaling,

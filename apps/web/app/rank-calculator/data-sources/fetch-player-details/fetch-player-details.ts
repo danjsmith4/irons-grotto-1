@@ -80,6 +80,7 @@ export const emptyResponse = {
   isMobileOnly: false,
   tzhaarCape: 'None',
   hasBloodTorva: false,
+  hasRadiantOathplate: false,
   hasDizanasQuiver: false,
   hasAchievementDiaryCape: false,
   combatBonusPoints: 0,
@@ -331,6 +332,7 @@ export async function fetchPlayerDetails(
         currentRank,
         tzhaarCape: mergeTzhaarCapes(tzhaarCape, savedData?.tzhaarCape),
         hasBloodTorva: (hasBloodTorva || savedData?.hasBloodTorva) ?? false,
+        hasRadiantOathplate: savedData?.hasRadiantOathplate ?? false,
         hasDizanasQuiver:
           (hasDizanasQuiver || savedData?.hasDizanasQuiver) ?? false,
         hasAchievementDiaryCape:
