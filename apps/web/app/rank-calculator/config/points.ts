@@ -14,20 +14,6 @@ export const achievementDiaryTierPoints = {
   Elite: 75,
 } satisfies Record<DiaryTier, number>;
 
-export const pointsConfig = {
-  notableItemsPointsPerHour: 1,
-  sailingOffset: 4000,
-  achievementDiaryCapePoints: 300,
-  maximumTotalLevelPoints: 50000,
-  maximumAchievementDiaryPoints:
-    DiaryLocation.options.length * achievementDiaryTierPoints.Elite,
-  maximumCombatAchievementPoints: 50000,
-  bloodTorvaPoints: 250,
-  dizanasQuiverPoints: 150,
-  infernalCapePoints: 250,
-  fireCapePoints: 50,
-} as const satisfies Record<string, number>;
-
 export const collectionLogSlotMilestonePoints = {
   100: 4,
   200: 8,
@@ -71,3 +57,21 @@ export const combatAchievementTierPoints = {
   Master: 1000,
   Grandmaster: 3000,
 } satisfies Record<CombatAchievementTier, number>;
+
+export const pointsConfig = {
+  notableItemsPointsPerHour: 1,
+  sailingOffset: 0,
+  achievementDiaryCapePoints: 300,
+  maximumTotalLevelPoints: Object.values(totalLevelMilestonePoints).reduce(
+    (acc, points) => acc + points,
+    0,
+  ),
+  maximumAchievementDiaryPoints:
+    DiaryLocation.options.length * achievementDiaryTierPoints.Elite,
+  maximumCombatAchievementPoints: combatAchievementTierPoints.Grandmaster,
+  bloodTorvaPoints: 250,
+  dizanasQuiverPoints: 150,
+  infernalCapePoints: 250,
+  fireCapePoints: 50,
+  radiantOathplatePoints: 250,
+} as const satisfies Record<string, number>;

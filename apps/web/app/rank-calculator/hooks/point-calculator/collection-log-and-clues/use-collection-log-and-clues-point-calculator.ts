@@ -38,7 +38,6 @@ export function useCollectionLogAndCluesPointCalculator() {
   const collectionLogSlotPoints = useCollectionLogSlotPoints();
   const { tierPoints: clueScrollTierPoints, totalPoints: clueScrollPoints } =
     calculateClueScrollPoints(clueScrollCounts, scaling);
-  console.log(clueScrollPoints);
   const { pointsAwarded, pointsAwardedPercentage, pointsRemaining } =
     calculateCollectionLogAndCluesPoints(
       collectionLogSlotPoints,
