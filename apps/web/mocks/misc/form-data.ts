@@ -38,6 +38,7 @@ export const earlyGamePlayer = {
   tzhaarCape: 'None',
   hasAchievementDiaryCape: false,
   hasBloodTorva: false,
+  hasRadiantOathplate: false,
   hasDizanasQuiver: false,
   clueScrollCounts: {
     Beginner: 0,
@@ -181,6 +182,7 @@ export const midGamePlayer = {
   tzhaarCape: 'None',
   hasAchievementDiaryCape: false,
   hasBloodTorva: false,
+  hasRadiantOathplate: false,
   hasDizanasQuiver: false,
   clueScrollCounts: {
     Beginner: 0,
@@ -440,6 +442,7 @@ export const endGamePlayer = {
   hasAchievementDiaryCape: false,
   hasBloodTorva: false,
   hasDizanasQuiver: false,
+  hasRadiantOathplate: false,
   clueScrollCounts: {
     Beginner: 0,
     Easy: 0,
