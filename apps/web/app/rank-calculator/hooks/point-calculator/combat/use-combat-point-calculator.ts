@@ -11,6 +11,7 @@ import { useCalculatorScaling } from '../use-calculator-scaling';
 import { useTzhaarCapePoints } from './use-tzhaar-cape-points';
 import { useBloodTorvaPoints } from './use-blood-torva-points';
 import { useDizanasQuiverPoints } from './use-dizanas-quiver-points';
+import { useRadiantOathplatePoints } from './use-radiant-oathplate-points';
 
 export interface CombatPointCalculatorData
   extends CommonPointCalculatorData,
@@ -20,6 +21,7 @@ export interface CombatPointCalculatorData
   tzhaarCapePoints: number;
   bloodTorvaPoints: number;
   dizanasQuiverPoints: number;
+  radiantOathplatePoints: number;
 }
 
 export function useCombatPointCalculator() {
@@ -36,6 +38,7 @@ export function useCombatPointCalculator() {
   const tzhaarCapePoints = useTzhaarCapePoints();
   const bloodTorvaPoints = useBloodTorvaPoints();
   const dizanasQuiverPoints = useDizanasQuiverPoints();
+  const radiantOathplatePoints = useRadiantOathplatePoints();
 
   const { pointsAwarded, pointsAwardedPercentage, pointsRemaining } =
     calculateCombatPoints(
@@ -43,6 +46,7 @@ export function useCombatPointCalculator() {
       combatAchievementTierPoints,
       tzhaarCapePoints,
       bloodTorvaPoints,
+      radiantOathplatePoints,
       dizanasQuiverPoints,
       bonusPointsAwarded,
       scaling,
@@ -58,5 +62,6 @@ export function useCombatPointCalculator() {
     bloodTorvaPoints,
     dizanasQuiverPoints,
     bonusPointsAwarded,
+    radiantOathplatePoints,
   } satisfies CombatPointCalculatorData;
 }

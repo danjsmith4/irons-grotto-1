@@ -24,15 +24,17 @@ export function CombatCard() {
     tzhaarCapePoints,
     bloodTorvaPoints,
     dizanasQuiverPoints,
+    radiantOathplatePoints,
     bonusPointsAwarded,
   } = useCombatPointCalculator();
   const {
     formState: { defaultValues, errors },
     getValues,
   } = useFormContext<RankCalculatorSchema>();
-  const [hasBloodTorva, hasDizanasQuiver] = getValues([
+  const [hasBloodTorva, hasDizanasQuiver, hasRadiantOathplate] = getValues([
     'hasBloodTorva',
     'hasDizanasQuiver',
+    'hasRadiantOathplate',
   ]);
 
   return (
@@ -169,6 +171,21 @@ export function CombatCard() {
         right={
           <Text aria-label="Blood torva points" color="gray" size="2">
             {formatNumber(bloodTorvaPoints)}
+          </Text>
+        }
+      />
+      <DataCard.Row
+        left={
+          <ValidationTooltip error={errors.hasBloodTorva} color="gray" size="2">
+            <Text>Radiant oathplate</Text>
+          </ValidationTooltip>
+        }
+        center={
+          <Checkbox name="hasRadiantOathplate" checked={hasRadiantOathplate} />
+        }
+        right={
+          <Text aria-label="Radiant oathplate points" color="gray" size="2">
+            {formatNumber(radiantOathplatePoints)}
           </Text>
         }
       />

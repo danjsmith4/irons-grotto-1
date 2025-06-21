@@ -6,6 +6,7 @@ export function calculateMaximumCombatPoints(scaling: number) {
     bloodTorvaPoints,
     dizanasQuiverPoints,
     maximumCombatAchievementPoints,
+    radiantOathplatePoints,
   } = pointsConfig;
   const maximumTzhaarCapePoints = infernalCapePoints;
 
@@ -13,6 +14,7 @@ export function calculateMaximumCombatPoints(scaling: number) {
     (maximumCombatAchievementPoints +
       maximumTzhaarCapePoints +
       bloodTorvaPoints +
+      radiantOathplatePoints +
       dizanasQuiverPoints) *
       scaling,
   );

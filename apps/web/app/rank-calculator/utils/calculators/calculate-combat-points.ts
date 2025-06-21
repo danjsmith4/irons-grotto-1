@@ -5,6 +5,7 @@ export function calculateCombatPoints(
   combatAchievementTierPoints: number,
   tzhaarCapePoints: number,
   bloodTorvaPoints: number,
+  radiantOathplatePoints: number,
   dizanasQuiverPoints: number,
   bonusPointsAwarded: number,
   scaling: number,
@@ -15,6 +16,7 @@ export function calculateCombatPoints(
     ehbPoints +
     tzhaarCapePoints +
     bloodTorvaPoints +
+    radiantOathplatePoints +
     dizanasQuiverPoints;
   const pointsRemaining = totalPointsAvailable - (pointsAwarded - ehbPoints);
   const pointsAwardedPercentage =

@@ -33,6 +33,7 @@ export const RankCalculatorSchema = z.object({
   proofLink: z.union([z.string().url().nullish(), z.literal('')]),
   tzhaarCape: TzHaarCape,
   hasBloodTorva: z.boolean().default(false),
+  hasRadiantOathplate: z.boolean().default(false),
   hasDizanasQuiver: z.boolean().default(false),
   hasAchievementDiaryCape: z.boolean().default(false),
   combatBonusPoints: z.number().min(0).default(0),
