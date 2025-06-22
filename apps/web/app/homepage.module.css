@@ -1,25 +1,17 @@
-/* CSS Variables for easier theme management */
-:root {
-  --primary-gold: #ffd700; /* Gold */
-  --secondary-blue: #2e86c1; /* Original button blue */
-  --dark-background: rgba(
-    0,
-    0,
-    0,
-    0.85
-  ); /* Slightly darker, less transparent */
-  --light-text: #e0e0e0; /* Off-white for body text */
-  --grey-text: #b0b0b0; /* Lighter grey for subtle text */
-  --border-color: #444; /* Dark grey for subtle borders */
-  --box-shadow-color: rgba(0, 0, 0, 0.5);
-  --transition-speed: 0.3s ease;
-}
+@value primaryGold: #ffd700; /* Gold */
+@value secondaryBlue: #2e86c1; /* Original button blue */
+@value darkBackground: rgba(0, 0, 0, 0.85); /* Slightly darker, less transparent background */
+@value lightText: #e0e0e0; /* Off-white for body text */
+@value greyText: #b0b0b0; /* Lighter grey for subtle text */
+@value borderColor: #444; /* Dark grey for subtle borders */
+@value boxShadowColor: rgba(0, 0, 0, 0.5);
+@value transitionSpeed: 0.3s ease;
 
 .outer-container {
   font-family: 'Open Sans', sans-serif; /* Modern sans-serif for body */
   margin: 0;
   padding: 0;
-  color: var(--light-text);
+  color: lightText;
   display: flex;
   justify-content: center;
   align-items: flex-start; /* Align items to the start, allow content to flow down */
@@ -31,39 +23,40 @@
 .container {
   max-width: 880px; /* Slightly wider container */
   width: 100%;
-  background-color: var(--dark-background);
+  background-color: darkBackground;
   padding: 2.5rem; /* More padding for a less cramped feel */
   border-radius: 10px; /* Slightly more rounded corners */
-  box-shadow: 0 10px 30px var(--box-shadow-color); /* More pronounced shadow */
+  box-shadow: 0 10px 30px boxShadowColor; /* More pronounced shadow */
   text-align: center;
   margin-top: 2rem; /* Initial margin from the top */
-  border: 1px solid var(--border-color); /* Subtle border */
+  border: 1px solid borderColor; /* Subtle border */
   overflow: hidden; /* Clear any floats/margins from children */
 }
 
-h1,
-h2 {
+.heading-1,
+.heading-2 {
   font-family: 'Cinzel', serif; /* More elegant, thematic font for headings */
-  color: var(--primary-gold);
+  color: primaryGold;
   margin-top: 0;
   margin-bottom: 1.5rem; /* Consistent spacing below headings */
   text-transform: uppercase; /* A classic OSRS text feel */
   letter-spacing: 0.05em; /* Slightly spaced out letters */
+  font-weight: 700; /* Bolder text for emphasis */
 }
 
-h1 {
+.heading-1 {
   font-size: 2.8rem; /* Larger main heading */
 }
 
-h2 {
+.heading-2 {
   font-size: 2.2rem; /* Slightly smaller section headings */
-  border-bottom: 2px solid var(--primary-gold); /* Underline for section headings */
+  border-bottom: 2px solid primaryGold; /* Underline for section headings */
   padding-bottom: 0.5rem;
   display: inline-block; /* Make border only as wide as text */
 }
 
-p {
-  color: var(--grey-text);
+.paragraph {
+  color: greyText;
   line-height: 1.7; /* Better readability */
   margin-bottom: 1.5rem; /* Consistent spacing below paragraphs */
 }
@@ -80,16 +73,16 @@ p {
 .button {
   display: inline-block;
   padding: 0.8rem 2.2rem; /* Larger padding for better touch targets */
-  background-color: var(--secondary-blue);
+  background-color: secondaryBlue;
   color: white;
   text-decoration: none;
   border: none;
   border-radius: 5px; /* Slightly more rounded */
   cursor: pointer;
   transition:
-    background-color var(--transition-speed),
-    transform var(--transition-speed),
-    box-shadow var(--transition-speed);
+    background-color transitionSpeed,
+    transform transitionSpeed,
+    box-shadow transitionSpeed;
   font-weight: 600; /* Bolder text for buttons */
   font-size: 1.1rem;
   letter-spacing: 0.03em;
@@ -116,7 +109,7 @@ p {
   /* All sections now share this top margin and border */
   margin-top: 3.5rem; /* More space between sections */
   padding-top: 2rem; /* Padding inside sections */
-  border-top: 1px dashed var(--border-color); /* Dashed line separator */
+  border-top: 1px dashed borderColor; /* Dashed line separator */
 }
 
 .leadership ul {
@@ -131,15 +124,15 @@ p {
 }
 
 .leadership strong {
-  color: var(--primary-gold); /* Make titles stand out */
+  color: primaryGold; /* Make titles stand out */
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  h1 {
+  .heading-1 {
     font-size: 2.2rem;
   }
-  h2 {
+  .heading-2 {
     font-size: 1.8rem;
   }
   .container {
@@ -157,10 +150,10 @@ p {
 }
 
 @media (max-width: 480px) {
-  h1 {
+  .heading-1 {
     font-size: 1.8rem;
   }
-  h2 {
+  .heading-2 {
     font-size: 1.5rem;
   }
   .container {

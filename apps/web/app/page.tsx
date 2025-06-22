@@ -1,5 +1,5 @@
+import css from './homepage.module.css';
 import { Cinzel, Open_Sans } from 'next/font/google';
-import './homepage.css';
 import backgroundImage from './images/homepage-background.png';
 
 import { auth, signIn } from '@/auth';
@@ -33,7 +33,7 @@ export default async function HomePage() {
 
   return (
     <div
-      className={`outer-container ${cinzel.className} ${openSans.className}`}
+      className={`${css['outer-container']} ${cinzel.className} ${openSans.className}`}
       style={{
         backgroundImage: `url(${backgroundImage.src})`,
         backgroundSize: 'cover',
@@ -41,47 +41,52 @@ export default async function HomePage() {
         backgroundAttachment: 'fixed',
       }}
     >
-      <div className="container">
-        <h1 style={{ fontWeight: 700 }}>Welcome to Irons Grotto</h1>
-        <p>A thriving Old School RuneScape community for Ironman accounts.</p>
+      <div className={css.container}>
+        <h1 className={css['heading-1']}>Welcome to Irons Grotto</h1>
+        <p className={css.paragraph}>
+          A thriving Old School RuneScape community for Ironman accounts.
+        </p>
 
-        <div className="button-container">
+        <div className={css['button-container']}>
           <a
             href="https://discord.gg/sUT4Xx9zag"
             target="_blank"
-            className="button"
+            className={css.button}
           >
             Join Discord
           </a>
           <a
             href="https://templeosrs.com/groups/overview.php?id=241"
             target="_blank"
-            className="button"
+            className={css.button}
           >
             Visit TempleOSRS
           </a>
         </div>
 
-        <div className="apply-section">
-          <h2 style={{ fontWeight: 700 }}>Apply for Rank</h2>
-          <p>
+        <div className={css['apply-section']}>
+          <h2 className={css['heading-2']}>Apply for Rank</h2>
+          <p className={css.paragraph}>
             Ready to take the next step in the Irons Grotto community? Apply for
             a higher rank by clicking the button below. You'll need to log in
             via Discord, and **you must be a member of our Discord server** to
             complete the application process.
           </p>
-          <div className="button-container">
+          <div className={css['button-container']}>
             <form action={handleSubmit}>
-              <button type="submit" className="button apply-here">
+              <button
+                type="submit"
+                className={`${css.button} ${css['apply-here']}`}
+              >
                 Apply Here
               </button>
             </form>
           </div>
         </div>
 
-        <div className="about-section">
-          <h2 style={{ fontWeight: 700 }}>About Us</h2>
-          <p>
+        <div className={css['about-section']}>
+          <h2 className={css['heading-2']}>About Us</h2>
+          <p className={css.paragraph}>
             We are a social Ironman clan dedicated to creating a vibrant
             community within the OSRS universe. Our clan organizes various
             events including bingo, boss of the week challenges, skill of the
@@ -91,8 +96,8 @@ export default async function HomePage() {
           </p>
         </div>
 
-        <div className="leadership">
-          <h2 style={{ fontWeight: 700 }}>Leadership</h2>
+        <div className={css.leadership}>
+          <h2 className={css['heading-2']}>Leadership</h2>
           <ul>
             <li>
               <strong>Owners:</strong> Avios & Tyluh
