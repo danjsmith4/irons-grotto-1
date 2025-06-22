@@ -121,11 +121,6 @@ export const publishRankSubmissionAction = authActionClient
                   value: format(joinDate, 'dd MMM yyyy'),
                   inline: true,
                 },
-                {
-                  name: 'Scaling',
-                  value: formatPercentage(calculateScaling(joinDate)),
-                  inline: true,
-                },
                 { name: 'User', value: `<@${userId}>`, inline: true },
                 {
                   name: 'View link',
