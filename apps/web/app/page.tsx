@@ -16,7 +16,7 @@ const openSans = Open_Sans({
 });
 
 // eslint-disable-next-line @typescript-eslint/require-await
-export default async function LoginPage() {
+export default async function HomePage() {
   const handleSubmit = async () => {
     'use server';
 
