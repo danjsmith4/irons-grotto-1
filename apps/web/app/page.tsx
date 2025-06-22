@@ -2,7 +2,8 @@ import { Cinzel, Open_Sans } from 'next/font/google';
 import './homepage.css';
 import backgroundImage from './images/homepage-background.png';
 
-import { signIn } from '@/auth';
+import { auth, signIn } from '@/auth';
+import { redirect } from 'next/navigation';
 
 const cinzel = Cinzel({
   weight: ['400', '700'],
@@ -20,7 +21,14 @@ export default async function HomePage() {
   const handleSubmit = async () => {
     'use server';
 
-    await signIn('discord', { redirectTo: '/rank-calculator' });
+    const session = await auth();
+    const rankCalculatorUrl = '/rank-calculator';
+
+    if (!session) {
+      await signIn('discord', { redirectTo: rankCalculatorUrl });
+    }
+
+    redirect(rankCalculatorUrl);
   };
 
   return (
