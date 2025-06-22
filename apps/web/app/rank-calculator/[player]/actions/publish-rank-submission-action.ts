@@ -40,7 +40,6 @@ import {
   Item,
 } from '@/app/schemas/items';
 import * as Sentry from '@sentry/nextjs';
-import { formatPercentage } from '../../utils/format-percentage';
 import { getRankName } from '../../utils/get-rank-name';
 import { getRankImageUrl } from '../../utils/get-rank-image-url';
 import { fetchPlayerDetails } from '../../data-sources/fetch-player-details/fetch-player-details';
