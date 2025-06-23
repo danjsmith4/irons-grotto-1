@@ -80,5 +80,5 @@ export const rankRequiredItems: Partial<
 export const rankRequiredCombatAchievements: Partial<
   Record<Rank, CombatAchievementTier>
 > = {
-  Skulled: 'Grandmaster',
+  Skulled: 'Master',
 };

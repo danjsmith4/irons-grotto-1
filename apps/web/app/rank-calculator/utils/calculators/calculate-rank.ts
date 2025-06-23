@@ -11,7 +11,7 @@ import { CombatAchievementTier } from '@/app/schemas/osrs';
 export interface RankData {
   rank: Rank;
   nextRank: Rank | null;
-  throttleReason: 'items' | 'GM CAs' | null;
+  throttleReason: 'items' | 'Master CAs' | null;
 }
 
 export function calculateRank(
@@ -56,7 +56,7 @@ export function calculateRank(
         if (!hasRequiredCombatAchievements) {
           return {
             ...acc,
-            throttleReason: 'GM CAs',
+            throttleReason: 'Master CAs',
           };
         }
 
