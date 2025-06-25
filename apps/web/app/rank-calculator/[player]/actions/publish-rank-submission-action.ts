@@ -145,7 +145,7 @@ export const publishRankSubmissionAction = authActionClient
     content: dedent`
       <@${userId}>, thanks for the application!
 
-      Someone from <@${roleId}> will check shortly.
+      Someone from <@&${roleId}> will check shortly.
     `
   },
   discordMessageId,
