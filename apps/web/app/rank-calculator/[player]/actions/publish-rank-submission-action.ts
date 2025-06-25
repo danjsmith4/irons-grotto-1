@@ -45,7 +45,7 @@ import { getRankImageUrl } from '../../utils/get-rank-image-url';
 import { fetchPlayerDetails } from '../../data-sources/fetch-player-details/fetch-player-details';
 import { RankCalculatorSchema } from '../submit-rank-calculator-validation';
 import { stripEntityName } from '../../utils/strip-entity-name';
-
+import dedent from 'dedent';
 export const publishRankSubmissionAction = authActionClient
   .metadata({ actionName: 'publish-rank-submission' })
   .bindArgsSchemas<
@@ -139,21 +139,18 @@ export const publishRankSubmissionAction = authActionClient
       });
 
       try {
-        await discordBotClient.put(
-          Routes.threadMembers(discordMessageId, userId),
-        );
+        await sendDiscordMessage(
+  {
+    content: dedent`
+      <@${userId}>, thanks for the application!
+
+      Someone from <@${roleId}> will check shortly.
+    `
+  },
+  discordMessageId,
+);
       } catch (error) {
-        try {
-          // If the user can't be added to the thread, send a comment that mentions them instead
-          await sendDiscordMessage(
-            { content: `<@${userId}>` },
-            discordMessageId,
-          );
-        } catch {
-          // Adding the user to the thread is not critical to the process,
-          // so if both attempts fail, just capture the exception and continue.
-          Sentry.captureException(error);
-        }
+Sentry.captureException(error);
       }
 
       const itemMap = Object.values(itemList)
