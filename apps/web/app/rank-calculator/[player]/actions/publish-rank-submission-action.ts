@@ -100,6 +100,7 @@ export const publishRankSubmissionAction = authActionClient
 
       const { channelId } = serverConstants.discord;
       const submissionId = randomUUID();
+      const roleId = '1387236150397370409'; // Replace with your actual Discord role ID
       const { id: discordMessageId } = await sendDiscordMessage(
         {
           embeds: [
