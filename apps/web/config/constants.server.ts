@@ -17,6 +17,7 @@ const ServerConfigSchema = z.object({
     token: z.string(),
     guildId: z.string(),
     channelId: z.string(),
+    rankRoleID: z.string(),
   }),
 });
 
