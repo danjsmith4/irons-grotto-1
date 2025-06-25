@@ -36,5 +36,6 @@ export const serverConstants = ServerConfigSchema.parse({
     token: process.env.DISCORD_TOKEN,
     guildId: process.env.DISCORD_GUILD_ID,
     channelId: process.env.DISCORD_CHANNEL_ID,
+    rankRoleID: process.env.DISCORD_RANK_ID,
   },
 });
