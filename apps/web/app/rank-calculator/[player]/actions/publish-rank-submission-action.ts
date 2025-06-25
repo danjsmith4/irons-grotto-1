@@ -98,8 +98,8 @@ export const publishRankSubmissionAction = authActionClient
         },
       } = playerDetails;
 
-      const { channelId,rankRoleID } = serverConstants.discord;
-    
+      const { channelId } = serverConstants.discord;
+      const roleId = '1387236150397370409';
       const submissionId = randomUUID();
       const { id: discordMessageId } = await sendDiscordMessage(
         {
@@ -145,7 +145,7 @@ export const publishRankSubmissionAction = authActionClient
     content: dedent`
       <@${userId}>, thanks for the application!
 
-      Someone from <@&${rankRoleID}> will check shortly.
+      Someone from <@&${roleID}> will check shortly.
     `
   },
   discordMessageId,
