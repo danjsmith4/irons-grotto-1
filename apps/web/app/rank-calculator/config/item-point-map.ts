@@ -130,6 +130,7 @@ export const rollOverrides: Record<string, number> = {
  */
 export const rarityOverrides: Partial<Record<CollectionLogItemName, number>> = {
   'Avernic defender hilt': 1 / 64,
+  "Bryophyta's essence": 1 / 118,
   'Ghrazi rapier': 1 / 259,
   'Sanguinesti staff (uncharged)': 1 / 259,
   'Justiciar chestguard': 1 / 259,
