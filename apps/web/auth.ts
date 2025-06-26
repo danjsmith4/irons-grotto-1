@@ -14,7 +14,7 @@ import { serverConstants } from './config/constants.server';
 
 declare module 'next-auth' {
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  interface Profile extends DiscordProfile {}
+  interface Profile extends DiscordProfile { }
 
   interface User {
     permissions: string;
@@ -47,23 +47,28 @@ export const config = {
       const { guildId } = serverConstants.discord;
 
       try {
-        await discordBotClient.get(Routes.guildMember(guildId, profile.id));
-      } catch (error) {
-        if (
-          error instanceof DiscordAPIError &&
-          error.code === RESTJSONErrorCodes.UnknownMember
-        ) {
+        const userGuildsResponse = await discordUserClient(account.access_token).get(
+          Routes.userGuilds(),
+          { authPrefix: 'Bearer' }
+        ) as APIGuild[];
+
+        const isInGuild = userGuildsResponse.some(({ id }) => id === guildId);
+
+        if (!isInGuild) {
           Sentry.addBreadcrumb({
             data: { id: profile.id, username: profile.username },
             category: 'Auth',
-            message: `User attempted to log in but was not found in the Discord server`,
+            message: `User not found in required Discord guild`,
             level: 'error',
           });
-        }
 
+          throw new Error('User is not in the required Discord server');
+        }
+      } catch (error) {
+        Sentry.captureException(error);
+        console.error('Error during Discord guild check', error);
         throw error;
       }
-
       return true;
     },
 

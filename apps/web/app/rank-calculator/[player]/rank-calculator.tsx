@@ -1,4 +1,4 @@
-import { BaseSyntheticEvent, ReactNode } from 'react';
+import { BaseSyntheticEvent, ReactNode, useState } from 'react';
 import { Grid } from '@radix-ui/themes';
 import dedent from 'dedent';
 import { Sidebar } from '../components/sidebar';
@@ -14,6 +14,9 @@ export function RankCalculator({
   submitRankCalculatorAction,
   navigation,
 }: RankCalculatorProps) {
+
+  const [query, setQuery] = useState('');
+
   return (
     <form onSubmit={submitRankCalculatorAction}>
       <Grid
@@ -41,8 +44,8 @@ export function RankCalculator({
       >
         {navigation}
         <Sidebar />
-        <RightSidebar />
-        <ItemList />
+        <RightSidebar query={query} onChange={setQuery}/>
+        <ItemList query={query} />
       </Grid>
     </form>
   );

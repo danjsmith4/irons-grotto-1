@@ -2,8 +2,14 @@ import { Box, Flex, ScrollArea } from '@radix-ui/themes';
 import { SkillingCard } from './cards/skilling-card';
 import { usePageHeight } from '../hooks/use-page-height';
 import { PlayerCard } from './cards/player-card';
+import { SearchCard } from './cards/search-card';
 
-export function RightSidebar() {
+type RightSidebarProps = {
+  query: string;
+  onChange: (value: string) => void;
+};
+
+export function RightSidebar({ query, onChange }: RightSidebarProps) {
   const mainHeightCss = usePageHeight();
 
   return (
@@ -25,6 +31,7 @@ export function RightSidebar() {
           pb={{ initial: '0', md: '3' }}
         >
           <aside>
+            <SearchCard query={query} onChange={onChange} />
             <PlayerCard />
             <SkillingCard />
           </aside>
