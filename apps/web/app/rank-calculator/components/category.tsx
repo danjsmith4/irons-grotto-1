@@ -15,6 +15,7 @@ interface CategoryProps {
   image?: string;
   items: Item[];
   errors: (FieldError | undefined)[];
+  query?: string;
 }
 
 export const Category = memo(
@@ -23,14 +24,34 @@ export const Category = memo(
     items,
     image = formatWikiImageUrl(title, 'category'),
     errors,
+    query,
   }: CategoryProps) => {
-    const fields = useWatch<RankCalculatorSchema, `acquiredItems.${string}`[]>({
-      name: items.map(
-        ({ name }) => `acquiredItems.${stripEntityName(name)}` as const,
-      ),
+    // Create a map of item names to their acquired status
+    const itemNames = items.map(({ name }) => stripEntityName(name));
+    const fieldsArray = useWatch<RankCalculatorSchema, `acquiredItems.${string}`[]>({
+      name: itemNames.map((name) => `acquiredItems.${name}` as const),
     });
-    const completedCount = fields.filter(Boolean).length;
+    // Map item name to acquired value
+    const fields: Record<string, boolean> = {};
+    itemNames.forEach((name, idx) => {
+      fields[name] = !!fieldsArray[idx];
+    });
+    // Map item name to error
+    const errorsMap: Record<string, FieldError | undefined> = {};
+    itemNames.forEach((name, idx) => {
+      errorsMap[name] = errors[idx];
+    });
+    const completedCount = Object.values(fields).filter(Boolean).length;
     const percentComplete = formatPercentage(completedCount / items.length, 0);
+    const queryLower = query?.toLowerCase() ?? '';
+
+    const matchesCategory = title.toLowerCase().includes(queryLower);
+    const visibleItems = items.filter(
+      (item) => matchesCategory || item.name.toLowerCase().includes(queryLower),
+    );
+    if (!matchesCategory && visibleItems.length === 0) {
+      return null;
+    }
 
     return (
       <Card my="3">
@@ -90,14 +111,27 @@ export const Category = memo(
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {items.map((item, i) => (
-              <MemoisedItem
-                acquired={!!fields[i]}
-                key={item.name}
-                item={item}
-                error={errors[i]}
-              />
-            ))}
+            {visibleItems.length > 0 ? (
+              visibleItems.map((item) => {
+                const nameKey = stripEntityName(item.name);
+                return (
+                  <MemoisedItem
+                    key={item.name}
+                    acquired={!!fields[nameKey]}
+                    item={item}
+                    error={errorsMap[nameKey]}
+                  />
+                );
+              })
+            ) : (
+              <Table.Row>
+                <Table.Cell colSpan={3}>
+                  <Text size="2" color="gray">
+                    No matching items
+                  </Text>
+                </Table.Cell>
+              </Table.Row>
+            )}
           </Table.Body>
         </Table.Root>
       </Card>

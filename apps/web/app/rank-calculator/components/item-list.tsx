@@ -6,7 +6,7 @@ import { Category } from './category';
 import { RankCalculatorSchema } from '../[player]/submit-rank-calculator-validation';
 import { stripEntityName } from '../utils/strip-entity-name';
 
-export function ItemList() {
+export function ItemList({ query }: { query: string }) {
   const { data: categories } = useGetItems();
   const mainHeightCss = usePageHeight();
   const { getFieldState } = useFormContext<RankCalculatorSchema>();
@@ -27,6 +27,7 @@ export function ItemList() {
                 title={title}
                 image={category.image}
                 errors={fieldErrors}
+                query={query}
               />
             </Box>
           );
