@@ -1637,6 +1637,7 @@ export const CollectionLogItemName = z.enum([
   'Breach of the scarab',
   'Eye of the corruptor',
   'Jewel of the sun',
+  'Jewel of amascut',
   'Cache of runes',
   "Tumeken's guardian",
   'Masori crafting kit',
