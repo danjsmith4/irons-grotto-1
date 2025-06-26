@@ -1,13 +1,8 @@
 'use client';
 
 import { Text, Flex } from '@radix-ui/themes';
-import { useFormContext } from 'react-hook-form';
 import { DataCard } from '../data-card';
 import { Input } from '../input';
-
-interface SearchCardSchema {
-  query: string;
-}
 
 export function SearchCard({
   query,

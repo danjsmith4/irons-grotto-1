@@ -4,7 +4,7 @@ import { usePageHeight } from '../hooks/use-page-height';
 import { PlayerCard } from './cards/player-card';
 import { SearchCard } from './cards/search-card';
 
-type RightSidebarProps = {
+interface RightSidebarProps {
   query: string;
   onChange: (value: string) => void;
 };
