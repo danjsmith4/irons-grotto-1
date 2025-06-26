@@ -46,6 +46,7 @@ export const miscellaneous: ItemCategory = {
     singleItem({
       name: "Bryophyta's essence",
       collectionLogCategory: 'bryophyta',
+      targetDropSources: ['Bryophyta#Members']
     }),
     singleItem({
       name: 'Dragon warhammer',
