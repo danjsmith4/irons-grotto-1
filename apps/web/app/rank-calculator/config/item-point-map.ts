@@ -26,6 +26,7 @@ export const rewardItemBossNameMap: Record<string, keyof typeof ehbRates> = {
   'Rewards Chest (Fortis Colosseum)#Wave 10': 'Sol Heredit',
   'Rewards Chest (Fortis Colosseum)#Wave 11': 'Sol Heredit',
   'Rewards Chest (Fortis Colosseum)#Wave 12': 'Sol Heredit',
+  "Chest (Bryophyta's lair)#Members": 'Bryophyta',
   'Vorkath#Post-quest': 'Vorkath',
   'Bryophyta#F2P': 'Bryophyta',
   'Bryophyta#Members': 'Bryophyta',
