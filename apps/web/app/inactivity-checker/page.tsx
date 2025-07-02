@@ -11,7 +11,7 @@ import { getRankImageUrl } from '../rank-calculator/utils/get-rank-image-url';
 
 async function getGroupMemberInfo(): Promise<GroupMemberInfoResponse> {
   const response = await fetch(
-    `${clientConstants.temple.baseUrl}/api/group_member_info.php?id=${serverConstants.temple.groupId}`,
+    `${clientConstants.temple.baseUrl}/api/group_member_info.php?id=241`,
   );
 
   return GroupMemberInfoResponse.parse(await response.json());
