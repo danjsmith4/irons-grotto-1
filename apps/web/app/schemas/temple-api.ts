@@ -31,7 +31,20 @@ export interface PlayerInfoResponse {
 
 export const GroupMemberInfoResponse = z.object({
   data: z.object({
-    memberlist: z.record(z.string(), MemberInfo),
+    memberlist: z.preprocess(
+      (memberList) => {
+        if (
+          typeof memberList === 'object' &&
+          memberList !== null &&
+          '' in memberList
+        ) {
+          delete memberList[''];
+        }
+
+        return memberList;
+      },
+      z.record(z.string(), MemberInfo),
+    ),
   }),
 });
 
