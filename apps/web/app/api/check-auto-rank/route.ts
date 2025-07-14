@@ -88,10 +88,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
-    const dropRates = await fetchItemDropRates(generateRequiredItemList());
-    const items = Object.entries(
-      await buildNotableItemList(itemList, dropRates),
-    );
+    const dropRates = await fetchItemDropRates([...generateRequiredItemList()]);
+    const items = Object.entries(await buildNotableItemList(dropRates));
     const scaling = calculateScaling(joinDate);
     const collectionLogSlotPoints = calculateCollectionLogSlotPoints(
       collectionLogCount,
