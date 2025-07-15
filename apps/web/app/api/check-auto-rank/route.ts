@@ -37,7 +37,6 @@ import { calculateAchievementDiaryCapePoints } from '@/app/rank-calculator/utils
 import { calculateTzhaarCapePoints } from '@/app/rank-calculator/utils/calculators/calculate-tzhaar-cape-points';
 import { calculateBloodTorvaPoints } from '@/app/rank-calculator/utils/calculators/calculate-blood-torva-points';
 import { calculateDizanasQuiverPoints } from '@/app/rank-calculator/utils/calculators/calculate-dizanas-quiver-points';
-import { itemList } from '@/data/item-list';
 import { calculateClueScrollPoints } from '@/app/rank-calculator/utils/calculators/calculate-clue-scroll-points';
 import { calculateRadiantOathplatePoints } from '@/app/rank-calculator/utils/calculators/calculate-radiant-oathplate-points';
 
@@ -88,10 +87,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
-    const dropRates = await fetchItemDropRates(generateRequiredItemList());
-    const items = Object.entries(
-      await buildNotableItemList(itemList, dropRates),
-    );
+    const dropRates = await fetchItemDropRates([...generateRequiredItemList()]);
+    const items = Object.entries(await buildNotableItemList(dropRates));
     const scaling = calculateScaling(joinDate);
     const collectionLogSlotPoints = calculateCollectionLogSlotPoints(
       collectionLogCount,

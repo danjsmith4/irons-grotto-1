@@ -26,7 +26,7 @@ import { ChannelType, Routes } from 'discord-api-types/v10';
 import { Rank } from '@/config/enums';
 import { PlayerName } from '@/app/schemas/player';
 import { ActionError } from '@/app/action-error';
-import { pickBy } from 'lodash';
+import { isEmpty, pickBy } from 'lodash';
 import {
   CombatAchievementTier,
   DiaryLocation,
@@ -45,6 +45,7 @@ import { getRankImageUrl } from '../../utils/get-rank-image-url';
 import { fetchPlayerDetails } from '../../data-sources/fetch-player-details/fetch-player-details';
 import { RankCalculatorSchema } from '../submit-rank-calculator-validation';
 import { stripEntityName } from '../../utils/strip-entity-name';
+import { approveSubmission } from '../../view/[submissionId]/utils/approve-submission';
 import dedent from 'dedent';
 export const publishRankSubmissionAction = authActionClient
   .metadata({ actionName: 'publish-rank-submission' })
@@ -141,17 +142,17 @@ export const publishRankSubmissionAction = authActionClient
 
       try {
         await sendDiscordMessage(
-  {
-    content: dedent`
+          {
+            content: dedent`
       <@${userId}>, thanks for the application!
 
       Someone from <@&${roleId}> will check shortly.
     `
-  },
-  discordMessageId,
-);
+          },
+          discordMessageId,
+        );
       } catch (error) {
-Sentry.captureException(error);
+        Sentry.captureException(error);
       }
 
       const itemMap = Object.values(itemList)
@@ -165,64 +166,64 @@ Sentry.captureException(error);
         achievementDiaries:
           hasWikiSyncData && savedData.achievementDiaries && achievementDiaries
             ? (
-                Object.entries(achievementDiaries) as [
-                  DiaryLocation,
-                  DiaryTier,
-                ][]
-              ).reduce<AchievementDiaryMap>(
-                (acc, [diaryLocation, diaryTier]) => {
-                  if (
-                    DiaryTier._def.values.indexOf(
-                      achievementDiaries[diaryLocation] ?? 'None',
-                    ) <
-                    DiaryTier._def.values.indexOf(
-                      savedData.achievementDiaries[diaryLocation] ?? 'None',
-                    )
-                  ) {
-                    return { ...acc, [diaryLocation]: diaryTier };
-                  }
+              Object.entries(achievementDiaries) as [
+                DiaryLocation,
+                DiaryTier,
+              ][]
+            ).reduce<AchievementDiaryMap>(
+              (acc, [diaryLocation, diaryTier]) => {
+                if (
+                  DiaryTier._def.values.indexOf(
+                    achievementDiaries[diaryLocation] ?? 'None',
+                  ) <
+                  DiaryTier._def.values.indexOf(
+                    savedData.achievementDiaries[diaryLocation] ?? 'None',
+                  )
+                ) {
+                  return { ...acc, [diaryLocation]: diaryTier };
+                }
 
-                  return acc;
-                },
-                {},
-              )
+                return acc;
+              },
+              {},
+            )
             : null,
         acquiredItems: [
           ...new Set<string>([
             ...(hasWikiSyncData
               ? z.array(z.string()).parse(
-                  Object.values(
-                    pickBy(Object.keys(savedData.acquiredItems), (key) => {
-                      if (
-                        isQuestItem(itemMap[key]) ||
-                        isCombatAchievementItem(itemMap[key])
-                      ) {
-                        return !acquiredItems[key];
-                      }
+                Object.values(
+                  pickBy(Object.keys(savedData.acquiredItems), (key) => {
+                    if (
+                      isQuestItem(itemMap[key]) ||
+                      isCombatAchievementItem(itemMap[key])
+                    ) {
+                      return !acquiredItems[key];
+                    }
 
-                      return false;
-                    }),
-                  ),
-                )
+                    return false;
+                  }),
+                ),
+              )
               : []),
             ...(hasTempleCollectionLog
               ? z.array(z.string()).parse(
-                  Object.values(
-                    pickBy(Object.keys(savedData.acquiredItems), (key) => {
-                      if (isCollectionLogItem(itemMap[key])) {
-                        return !acquiredItems[key];
-                      }
+                Object.values(
+                  pickBy(Object.keys(savedData.acquiredItems), (key) => {
+                    if (isCollectionLogItem(itemMap[key])) {
+                      return !acquiredItems[key];
+                    }
 
-                      return false;
-                    }),
-                  ),
-                )
+                    return false;
+                  }),
+                ),
+              )
               : []),
           ]),
         ],
         combatAchievementTier:
           hasWikiSyncData &&
-          CombatAchievementTier._def.values.indexOf(combatAchievementTier) <
+            CombatAchievementTier._def.values.indexOf(combatAchievementTier) <
             CombatAchievementTier._def.values.indexOf(
               savedData.combatAchievementTier,
             )
@@ -230,7 +231,7 @@ Sentry.captureException(error);
             : null,
         collectionLogCount:
           hasTemplePlayerStats &&
-          collectionLogCount < savedData.collectionLogCount
+            collectionLogCount < savedData.collectionLogCount
             ? collectionLogCount
             : null,
         totalLevel:
@@ -247,15 +248,22 @@ Sentry.captureException(error);
             : null,
         hasDizanasQuiver:
           hasTempleCollectionLog &&
-          hasDizanasQuiver !== savedData.hasDizanasQuiver
+            hasDizanasQuiver !== savedData.hasDizanasQuiver
             ? !!hasDizanasQuiver
             : null,
         hasAchievementDiaryCape:
           hasWikiSyncData &&
-          hasAchievementDiaryCape !== savedData.hasAchievementDiaryCape
+            hasAchievementDiaryCape !== savedData.hasAchievementDiaryCape
             ? !!hasAchievementDiaryCape
             : null,
       } satisfies RankSubmissionDiff;
+
+      const isAutoApprovalAvailable =
+        rankStructure === 'Standard' &&
+        hasTempleCollectionLog &&
+        hasWikiSyncData &&
+        hasTemplePlayerStats &&
+        isEmpty(pickBy(submissionDiff, (val) => !isEmpty(val)));
 
       const submissionTransaction = redis.multi();
 
@@ -294,6 +302,20 @@ Sentry.captureException(error);
         );
 
         return { success: false };
+      }
+
+      if (isAutoApprovalAvailable) {
+        try {
+          await approveSubmission({
+            rank,
+            submissionId,
+            isAutomatic: true,
+          });
+        } catch (error) {
+          // If auto-approval fails, it can still be manually approved later,
+          // so we just log the error and continue.
+          Sentry.captureException(error);
+        }
       }
 
       return { success: true };
