@@ -37,7 +37,6 @@ import { calculateAchievementDiaryCapePoints } from '@/app/rank-calculator/utils
 import { calculateTzhaarCapePoints } from '@/app/rank-calculator/utils/calculators/calculate-tzhaar-cape-points';
 import { calculateBloodTorvaPoints } from '@/app/rank-calculator/utils/calculators/calculate-blood-torva-points';
 import { calculateDizanasQuiverPoints } from '@/app/rank-calculator/utils/calculators/calculate-dizanas-quiver-points';
-import { itemList } from '@/data/item-list';
 import { calculateClueScrollPoints } from '@/app/rank-calculator/utils/calculators/calculate-clue-scroll-points';
 import { calculateRadiantOathplatePoints } from '@/app/rank-calculator/utils/calculators/calculate-radiant-oathplate-points';
 

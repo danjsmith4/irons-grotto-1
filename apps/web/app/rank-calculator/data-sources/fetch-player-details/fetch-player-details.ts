@@ -141,8 +141,8 @@ export async function fetchPlayerDetails(
   try {
     const savedData = mergeSavedData
       ? await redis.json.get<RankCalculatorSchema>(
-          userDraftRankSubmissionKey(userId, player),
-        )
+        userDraftRankSubmissionKey(userId, player),
+      )
       : undefined;
     const { joinDate, rsn, rank: currentRank } = playerRecord;
     const [wikiSyncData, templePlayerStats, templeCollectionLog, discordRoles] =
@@ -208,7 +208,7 @@ export async function fetchPlayerDetails(
       musicTracks = null,
       combatAchievements = null,
     } = wikiSyncData
-      ? {
+        ? {
           achievementDiaries: parseAchievementDiaries(
             wikiSyncData.achievement_diaries,
           ),
@@ -216,7 +216,7 @@ export async function fetchPlayerDetails(
           musicTracks: wikiSyncData.music_tracks,
           combatAchievements: wikiSyncData.combat_achievements,
         }
-      : {};
+        : {};
 
     const collectionLogItems =
       templeCollectionLog?.items.reduce(
@@ -227,21 +227,21 @@ export async function fetchPlayerDetails(
     const acquiredItems =
       wikiSyncData || templeCollectionLog
         ? Object.values(itemList)
-            .flatMap(({ items }) => items)
-            .filter((item) =>
-              isItemAcquired(item, {
-                acquiredItems: collectionLogItems,
-                quests,
-                combatAchievements,
-              }),
-            )
-            .map(({ name }) => stripEntityName(name))
+          .flatMap(({ items }) => items)
+          .filter((item) =>
+            isItemAcquired(item, {
+              acquiredItems: collectionLogItems,
+              quests,
+              combatAchievements,
+            }),
+          )
+          .map(({ name }) => stripEntityName(name))
         : [];
 
     const previouslyAcquiredItems = savedData
       ? Object.keys(savedData.acquiredItems).filter(
-          (key) => savedData.acquiredItems[key],
-        )
+        (key) => savedData.acquiredItems[key],
+      )
       : [];
 
     const allCurrentNotableItemNames = new Set(
@@ -252,8 +252,8 @@ export async function fetchPlayerDetails(
 
     const hasMusicCape = musicTracks
       ? Object.entries(musicTracks)
-          .filter(([track]) => !isHolidayTrack(track))
-          .every(([, unlocked]) => unlocked)
+        .filter(([track]) => !isHolidayTrack(track))
+        .every(([, unlocked]) => unlocked)
       : false;
 
     const acquiredItemsMap = [
@@ -298,7 +298,6 @@ export async function fetchPlayerDetails(
       ? isAchievementDiaryCapeAchieved(achievementDiaries)
       : false;
 
-    const discordRoles = await fetchUserDiscordRoles(userId);
     const { combatBonusPoints } =
       calculateCustomDiaryTierBonusPoints(discordRoles);
 

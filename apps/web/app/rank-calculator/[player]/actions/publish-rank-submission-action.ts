@@ -45,6 +45,7 @@ import { getRankImageUrl } from '../../utils/get-rank-image-url';
 import { fetchPlayerDetails } from '../../data-sources/fetch-player-details/fetch-player-details';
 import { RankCalculatorSchema } from '../submit-rank-calculator-validation';
 import { stripEntityName } from '../../utils/strip-entity-name';
+import { approveSubmission } from '../../view/[submissionId]/utils/approve-submission';
 import dedent from 'dedent';
 export const publishRankSubmissionAction = authActionClient
   .metadata({ actionName: 'publish-rank-submission' })
@@ -141,17 +142,17 @@ export const publishRankSubmissionAction = authActionClient
 
       try {
         await sendDiscordMessage(
-  {
-    content: dedent`
+          {
+            content: dedent`
       <@${userId}>, thanks for the application!
 
       Someone from <@&${roleId}> will check shortly.
     `
-  },
-  discordMessageId,
-);
+          },
+          discordMessageId,
+        );
       } catch (error) {
-Sentry.captureException(error);
+        Sentry.captureException(error);
       }
 
       const itemMap = Object.values(itemList)
@@ -165,64 +166,64 @@ Sentry.captureException(error);
         achievementDiaries:
           hasWikiSyncData && savedData.achievementDiaries && achievementDiaries
             ? (
-                Object.entries(achievementDiaries) as [
-                  DiaryLocation,
-                  DiaryTier,
-                ][]
-              ).reduce<AchievementDiaryMap>(
-                (acc, [diaryLocation, diaryTier]) => {
-                  if (
-                    DiaryTier._def.values.indexOf(
-                      achievementDiaries[diaryLocation] ?? 'None',
-                    ) <
-                    DiaryTier._def.values.indexOf(
-                      savedData.achievementDiaries[diaryLocation] ?? 'None',
-                    )
-                  ) {
-                    return { ...acc, [diaryLocation]: diaryTier };
-                  }
+              Object.entries(achievementDiaries) as [
+                DiaryLocation,
+                DiaryTier,
+              ][]
+            ).reduce<AchievementDiaryMap>(
+              (acc, [diaryLocation, diaryTier]) => {
+                if (
+                  DiaryTier._def.values.indexOf(
+                    achievementDiaries[diaryLocation] ?? 'None',
+                  ) <
+                  DiaryTier._def.values.indexOf(
+                    savedData.achievementDiaries[diaryLocation] ?? 'None',
+                  )
+                ) {
+                  return { ...acc, [diaryLocation]: diaryTier };
+                }
 
-                  return acc;
-                },
-                {},
-              )
+                return acc;
+              },
+              {},
+            )
             : null,
         acquiredItems: [
           ...new Set<string>([
             ...(hasWikiSyncData
               ? z.array(z.string()).parse(
-                  Object.values(
-                    pickBy(Object.keys(savedData.acquiredItems), (key) => {
-                      if (
-                        isQuestItem(itemMap[key]) ||
-                        isCombatAchievementItem(itemMap[key])
-                      ) {
-                        return !acquiredItems[key];
-                      }
+                Object.values(
+                  pickBy(Object.keys(savedData.acquiredItems), (key) => {
+                    if (
+                      isQuestItem(itemMap[key]) ||
+                      isCombatAchievementItem(itemMap[key])
+                    ) {
+                      return !acquiredItems[key];
+                    }
 
-                      return false;
-                    }),
-                  ),
-                )
+                    return false;
+                  }),
+                ),
+              )
               : []),
             ...(hasTempleCollectionLog
               ? z.array(z.string()).parse(
-                  Object.values(
-                    pickBy(Object.keys(savedData.acquiredItems), (key) => {
-                      if (isCollectionLogItem(itemMap[key])) {
-                        return !acquiredItems[key];
-                      }
+                Object.values(
+                  pickBy(Object.keys(savedData.acquiredItems), (key) => {
+                    if (isCollectionLogItem(itemMap[key])) {
+                      return !acquiredItems[key];
+                    }
 
-                      return false;
-                    }),
-                  ),
-                )
+                    return false;
+                  }),
+                ),
+              )
               : []),
           ]),
         ],
         combatAchievementTier:
           hasWikiSyncData &&
-          CombatAchievementTier._def.values.indexOf(combatAchievementTier) <
+            CombatAchievementTier._def.values.indexOf(combatAchievementTier) <
             CombatAchievementTier._def.values.indexOf(
               savedData.combatAchievementTier,
             )
@@ -230,7 +231,7 @@ Sentry.captureException(error);
             : null,
         collectionLogCount:
           hasTemplePlayerStats &&
-          collectionLogCount < savedData.collectionLogCount
+            collectionLogCount < savedData.collectionLogCount
             ? collectionLogCount
             : null,
         totalLevel:
@@ -247,12 +248,12 @@ Sentry.captureException(error);
             : null,
         hasDizanasQuiver:
           hasTempleCollectionLog &&
-          hasDizanasQuiver !== savedData.hasDizanasQuiver
+            hasDizanasQuiver !== savedData.hasDizanasQuiver
             ? !!hasDizanasQuiver
             : null,
         hasAchievementDiaryCape:
           hasWikiSyncData &&
-          hasAchievementDiaryCape !== savedData.hasAchievementDiaryCape
+            hasAchievementDiaryCape !== savedData.hasAchievementDiaryCape
             ? !!hasAchievementDiaryCape
             : null,
       } satisfies RankSubmissionDiff;
