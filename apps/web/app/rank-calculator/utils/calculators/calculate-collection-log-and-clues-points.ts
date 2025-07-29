@@ -9,7 +9,6 @@ export function calculateCollectionLogAndCluesPoints(
   multiplier: number,
   scaling: number,
 ) {
-  console.log(multiplier, scaling);
   const totalPointsAvailable = calculateCollectionLogSlotPoints(
     totalCollectionLogSlots,
     scaling,
