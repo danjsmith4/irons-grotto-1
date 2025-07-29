@@ -30,11 +30,11 @@ export const customDiaryDiscordRoles = {
     ['Grandmaster', '1385249095559549111'],
   ]),
   Clog: new Map<ClogDiaryTier, string>([
-    ['Easy', '1385249200986467328'],
-    ['Medium', '1385249276468858880'],
-    ['Hard', '1385249346468858880'],
-    ['Elite', '1385249416468858880'],
-    ['Grandmaster', '1385249486468858880'],
+    ['Easy', '1399729580151144610'],
+    ['Medium', '1399729884082999356'],
+    ['Hard', '1399729884082999356'],
+    ['Elite', '1399730120750534686'],
+    ['Grandmaster', '1399730234307252264'],
   ]),
 } as const satisfies {
   Combat: Map<CombatDiaryTier, string>;
