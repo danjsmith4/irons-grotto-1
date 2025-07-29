@@ -18,7 +18,6 @@ export function CollectionLogAndCluesCard() {
     pointsRemaining,
     collectionLogSlotPoints,
     clueScrollTierPoints,
-    bonusPointsAwarded,
     collectionLogBonusPoints,
   } = useCollectionLogAndCluesPointCalculator();
   const {

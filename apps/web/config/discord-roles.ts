@@ -1,7 +1,5 @@
 import {
-  CombatDiarySection,
   CombatDiaryTier,
-  ClogDiarySection,
   ClogDiaryTier,
 } from '@/app/schemas/custom-diaries';
 import { StandardRank } from './ranks';
