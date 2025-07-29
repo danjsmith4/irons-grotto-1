@@ -16,7 +16,7 @@ const openSans = Open_Sans({
   display: 'swap',
 });
 
-// eslint-disable-next-line @typescript-eslint/require-await
+ 
 export default async function HomePage() {
   // Check auth on page load and redirect if authed
   const session = await auth();

@@ -192,7 +192,7 @@ export function CombatCard() {
       <DataCard.Row
         left={
           <Text color="gray" size="2">
-            Grotto diary tier
+            Speedrun diary tier
           </Text>
         }
         center={

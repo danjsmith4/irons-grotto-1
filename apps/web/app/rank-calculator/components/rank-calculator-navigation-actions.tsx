@@ -18,6 +18,7 @@ import { useRankCalculator } from '../hooks/point-calculator/use-rank-calculator
 import { DeleteSubmissionDataDialog } from './delete-submission-data-dialog';
 import { handleToastUpdates } from '../utils/handle-toast-updates';
 import { useCurrentPlayer } from '../contexts/current-player-context';
+import { useRouter } from 'next/navigation';
 
 interface RankCalculatorNavigationActionsProps {
   isActionActive: boolean;
@@ -40,6 +41,7 @@ export function RankCalculatorNavigationActions({
   const { executeAsync: publishRankSubmission } = useAction(
     publishRankSubmissionAction.bind(null, currentRank, playerName),
   );
+  const router = useRouter();
 
   return (
     <Flex gap="1">
@@ -51,8 +53,16 @@ export function RankCalculatorNavigationActions({
           Help
         </Link>
       </Button>
-      <Button asChild variant="soft" color="gray" type="button">
-        <Link href="/api/logout">Sign Out</Link>
+      <Button
+        variant="soft"
+        color="gray"
+        type="button"
+        onClick={async () => {
+          await fetch('/api/logout', { method: 'POST' });
+          router.push('/');
+        }}
+      >
+        Sign Out
       </Button>
       <Flex>
         <Button

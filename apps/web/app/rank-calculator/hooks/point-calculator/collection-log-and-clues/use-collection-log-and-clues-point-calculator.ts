@@ -12,9 +12,10 @@ import { ClueScrollTier } from '@/app/schemas/osrs';
 
 export interface CollectionLogAndCluesPointCalculatorData
   extends CommonPointCalculatorData,
-    BonusPointCalculatorData {
+  BonusPointCalculatorData {
   collectionLogSlotPoints: number;
   clueScrollTierPoints: Record<ClueScrollTier, number>;
+  collectionLogBonusPoints: number;
 }
 
 export function useCollectionLogAndCluesPointCalculator() {
@@ -27,7 +28,7 @@ export function useCollectionLogAndCluesPointCalculator() {
   const clueScrollCounts = useWatch<RankCalculatorSchema, 'clueScrollCounts'>({
     name: 'clueScrollCounts',
   });
-  const bonusPointsAwarded = useWatch<
+  const collectionLogBonusPoints = useWatch<
     RankCalculatorSchema,
     'collectionLogBonusPoints'
   >({
@@ -38,12 +39,13 @@ export function useCollectionLogAndCluesPointCalculator() {
   const collectionLogSlotPoints = useCollectionLogSlotPoints();
   const { tierPoints: clueScrollTierPoints, totalPoints: clueScrollPoints } =
     calculateClueScrollPoints(clueScrollCounts, scaling);
-  const { pointsAwarded, pointsAwardedPercentage, pointsRemaining } =
+  const { pointsAwarded, pointsRemaining, pointsAwardedPercentage, bonusPointsAwarded } =
     calculateCollectionLogAndCluesPoints(
       collectionLogSlotPoints,
       totalCollectionLogSlots,
       clueScrollPoints,
-      bonusPointsAwarded,
+      collectionLogBonusPoints,
+      1.0,
       scaling,
     );
 
@@ -54,5 +56,6 @@ export function useCollectionLogAndCluesPointCalculator() {
     collectionLogSlotPoints,
     bonusPointsAwarded,
     clueScrollTierPoints,
+    collectionLogBonusPoints,
   } satisfies CollectionLogAndCluesPointCalculatorData;
 }

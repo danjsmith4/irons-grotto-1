@@ -5,6 +5,7 @@ export function calculateCollectionLogAndCluesPoints(
   collectionLogSlotPoints: number,
   totalCollectionLogSlots: number,
   clueScrollPoints: number,
+  collectionLogBonusPoints: number,
   multiplier: number,
   scaling: number,
 ) {
@@ -13,7 +14,8 @@ export function calculateCollectionLogAndCluesPoints(
     scaling,
   );
   const pointsAwarded = collectionLogSlotPoints + clueScrollPoints;
-  const bonusPointsAwarded = calculateBonusPoints(pointsAwarded, multiplier);
+  const bonusPointsAwarded = calculateBonusPoints(pointsAwarded, multiplier) + collectionLogBonusPoints;
+
   const pointsRemaining =
     totalPointsAvailable - (pointsAwarded - clueScrollPoints);
   const pointsAwardedPercentage =

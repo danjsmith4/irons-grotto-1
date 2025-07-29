@@ -18,7 +18,7 @@ export function CollectionLogAndCluesCard() {
     pointsRemaining,
     collectionLogSlotPoints,
     clueScrollTierPoints,
-    bonusPointsAwarded,
+    collectionLogBonusPoints,
   } = useCollectionLogAndCluesPointCalculator();
   const {
     getValues,
@@ -132,7 +132,7 @@ export function CollectionLogAndCluesCard() {
             aria-label="Clog diary tier"
             size="2"
           >
-          {clogDiaryTierNameByBonusPoints[bonusPointsAwarded] ?? 'None'}
+          {clogDiaryTierNameByBonusPoints[collectionLogBonusPoints] ?? 'None'}
           </Text>
         }
 
@@ -142,7 +142,7 @@ export function CollectionLogAndCluesCard() {
             color="gray"
             size="2"
           >
-            {bonusPointsAwarded ? `+${formatNumber(bonusPointsAwarded)}` : '-'}
+            {collectionLogBonusPoints ? `+${formatNumber(collectionLogBonusPoints)}` : '-'}
           </Text>
         }
       />
