@@ -45,7 +45,7 @@ export function useCollectionLogAndCluesPointCalculator() {
       totalCollectionLogSlots,
       clueScrollPoints,
       collectionLogBonusPoints,
-      1.0,
+      0.0,
       scaling,
     );
 
