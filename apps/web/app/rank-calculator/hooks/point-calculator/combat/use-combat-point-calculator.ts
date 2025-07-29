@@ -15,7 +15,7 @@ import { useRadiantOathplatePoints } from './use-radiant-oathplate-points';
 
 export interface CombatPointCalculatorData
   extends CommonPointCalculatorData,
-    BonusPointCalculatorData {
+  BonusPointCalculatorData {
   combatAchievementTierPoints: number;
   ehbPoints: number;
   tzhaarCapePoints: number;

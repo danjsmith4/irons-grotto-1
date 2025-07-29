@@ -51,6 +51,9 @@ export function RankCalculatorNavigationActions({
           Help
         </Link>
       </Button>
+      <Button asChild variant="soft" color="gray" type="button">
+        <Link href="/api/logout">Sign Out</Link>
+      </Button>
       <Flex>
         <Button
           role="button"
