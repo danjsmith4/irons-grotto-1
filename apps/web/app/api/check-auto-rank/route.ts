@@ -104,6 +104,7 @@ export async function GET(request: NextRequest) {
         collectionLogTotal,
         clueScrollPoints,
         collectionLogBonusPoints,
+        1.0,
         scaling,
       );
     const { pointsAwarded: totalNotableItemsPoints } =
