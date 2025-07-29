@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Card, Text, IconButton, Tooltip } from "@radix-ui/themes";
+import { Text, IconButton, Tooltip } from "@radix-ui/themes";
 
 export function GimTooltip() {
   return (
