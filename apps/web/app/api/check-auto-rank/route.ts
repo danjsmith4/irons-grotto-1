@@ -130,7 +130,7 @@ export async function GET(request: NextRequest) {
       skillingBonusPoints,
       scaling,
     );
-    const ehbPoints = calculateEhbPoints(ehb, scaling);
+    const ehbPoints = calculateEhbPoints(ehb);
     const combatAchievementTierPoints = calculateCombatAchievementPoints(
       combatAchievementTier,
       scaling,
