@@ -1,6 +1,8 @@
 import {
-  CustomDiarySection,
-  CustomDiaryTier,
+  CombatDiarySection,
+  CombatDiaryTier,
+  ClogDiarySection,
+  ClogDiaryTier,
 } from '@/app/schemas/custom-diaries';
 import { StandardRank } from './ranks';
 
@@ -21,12 +23,22 @@ export const rankDiscordRoles = {
 } satisfies Record<StandardRank, string>;
 
 export const customDiaryDiscordRoles = {
-  Combat: new Map<CustomDiaryTier, string>([
+  Combat: new Map<CombatDiaryTier, string>([
     ['Easy', '1385248680357003335'],
     ['Hard', '1385248881423417407'],
     ['Master', '1385248972037165086'],
     ['Grandmaster', '1385249095559549111'],
   ]),
-} as const satisfies Record<CustomDiarySection, Map<CustomDiaryTier, string>>;
+  Clog: new Map<ClogDiaryTier, string>([
+    ['Easy', '1385249200986467328'],
+    ['Medium', '1385249276468858880'],
+    ['Hard', '1385249346468858880'],
+    ['Elite', '1385249416468858880'],
+    ['Grandmaster', '1385249486468858880'],
+  ]),
+} as const satisfies {
+  Combat: Map<CombatDiaryTier, string>;
+  Clog: Map<ClogDiaryTier, string>;
+};
 
 export const achievementDiscordRoles = {} as const;

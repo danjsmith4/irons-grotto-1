@@ -1,14 +1,28 @@
 import { z } from 'zod';
 
-export const CustomDiarySection = z.enum(['Combat']);
+export const CombatDiarySection = z.enum(['Combat']);
 
-export type CustomDiarySection = z.infer<typeof CustomDiarySection>;
+export type CombatDiarySection = z.infer<typeof CombatDiarySection>;
 
-export const CustomDiaryTier = z.enum([
+export const CombatDiaryTier = z.enum([
   'Easy',
   'Hard',
   'Master',
   'Grandmaster',
 ]);
 
-export type CustomDiaryTier = z.infer<typeof CustomDiaryTier>;
+export type CombatDiaryTier = z.infer<typeof CombatDiaryTier>;
+
+export const ClogDiarySection = z.enum(['Collection Log & Clues'])
+
+export type ClogDiarySection = z.infer<typeof ClogDiarySection>;
+
+export const ClogDiaryTier = z.enum([
+  'Easy',
+  'Medium',
+  'Hard',
+  'Elite',
+  'Grandmaster'
+])
+
+export type ClogDiaryTier = z.infer<typeof ClogDiaryTier>;

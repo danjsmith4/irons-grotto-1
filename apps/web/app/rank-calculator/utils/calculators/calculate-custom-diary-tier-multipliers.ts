@@ -1,37 +1,36 @@
-import { CustomDiarySection } from '@/app/schemas/custom-diaries';
 import { customDiaryDiscordRoles } from '@/config/discord-roles';
-import { customDiaryTierBonusPoints } from '@/config/custom-diaries';
+import { clogDiaryTierBonusPoints, customDiaryTierBonusPoints } from '@/config/custom-diaries';
 
-export function calculateCustomDiaryTierBonusPoints(
+export function calculateCombatDiaryTierBonusPoints(
   discordRoles: Set<string> | null,
 ) {
+
   if (!discordRoles) {
     return {
-      collectionLogBonusPoints: 0,
       combatBonusPoints: 0,
-      skillingBonusPoints: 0,
+      collectionLogBonusPoints: 0,
     };
   }
 
-  const { Combat: combatBonusPoints } = (
-    Object.keys(
-      customDiaryDiscordRoles,
-    ) as (keyof typeof customDiaryDiscordRoles)[]
-  ).reduce(
-    (acc, key) => ({
-      ...acc,
-      [key]: [...customDiaryDiscordRoles[key]].reduce(
-        (tierMultiplier, [tier, roleId]) =>
-          discordRoles.has(roleId)
-            ? customDiaryTierBonusPoints[tier]
-            : tierMultiplier,
-        0,
-      ),
-    }),
-    {} as Record<CustomDiarySection, number>,
-  );
+  // More readable imperative approach
+  let combatBonusPoints = 0;
+  const combatRoles = customDiaryDiscordRoles.Combat;
+  for (const [tier, roleId] of combatRoles) {
+    if (discordRoles.has(roleId)) {
+      combatBonusPoints = customDiaryTierBonusPoints[tier];
+    }
+  }
+
+  let collectionLogBonusPoints = 0;
+  const clogRoles = customDiaryDiscordRoles.Clog;
+  for (const [tier, roleId] of clogRoles) {
+    if (discordRoles.has(roleId)) {
+      collectionLogBonusPoints = clogDiaryTierBonusPoints[tier];
+    }
+  }
 
   return {
     combatBonusPoints,
+    collectionLogBonusPoints,
   };
 }

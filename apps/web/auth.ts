@@ -14,7 +14,7 @@ import { serverConstants } from './config/constants.server';
 
 declare module 'next-auth' {
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  interface Profile extends DiscordProfile {}
+  interface Profile extends DiscordProfile { }
 
   interface User {
     permissions: string;

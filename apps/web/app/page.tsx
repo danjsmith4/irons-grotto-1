@@ -18,6 +18,13 @@ const openSans = Open_Sans({
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export default async function HomePage() {
+  // Check auth on page load and redirect if authed
+  const session = await auth();
+  const rankCalculatorUrl = '/rank-calculator';
+  if (session) {
+    redirect(rankCalculatorUrl);
+  }
+
   const handleSubmit = async () => {
     'use server';
 

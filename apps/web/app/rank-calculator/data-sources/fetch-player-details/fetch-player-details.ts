@@ -33,7 +33,7 @@ import { fetchTempleConstants } from './fetch-temple-constants';
 import { mergeTzhaarCapes } from './utils/merge-tzhaar-capes';
 import { isAchievementDiaryCapeAchieved } from '../../utils/is-achievement-diary-cape-achieved';
 import { fetchUserDiscordRoles } from '../fetch-user-discord-roles';
-import { calculateCustomDiaryTierBonusPoints } from '../../utils/calculators/calculate-custom-diary-tier-multipliers';
+import { calculateCombatDiaryTierBonusPoints } from '../../utils/calculators/calculate-custom-diary-tier-multipliers';
 
 export interface PlayerDetailsResponse
   extends Omit<RankCalculatorSchema, 'rank' | 'points'> {
@@ -298,8 +298,8 @@ export async function fetchPlayerDetails(
       ? isAchievementDiaryCapeAchieved(achievementDiaries)
       : false;
 
-    const { combatBonusPoints } =
-      calculateCustomDiaryTierBonusPoints(discordRoles);
+    const { combatBonusPoints, collectionLogBonusPoints } =
+      calculateCombatDiaryTierBonusPoints(discordRoles);
 
     return {
       success: true,
@@ -344,7 +344,7 @@ export async function fetchPlayerDetails(
         hasThirdPartyData,
         isTempleCollectionLogOutdated,
         isMobileOnly: playerRecord.isMobileOnly,
-        collectionLogBonusPoints: 0, // Leaving this in for future use, if we decide to add a collection log diary
+        collectionLogBonusPoints: collectionLogBonusPoints,
         combatBonusPoints,
         skillingBonusPoints: 0, // Leaving this in for future use, if we decide to add a skilling diary
         notableItemsBonusPoints: 0, // Leaving this in for future use, if we decide to add a notable items diary

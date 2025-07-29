@@ -1,11 +1,11 @@
 import { customDiaryDiscordRoles } from '@/config/discord-roles';
-import { calculateCustomDiaryTierBonusPoints } from './calculate-custom-diary-tier-multipliers';
+import { calculateCombatDiaryTierBonusPoints } from './calculate-custom-diary-tier-multipliers';
 
 it('calculates the correct tier multipliers', () => {
   const roles = new Set<string>([customDiaryDiscordRoles.Combat.get('Easy')!]);
 
   const { collectionLogBonusPoints, combatBonusPoints, skillingBonusPoints } =
-    calculateCustomDiaryTierBonusPoints(roles);
+    calculateCombatDiaryTierBonusPoints(roles);
 
   expect(collectionLogBonusPoints).toEqual(0.4);
   expect(combatBonusPoints).toEqual(0.3);
@@ -19,7 +19,7 @@ it('calculates the correct tier multipliers when multiple roles for the same dia
   ]);
 
   const { collectionLogBonusPoints, combatBonusPoints, skillingBonusPoints } =
-    calculateCustomDiaryTierBonusPoints(roles);
+    calculateCombatDiaryTierBonusPoints(roles);
 
   expect(collectionLogBonusPoints).toEqual(0.4);
   expect(combatBonusPoints).toEqual(0.4);
