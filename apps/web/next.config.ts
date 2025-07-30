@@ -27,7 +27,7 @@ export default withSentryConfig<NextConfig>(
     // For all available options, see:
     // https://github.com/getsentry/sentry-webpack-plugin#options
 
-    org: 'grotto',
+    org: 'ascent-bi',
     project: 'javascript-nextjs',
 
     // Only print logs for uploading source maps in CI
