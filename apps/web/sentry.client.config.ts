@@ -6,7 +6,7 @@ import * as Sentry from '@sentry/nextjs';
 import * as Spotlight from '@spotlightjs/spotlight';
 
 Sentry.init({
-  dsn: 'https://b40c9480d1931264125d3752ae847b56@o4509550268121088.ingest.us.sentry.io/4509550932983808',
+  dsn: 'https://23028ebcb98238668c3f70993d9ef5bf@o4509759032066048.ingest.us.sentry.io/4509759431573504',
 
   // Add optional integrations for additional features
   integrations: [
