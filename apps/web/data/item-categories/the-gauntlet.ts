@@ -1,6 +1,6 @@
 import { formatWikiImageUrl } from '@/app/rank-calculator/utils/format-wiki-url';
 import { ItemCategory } from '@/app/schemas/items';
-import { singleItem } from '../utils/item-builders';
+import { singleItem, compoundItem } from '../utils/item-builders';
 
 export const theGauntlet: ItemCategory = {
   image: formatWikiImageUrl('Corrupted Youngllef chathead', 'category'),
@@ -10,10 +10,27 @@ export const theGauntlet: ItemCategory = {
       collectionLogCategory: 'the_gauntlet',
       targetDropSources: ['Reward Chest (The Gauntlet)#(Corrupted)'],
     }),
-    singleItem({
-      name: 'Crystal armour seed',
-      collectionLogCategory: 'the_gauntlet',
-      targetDropSources: ['Reward Chest (The Gauntlet)#(Corrupted)'],
+    compoundItem({
+      name: 'Crystal helm',
+      requiredItems: [
+        { clogName: 'Crystal armour seed', targetDropSources: ['Reward Chest (The Gauntlet)#(Corrupted)'], },
+      ],
+      collectionLogCategories: ['the_gauntlet'],
+    }),
+    compoundItem({
+      name: 'Crystal body',
+      requiredItems: [
+        { clogName: 'Crystal armour seed', amount: 3, targetDropSources: ['Reward Chest (The Gauntlet)#(Corrupted)'], },
+      ],
+      collectionLogCategories: ['the_gauntlet'],
+    }),
+    compoundItem({
+      name: 'Crystal legs',
+      requiredItems: [
+        { clogName: 'Crystal armour seed', amount: 2, targetDropSources: ['Reward Chest (The Gauntlet)#(Corrupted)'], },
+      ],
+
+      collectionLogCategories: ['the_gauntlet'],
     }),
     singleItem({
       name: 'Enhanced crystal weapon seed (1)',

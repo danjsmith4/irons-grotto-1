@@ -5,6 +5,7 @@ import {
   pointModifiers,
   collectionLogItemBossNameMap,
   groupSizes,
+  itemPointOverrides,
 } from '@/app/rank-calculator/config/item-point-map';
 import { RequiredItem } from '@/app/schemas/items';
 import Decimal from 'decimal.js-light';
@@ -81,6 +82,12 @@ export function calculateItemPoints(
     ) => {
       const totalPointsForDropSources = targetDropSources.reduce(
         (sum, dropSource) => {
+          // Check for override FIRST, before processing drop sources
+          const override = itemPointOverrides[clogName];
+          if (override !== undefined) {
+            return acc + override;
+          }
+
           if (ignorePoints) {
             return sum;
           }

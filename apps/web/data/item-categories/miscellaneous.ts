@@ -120,5 +120,15 @@ export const miscellaneous: ItemCategory = {
       collectionLogCategory: 'miscellaneous',
       targetDropSources: ["Armoured zombie (Zemouregal's Fort)"],
     }),
+    singleItem({
+      name: 'Earthbound tecpatl',
+      targetDropSources: ['Earthen nagua'],
+      collectionLogCategory: 'miscellaneous'
+    }),
+    singleItem({
+      name: 'Sulphur blades',
+      collectionLogCategory: 'miscellaneous',
+      targetDropSources: ['Sulphur nagua'],
+    })
   ],
 };
