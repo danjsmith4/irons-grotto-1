@@ -52,12 +52,15 @@ import { vorkath } from './item-categories/vorkath';
 import { yama } from './item-categories/yama';
 import { zalcano } from './item-categories/zalcano';
 import { zulrah } from './item-categories/zulrah';
+import { barrows } from './item-categories/barrows';
+import { doom } from './item-categories/doom';
 
 export const itemList: ItemCategoryMap = {
   'Abyssal Sire': abyssalSire,
   'Alchemical Hydra': alchemicalHydra,
   Araxxor: araxxor,
   'Barbarian Assault': barbarianAssault,
+  'Barrows': barrows,
   'Callisto and Artio': callistoAndArtio,
   Cerberus: cerberus,
   'Chambers of Xeric': chambersOfXeric,
@@ -88,6 +91,7 @@ export const itemList: ItemCategoryMap = {
   'Phantom Muspah': phantomMuspah,
   Revenants: revenants,
   'Royal Titans': royalTitans,
+  'Doom of Mokhaiotl': doom,
   Sarachnis: sarachnis,
   Scorpia: scorpia,
   Scurrius: scurrius,
