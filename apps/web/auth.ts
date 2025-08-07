@@ -47,7 +47,7 @@ export const config = {
       const { guildId } = serverConstants.discord;
 
       try {
-        //await discordBotClient.get(Routes.guildMember(guildId, profile.id));
+        await discordBotClient.get(Routes.guildMember(guildId, profile.id));
       } catch (error) {
         if (
           error instanceof DiscordAPIError &&
