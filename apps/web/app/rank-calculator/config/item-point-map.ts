@@ -241,7 +241,4 @@ export const itemPointOverrides: Partial<Record<CollectionLogItemName, number>> 
   'Earthbound tecpatl': 2,
   'Dragon chainbody': 4,
   'Sulphur blades': 2,
-  'Avernic treads': 0, // TODO: Remove overrides
-  'Eye of ayak (uncharged)': 0,
-  'Mokhaiotl cloth': 0,
 };
