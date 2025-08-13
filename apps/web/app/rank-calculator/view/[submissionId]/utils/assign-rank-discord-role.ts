@@ -1,5 +1,5 @@
 import { serverConstants } from '@/config/constants.server';
-import { rankDiscordRoles } from '@/config/discord-roles';
+import { rankDiscordRoles, discordGuestRole } from '@/config/discord-roles';
 import { Rank } from '@/config/enums';
 import { discordBotClient } from '@/discord';
 import { APIGuildMember, Routes } from 'discord-api-types/v10';
@@ -25,6 +25,13 @@ export async function assignRankDiscordRole(rank: Rank, submitterId: string) {
       ),
     ),
   ]);
+
+  // Remove guest role
+  if (roles.includes(discordGuestRole)) {
+    await discordBotClient.delete(
+      Routes.guildMemberRole(guildId, submitterId, discordGuestRole),
+    );
+  }
 
   const approvedRole = rankDiscordRoles[rank as keyof typeof rankDiscordRoles];
 

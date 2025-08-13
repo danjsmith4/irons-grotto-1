@@ -20,6 +20,8 @@ export const rankDiscordRoles = {
   Beast: '1135475800989245472',
 } satisfies Record<StandardRank, string>;
 
+export const discordGuestRole = '1402713524861669498';
+
 export const customDiaryDiscordRoles = {
   Combat: new Map<CombatDiaryTier, string>([
     ['Easy', '1385248680357003335'],
