@@ -5,7 +5,7 @@ import { Tooltip, IconButton, Text } from "@radix-ui/themes";
 
 export function HelpPopup() {
   return (
-    <div style={{ position: "fixed", bottom: 40, right: 24, zIndex: 1000 }}>
+    <div style={{ position: "relative", display: "inline-block" }}>
       <Tooltip
         content={
           <div style={{ maxWidth: 360 }}>
@@ -23,7 +23,7 @@ export function HelpPopup() {
             </Text>
           </div>
         }
-        side="left"
+        side="bottom"
         align="center"
         delayDuration={0}
       >
@@ -35,6 +35,7 @@ export function HelpPopup() {
             borderRadius: "50%",
             fontWeight: "bold",
             fontSize: 28,
+            marginLeft: 8,
           }}
         >
           ?
