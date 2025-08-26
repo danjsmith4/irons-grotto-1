@@ -7,16 +7,16 @@ const ServerConfigSchema = z.object({
     url: z.string(),
   }),
   temple: z.object({
-    groupName: z.string(),
-    groupId: z.string(),
-    groupKey: z.string(),
-    privateGroup: z.string(),
+    groupName: z.string().nonempty(),
+    groupId: z.string().nonempty(),
+    groupKey: z.string().nonempty(),
+    privateGroup: z.string().nonempty(),
   }),
-  redisUrl: z.string(),
+  redisUrl: z.string().nonempty(),
   discord: z.object({
-    token: z.string(),
-    guildId: z.string(),
-    channelId: z.string(),
+    token: z.string().nonempty(),
+    guildId: z.string().nonempty(),
+    channelId: z.string().nonempty(),
   }),
 });
 
@@ -26,10 +26,10 @@ export const serverConstants = ServerConfigSchema.parse({
     url: '',
   },
   temple: {
-    groupName: '',
-    groupId: '',
-    groupKey: '',
-    privateGroup: '',
+    groupName: process.env.TEMPLE_GROUP_NAME,
+    groupId: process.env.TEMPLE_GROUP_ID,
+    groupKey: process.env.TEMPLE_GROUP_KEY,
+    privateGroup: process.env.TEMPLE_PRIVATE_GROUP,
   },
   redisUrl: process.env.KV_REST_API_URL,
   discord: {
