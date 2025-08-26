@@ -110,7 +110,7 @@ export default async function HomePage() {
               <strong>Owners:</strong> Avios & Tyluh
             </li>
             <li>
-              <strong>Deputies:</strong> RodneyMullen, 41ex, Claytonaa, Aceriwyn
+              <strong>Deputies:</strong> RodneyMullen, Claytonaa, Aceriwyn
             </li>
           </ul>
         </div>
