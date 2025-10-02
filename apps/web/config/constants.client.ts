@@ -12,7 +12,8 @@ const ClientConfigSchema = z.object({
   }),
   wiki: z.object({
     baseUrl: z.literal('https://oldschool.runescape.wiki'),
-    userAgent: z.literal('Irons-Grotto-Rank-Calculator (Discord @avios)')
+    userAgent: z.literal('Irons-Grotto-Rank-Calculator (Discord @avios)'),
+    queryLimit: z.number().int().min(1).max(5000),
   }),
   wikiSync: z.object({
     baseUrl: z.literal('https://sync.runescape.wiki'),
@@ -33,7 +34,8 @@ export const clientConstants = ClientConfigSchema.parse({
   },
   wiki: {
     baseUrl: 'https://oldschool.runescape.wiki',
-    userAgent: 'Irons-Grotto-Rank-Calculator (Discord @avios)'
+    userAgent: 'Irons-Grotto-Rank-Calculator (Discord @avios)',
+    queryLimit: 5000
   },
   wikiSync: {
     baseUrl: 'https://sync.runescape.wiki',
