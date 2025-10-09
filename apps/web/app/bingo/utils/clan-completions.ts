@@ -1,4 +1,4 @@
-import { ClanCompletions, BingoBoard, ClanProgress } from '../types/bingo-tile';
+import { ClanCompletions, BingoBoard, ClanProgress, BingoTile } from '../types/bingo-tile';
 import clanCompletionsData from '../data/clan-completions.json';
 
 export function loadClanCompletions(): ClanCompletions {
@@ -31,8 +31,7 @@ export function calculateClanProgress(board: BingoBoard, clanName: 'ironsGrotto'
 
     // Calculate points based on sequential completion per tile
     board.tiles.forEach(tile => {
-        for (let i = 0; i < tile.tasks.length; i++) {
-            const task = tile.tasks[i];
+        for (const task of tile.tasks) {
             const isCompleted = clanName === 'ironsGrotto'
                 ? task.ironsGrottoCompleted
                 : task.ironDaddyCompleted;
@@ -59,12 +58,11 @@ export function calculateClanProgress(board: BingoBoard, clanName: 'ironsGrotto'
     };
 }
 
-export function calculateTilePoints(tile: any, clanName: 'ironsGrotto' | 'ironDaddy'): number {
+export function calculateTilePoints(tile: BingoTile, clanName: 'ironsGrotto' | 'ironDaddy'): number {
     let earnedPoints = 0;
 
     // Loop through tasks in order, add points only if previous tasks are completed
-    for (let i = 0; i < tile.tasks.length; i++) {
-        const task = tile.tasks[i];
+    for (const task of tile.tasks) {
         const isCompleted = clanName === 'ironsGrotto'
             ? task.ironsGrottoCompleted
             : task.ironDaddyCompleted;
