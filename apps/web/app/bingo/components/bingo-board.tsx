@@ -1,6 +1,6 @@
 'use client';
 
-import { Grid, Text, Card, Flex, Table, Badge, Separator } from '@radix-ui/themes';
+import { Grid, Text, Card, Flex, Badge, Separator } from '@radix-ui/themes';
 import { BingoBoard } from '../types/bingo-tile';
 import { BingoTileComponent } from './bingo-tile';
 import { CompletionTable } from './completion-table';
