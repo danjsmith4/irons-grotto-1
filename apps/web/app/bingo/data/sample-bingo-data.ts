@@ -782,7 +782,7 @@ export const sampleBingoBoard: BingoBoard = {
         },
         {
             id: 'tile-31',
-            header: 'Coloseum',
+            header: 'Colosseum',
             image: 'Sol_Heredit',
             tasks: [
                 {
