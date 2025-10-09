@@ -8,7 +8,6 @@ import { ToastContainer } from 'react-toastify';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from "@vercel/analytics/next"
 import Providers from './providers';
-import { A } from 'node_modules/@upstash/redis/zmscore-CjoCv9kz.mjs';
 
 if (process.env.NEXT_PUBLIC_API_MOCKING === 'enabled') {
   await import('../mocks');
