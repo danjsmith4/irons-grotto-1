@@ -1,4 +1,4 @@
-import { ClanCompletions, BingoBoard, BingoTask, ClanProgress } from '../types/bingo-tile';
+import { ClanCompletions, BingoBoard, ClanProgress } from '../types/bingo-tile';
 import clanCompletionsData from '../data/clan-completions.json';
 
 export function loadClanCompletions(): ClanCompletions {

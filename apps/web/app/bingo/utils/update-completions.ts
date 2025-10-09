@@ -1,4 +1,4 @@
-import { writeFileSync } from 'fs';
+import { writeFileSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { ClanCompletions } from '../types/bingo-tile';
 
@@ -13,7 +13,8 @@ export function updateClanCompletions(
     const completionsPath = join(process.cwd(), 'apps/web/app/bingo/data/clan-completions.json');
 
     try {
-        const currentCompletions = require(completionsPath) as ClanCompletions;
+        const fileContent = readFileSync(completionsPath, 'utf-8');
+        const currentCompletions = JSON.parse(fileContent) as ClanCompletions;
 
         const updatedCompletions: ClanCompletions = {
             ...currentCompletions,
@@ -23,7 +24,7 @@ export function updateClanCompletions(
         writeFileSync(completionsPath, JSON.stringify(updatedCompletions, null, 2));
 
         return { success: true, message: 'Completions updated successfully' };
-    } catch (error) {
+    } catch {
         return { success: false, message: 'Failed to update completions' };
     }
 }
@@ -38,7 +39,8 @@ export function addTaskCompletion(
     const completionsPath = join(process.cwd(), 'apps/web/app/bingo/data/clan-completions.json');
 
     try {
-        const currentCompletions = require(completionsPath) as ClanCompletions;
+        const fileContent = readFileSync(completionsPath, 'utf-8');
+        const currentCompletions = JSON.parse(fileContent) as ClanCompletions;
 
         if (!currentCompletions[clanName].includes(taskId)) {
             currentCompletions[clanName].push(taskId);
@@ -47,7 +49,7 @@ export function addTaskCompletion(
         writeFileSync(completionsPath, JSON.stringify(currentCompletions, null, 2));
 
         return { success: true, message: 'Task completion added successfully' };
-    } catch (error) {
+    } catch {
         return { success: false, message: 'Failed to add task completion' };
     }
 }
@@ -62,14 +64,15 @@ export function removeTaskCompletion(
     const completionsPath = join(process.cwd(), 'apps/web/app/bingo/data/clan-completions.json');
 
     try {
-        const currentCompletions = require(completionsPath) as ClanCompletions;
+        const fileContent = readFileSync(completionsPath, 'utf-8');
+        const currentCompletions = JSON.parse(fileContent) as ClanCompletions;
 
         currentCompletions[clanName] = currentCompletions[clanName].filter(id => id !== taskId);
 
         writeFileSync(completionsPath, JSON.stringify(currentCompletions, null, 2));
 
         return { success: true, message: 'Task completion removed successfully' };
-    } catch (error) {
+    } catch {
         return { success: false, message: 'Failed to remove task completion' };
     }
 }
