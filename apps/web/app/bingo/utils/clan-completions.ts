@@ -22,7 +22,7 @@ export function applyClanCompletions(board: BingoBoard, completions: ClanComplet
 
 export function calculateClanProgress(board: BingoBoard, clanName: 'ironsGrotto' | 'ironDaddy'): ClanProgress {
     const totalTasks = board.tiles.reduce((sum, tile) => sum + tile.tasks.length, 0);
-    const totalPoints = board.tiles.reduce((sum, tile) => 
+    const totalPoints = board.tiles.reduce((sum, tile) =>
         sum + tile.tasks.reduce((taskSum, task) => taskSum + task.points, 0), 0
     );
 
@@ -33,8 +33,8 @@ export function calculateClanProgress(board: BingoBoard, clanName: 'ironsGrotto'
     board.tiles.forEach(tile => {
         for (let i = 0; i < tile.tasks.length; i++) {
             const task = tile.tasks[i];
-            const isCompleted = clanName === 'ironsGrotto' 
-                ? task.ironsGrottoCompleted 
+            const isCompleted = clanName === 'ironsGrotto'
+                ? task.ironsGrottoCompleted
                 : task.ironDaddyCompleted;
 
             if (isCompleted) {
@@ -61,12 +61,12 @@ export function calculateClanProgress(board: BingoBoard, clanName: 'ironsGrotto'
 
 export function calculateTilePoints(tile: any, clanName: 'ironsGrotto' | 'ironDaddy'): number {
     let earnedPoints = 0;
-    
+
     // Loop through tasks in order, add points only if previous tasks are completed
     for (let i = 0; i < tile.tasks.length; i++) {
         const task = tile.tasks[i];
-        const isCompleted = clanName === 'ironsGrotto' 
-            ? task.ironsGrottoCompleted 
+        const isCompleted = clanName === 'ironsGrotto'
+            ? task.ironsGrottoCompleted
             : task.ironDaddyCompleted;
 
         if (isCompleted) {
