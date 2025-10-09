@@ -21,20 +21,32 @@ export function applyClanCompletions(board: BingoBoard, completions: ClanComplet
 }
 
 export function calculateClanProgress(board: BingoBoard, clanName: 'ironsGrotto' | 'ironDaddy'): ClanProgress {
-    const allTasks = board.tiles.flatMap(tile => tile.tasks);
-    const totalTasks = allTasks.length;
-    const totalPoints = allTasks.reduce((sum, task) => sum + task.points, 0);
+    const totalTasks = board.tiles.reduce((sum, tile) => sum + tile.tasks.length, 0);
+    const totalPoints = board.tiles.reduce((sum, tile) => 
+        sum + tile.tasks.reduce((taskSum, task) => taskSum + task.points, 0), 0
+    );
 
-    const completedTasks = allTasks.filter(task => {
-        if (clanName === 'ironsGrotto') {
-            return task.ironsGrottoCompleted;
-        } else {
-            return task.ironDaddyCompleted;
+    let completedTaskCount = 0;
+    let earnedPoints = 0;
+
+    // Calculate points based on sequential completion per tile
+    board.tiles.forEach(tile => {
+        for (let i = 0; i < tile.tasks.length; i++) {
+            const task = tile.tasks[i];
+            const isCompleted = clanName === 'ironsGrotto' 
+                ? task.ironsGrottoCompleted 
+                : task.ironDaddyCompleted;
+
+            if (isCompleted) {
+                completedTaskCount++;
+                earnedPoints += task.points;
+            } else {
+                // If this task is not completed, stop processing this tile
+                break;
+            }
         }
     });
 
-    const completedTaskCount = completedTasks.length;
-    const earnedPoints = completedTasks.reduce((sum, task) => sum + task.points, 0);
     const progressPercentage = totalTasks > 0 ? Math.round((completedTaskCount / totalTasks) * 100) : 0;
 
     return {
@@ -45,6 +57,27 @@ export function calculateClanProgress(board: BingoBoard, clanName: 'ironsGrotto'
         totalPoints,
         progressPercentage,
     };
+}
+
+export function calculateTilePoints(tile: any, clanName: 'ironsGrotto' | 'ironDaddy'): number {
+    let earnedPoints = 0;
+    
+    // Loop through tasks in order, add points only if previous tasks are completed
+    for (let i = 0; i < tile.tasks.length; i++) {
+        const task = tile.tasks[i];
+        const isCompleted = clanName === 'ironsGrotto' 
+            ? task.ironsGrottoCompleted 
+            : task.ironDaddyCompleted;
+
+        if (isCompleted) {
+            earnedPoints += task.points;
+        } else {
+            // If this task is not completed, stop processing
+            break;
+        }
+    }
+
+    return earnedPoints;
 }
 
 export function getClanColor(clanName: 'ironsGrotto' | 'ironDaddy'): string {

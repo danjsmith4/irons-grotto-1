@@ -6,6 +6,7 @@ import { BingoTile } from '../types/bingo-tile';
 import { formatWikiImageUrl } from '../utils/format-wiki-image-url';
 import { EntityImage } from '../../rank-calculator/components/entity-image';
 import { parseInitials } from '../../rank-calculator/utils/parse-initials';
+import { calculateTilePoints } from '../utils/clan-completions';
 
 interface BingoTileProps {
     tile: BingoTile;
@@ -16,12 +17,8 @@ export function BingoTileComponent({ tile }: BingoTileProps) {
     const imageUrl = tile.image ? formatWikiImageUrl(tile.image, 80) : '';
 
     const totalPoints = tile.tasks.reduce((sum, task) => sum + task.points, 0);
-    const ironsGrottoPoints = tile.tasks
-        .filter(task => task.ironsGrottoCompleted)
-        .reduce((sum, task) => sum + task.points, 0);
-    const ironDaddyPoints = tile.tasks
-        .filter(task => task.ironDaddyCompleted)
-        .reduce((sum, task) => sum + task.points, 0);
+    const ironsGrottoPoints = calculateTilePoints(tile, 'ironsGrotto');
+    const ironDaddyPoints = calculateTilePoints(tile, 'ironDaddy');
 
     return (
         <>
@@ -30,7 +27,7 @@ export function BingoTileComponent({ tile }: BingoTileProps) {
                 onClick={() => setIsOpen(true)}
             >
                 <Flex direction="column" gap="3" p="3">
-                    <Flex justify="between" align="center">
+                    <Flex justify="center" align="center">
                         <Flex align="center" gap="3">
                             <EntityImage
                                 alt={`${tile.header} icon`}
@@ -47,16 +44,57 @@ export function BingoTileComponent({ tile }: BingoTileProps) {
                     </Flex>
 
                     <Flex justify="between" align="center">
-                        <Flex direction="column" gap="1">
-                            <Text size="2" color="green" weight="medium">
-                                IG: {ironsGrottoPoints}pts
-                            </Text>
-                            <Text size="2" color="amber" weight="medium">
-                                ID: {ironDaddyPoints}pts
-                            </Text>
+                        <Text size="2" color="gray">
+                            {tile.tasks.length} Tasks
+                        </Text>
+                        <Badge color="blue" size="2">
+                            {totalPoints} pts
+                        </Badge>
+                    </Flex>
+
+                    <Flex direction="column" gap="2">
+                        <Flex justify="between" align="center">
+                            <Text size="1" color="gray" weight="medium">IG</Text>
+                            <Text size="1" color="gray">{ironsGrottoPoints}/{totalPoints}</Text>
                         </Flex>
-                        <Text size="2" color="blue">
-                            View Tasks →
+                        <div style={{ 
+                            width: '100%', 
+                            height: '4px', 
+                            backgroundColor: 'var(--gray-a4)', 
+                            borderRadius: '2px',
+                            overflow: 'hidden'
+                        }}>
+                            <div style={{
+                                width: `${totalPoints > 0 ? (ironsGrottoPoints / totalPoints) * 100 : 0}%`,
+                                height: '100%',
+                                backgroundColor: 'var(--green-9)',
+                                transition: 'width 0.3s ease'
+                            }} />
+                        </div>
+                        
+                        <Flex justify="between" align="center">
+                            <Text size="1" color="gray" weight="medium">ID</Text>
+                            <Text size="1" color="gray">{ironDaddyPoints}/{totalPoints}</Text>
+                        </Flex>
+                        <div style={{ 
+                            width: '100%', 
+                            height: '4px', 
+                            backgroundColor: 'var(--gray-a4)', 
+                            borderRadius: '2px',
+                            overflow: 'hidden'
+                        }}>
+                            <div style={{
+                                width: `${totalPoints > 0 ? (ironDaddyPoints / totalPoints) * 100 : 0}%`,
+                                height: '100%',
+                                backgroundColor: 'var(--amber-9)',
+                                transition: 'width 0.3s ease'
+                            }} />
+                        </div>
+                    </Flex>
+
+                    <Flex justify="center" align="center" mt="1">
+                        <Text size="1" color="blue" weight="medium">
+                            Click to view tasks
                         </Text>
                     </Flex>
                 </Flex>
