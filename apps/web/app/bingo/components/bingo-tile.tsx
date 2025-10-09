@@ -15,11 +15,6 @@ export function BingoTileComponent({ tile }: BingoTileProps) {
     const [isOpen, setIsOpen] = useState(false);
     const imageUrl = tile.image ? formatWikiImageUrl(tile.image, 80) : '';
 
-    // Calculate clan-specific completions
-    const ironsGrottoCompleted = tile.tasks.filter(task => task.ironsGrottoCompleted).length;
-    const ironDaddyCompleted = tile.tasks.filter(task => task.ironDaddyCompleted).length;
-    const totalTasks = tile.tasks.length;
-
     const totalPoints = tile.tasks.reduce((sum, task) => sum + task.points, 0);
     const ironsGrottoPoints = tile.tasks
         .filter(task => task.ironsGrottoCompleted)

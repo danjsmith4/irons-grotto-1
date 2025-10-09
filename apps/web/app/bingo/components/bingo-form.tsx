@@ -23,8 +23,8 @@ export function BingoForm() {
                 // Refresh the page to show the bingo content
                 window.location.reload();
             }
-        } catch (error) {
-            toast.error('An unexpected error occurred. Please try again.');
+        } catch {
+            toast.error(`An unexpected error occurred. Please try again.}`);
         } finally {
             setIsLoading(false);
         }
