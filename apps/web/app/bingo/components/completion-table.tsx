@@ -2,18 +2,14 @@
 
 import { Card, Table, Text, Badge, Flex, Separator } from '@radix-ui/themes';
 import { BingoBoard } from '../types/bingo-tile';
-import { loadClanCompletions, applyClanCompletions } from '../utils/clan-completions';
 
 interface CompletionTableProps {
     board: BingoBoard;
 }
 
 export function CompletionTable({ board }: CompletionTableProps) {
-    const completions = loadClanCompletions();
-    const updatedBoard = applyClanCompletions(board, completions);
-
-    // Flatten all tasks with their tile information
-    const allTasks = updatedBoard.tiles.flatMap(tile =>
+    // Flatten all tasks with their tile information (board should already have completions applied)
+    const allTasks = board.tiles.flatMap(tile =>
         tile.tasks.map(task => ({
             ...task,
             tileHeader: tile.header,

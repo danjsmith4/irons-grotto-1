@@ -4,7 +4,7 @@ import { Grid, Text, Card, Flex, Badge, Separator } from '@radix-ui/themes';
 import { BingoBoard } from '../types/bingo-tile';
 import { BingoTileComponent } from './bingo-tile';
 import { CompletionTable } from './completion-table';
-import { loadClanCompletions, applyClanCompletions, calculateClanProgress, getClanColor } from '../utils/clan-completions';
+import { applyClanCompletions, calculateClanProgress, getClanColor } from '../utils/clan-completions';
 
 interface BingoBoardProps {
     board: BingoBoard;
@@ -13,13 +13,9 @@ interface BingoBoardProps {
 export function BingoBoardComponent({ board }: BingoBoardProps) {
     const gridSize = board.gridSize || Math.ceil(Math.sqrt(board.tiles.length));
 
-    // Load clan completions and apply to board
-    const completions = loadClanCompletions();
-    const updatedBoard = applyClanCompletions(board, completions);
-
-    // Calculate progress for both clans
-    const ironsGrottoProgress = calculateClanProgress(updatedBoard, 'ironsGrotto');
-    const ironDaddyProgress = calculateClanProgress(updatedBoard, 'ironDaddy');
+    // Calculate progress for both clans (board should already have completions applied)
+    const ironsGrottoProgress = calculateClanProgress(board, 'ironsGrotto');
+    const ironDaddyProgress = calculateClanProgress(board, 'ironDaddy');
 
     return (
         <Flex direction="column" gap="4">
@@ -34,7 +30,15 @@ export function BingoBoardComponent({ board }: BingoBoardProps) {
                     <Flex justify="center" gap="8">
                         <Flex direction="column" align="center" gap="2">
                             <Text size="2" color="gray" weight="medium">Iron's Grotto</Text>
-                            <Badge color="green" size="2">
+                            <Badge 
+                                color="green" 
+                                size="3"
+                                style={{ 
+                                    fontSize: '1rem', 
+                                    padding: '8px 12px',
+                                    fontWeight: '600'
+                                }}
+                            >
                                 {ironsGrottoProgress.earnedPoints} / {ironsGrottoProgress.totalPoints} pts
                             </Badge>
                             <Text size="3" weight="bold" style={{ color: getClanColor('ironsGrotto') }}>
@@ -46,7 +50,15 @@ export function BingoBoardComponent({ board }: BingoBoardProps) {
 
                         <Flex direction="column" align="center" gap="2">
                             <Text size="2" color="gray" weight="medium">Iron Daddy</Text>
-                            <Badge color="amber" size="2">
+                            <Badge 
+                                color="amber" 
+                                size="3"
+                                style={{ 
+                                    fontSize: '1rem', 
+                                    padding: '8px 12px',
+                                    fontWeight: '600'
+                                }}
+                            >
                                 {ironDaddyProgress.earnedPoints} / {ironDaddyProgress.totalPoints} pts
                             </Badge>
                             <Text size="3" weight="bold" style={{ color: getClanColor('ironDaddy') }}>
@@ -85,7 +97,7 @@ export function BingoBoardComponent({ board }: BingoBoardProps) {
                 gap="4"
                 width="100%"
             >
-                {updatedBoard.tiles.map((tile) => (
+                {board.tiles.map((tile) => (
                     <BingoTileComponent key={tile.id} tile={tile} />
                 ))}
             </Grid>

@@ -13,6 +13,7 @@ const ServerConfigSchema = z.object({
     privateGroup: z.string().nonempty(),
   }),
   redisUrl: z.string().nonempty(),
+  databaseUrl: z.string().nonempty(),
   discord: z.object({
     token: z.string().nonempty(),
     guildId: z.string().nonempty(),
@@ -32,6 +33,7 @@ export const serverConstants = ServerConfigSchema.parse({
     privateGroup: process.env.TEMPLE_PRIVATE_GROUP,
   },
   redisUrl: process.env.KV_REST_API_URL,
+  databaseUrl: process.env.DATABASE_URL,
   discord: {
     token: process.env.DISCORD_TOKEN,
     guildId: process.env.DISCORD_GUILD_ID,

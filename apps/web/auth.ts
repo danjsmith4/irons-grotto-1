@@ -33,7 +33,7 @@ declare module 'next-auth/jwt' {
 export const config = {
   debug: /\*|nextauth/.test(process.env.DEBUG ?? ''),
   callbacks: {
-    async signIn({ account, profile }) {
+    async signIn({ account, profile, ...params }) {
       if (!profile?.id) {
         throw new Error('Discord user not found');
       }
@@ -46,22 +46,30 @@ export const config = {
 
       const { guildId } = serverConstants.discord;
 
-      try {
-        await discordBotClient.get(Routes.guildMember(guildId, profile.id));
-      } catch (error) {
-        if (
-          error instanceof DiscordAPIError &&
-          error.code === RESTJSONErrorCodes.UnknownMember
-        ) {
-          Sentry.addBreadcrumb({
-            data: { id: profile.id, username: profile.username },
-            category: 'Auth',
-            message: `User attempted to log in but was not found in the Discord server`,
-            level: 'error',
-          });
-        }
+      // Check if this is an admin login flow by looking at the request URL
+      // Admin logins come from /bingo/admin redirectTo parameter
+      const isAdminLogin = (params as any)?.redirectTo?.includes('/bingo/admin') ||
+        (params as any)?.callbackUrl?.includes('/bingo/admin');
 
-        throw error;
+      // Skip guild member check for admin logins
+      if (!isAdminLogin) {
+        try {
+          await discordBotClient.get(Routes.guildMember(guildId, profile.id));
+        } catch (error) {
+          if (
+            error instanceof DiscordAPIError &&
+            error.code === RESTJSONErrorCodes.UnknownMember
+          ) {
+            Sentry.addBreadcrumb({
+              data: { id: profile.id, username: profile.username },
+              category: 'Auth',
+              message: `User attempted to log in but was not found in the Discord server`,
+              level: 'error',
+            });
+          }
+
+          throw error;
+        }
       }
 
       return true;
