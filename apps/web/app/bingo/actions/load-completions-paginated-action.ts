@@ -4,7 +4,9 @@ import { getCompletionsPaginated } from '@/lib/db/completions';
 
 export async function loadCompletionsPaginatedAction(page: number = 1, pageSize: number = 10) {
     try {
-        const completions = await getCompletionsPaginated(page, pageSize);
+        // Convert from 1-based (frontend) to 0-based (database) pagination
+        const dbPage = page - 1;
+        const completions = await getCompletionsPaginated(dbPage, pageSize);
 
         return {
             success: true,

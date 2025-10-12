@@ -36,7 +36,9 @@ export function CompletionTable({ board }: CompletionTableProps) {
     const loadCompletions = async (page: number, append: boolean = false) => {
         setLoading(true);
         try {
+            console.log('Loading completions for page:', page);
             const result = await loadCompletionsPaginatedAction(page, 10);
+            console.log('Completions result:', result);
             
             if (result.success) {
                 // Enrich completions with task details
@@ -47,12 +49,16 @@ export function CompletionTable({ board }: CompletionTableProps) {
                     tileHeader: taskMap.get(completion.taskId)?.tileHeader,
                 }));
 
+                console.log('Enriched completions:', enrichedCompletions);
+
                 if (append) {
                     setCompletions(prev => [...prev, ...enrichedCompletions]);
                 } else {
                     setCompletions(enrichedCompletions);
                 }
                 setHasMore(result.hasMore);
+            } else {
+                console.error('Failed to load completions:', result.error);
             }
         } catch (error) {
             console.error('Failed to load completions:', error);
