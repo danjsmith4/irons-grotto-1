@@ -1,6 +1,6 @@
 {
-  "id": "c1fb4558-79e7-4814-8cbb-c342f9f9f40f",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "fd6fa850-06f5-44f0-a778-e6123b4a8f66",
+  "prevId": "c1fb4558-79e7-4814-8cbb-c342f9f9f40f",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -13,7 +13,7 @@
           "type": "uuid",
           "primaryKey": true,
           "notNull": true,
-          "default": "'gen_random_uuid()'"
+          "default": "gen_random_uuid()"
         },
         "task_id": {
           "name": "task_id",

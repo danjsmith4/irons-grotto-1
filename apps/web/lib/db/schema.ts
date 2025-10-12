@@ -1,7 +1,13 @@
-import { pgTable, text, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm/sql/sql';
+
+// uuid-ossp extension is required for gen_random_uuid()
+// Make sure to enable it in your database with: CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+
 
 export const bingoCompletions = pgTable('bingo_completions', {
-    id: text('id').primaryKey().default('gen_random_uuid()'),
+    id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
     taskId: text('task_id').notNull(),
     user: text('user').notNull(),
     proof: text('proof').notNull(),
