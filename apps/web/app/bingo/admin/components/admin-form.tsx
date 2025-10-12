@@ -60,6 +60,7 @@ export function AdminForm() {
             await submitCompletion({
                 taskId: selectedTask.id,
                 clan: selectedClan,
+                points: selectedTask.points, // Pass the points from the selected task
                 userCompletions: validCompletions,
             });
 
