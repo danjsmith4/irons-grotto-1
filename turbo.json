@@ -23,7 +23,8 @@
         "ZEPLO_API_KEY",
         "ZEPLO_URL",
         "TEMPLE_PRIVATE_GROUP",
-        "DISCORD_GUILD_ID"
+        "DISCORD_GUILD_ID",
+        "DATABASE_URL"
       ],
       "outputs": [".next/**", "!.next/cache/**"]
     },

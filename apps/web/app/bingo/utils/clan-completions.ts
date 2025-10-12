@@ -1,10 +1,6 @@
 import { ClanCompletions, BingoBoard, ClanProgress, BingoTile } from '../types/bingo-tile';
-import clanCompletionsData from '../data/clan-completions.json';
 
-export function loadClanCompletions(): ClanCompletions {
-    return clanCompletionsData as ClanCompletions;
-}
-
+// Client-safe function to apply completions to board
 export function applyClanCompletions(board: BingoBoard, completions: ClanCompletions): BingoBoard {
     const updatedBoard = { ...board };
 

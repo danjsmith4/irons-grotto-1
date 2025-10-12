@@ -397,7 +397,7 @@ export const sampleBingoBoard: BingoBoard = {
                     points: 4,
                 },
                 {
-                    id: 'inferno',
+                    id: 'budget-inferno',
                     title: 'Budget Inferno',
                     description: 'Obtain budget Infernal cape.',
                     points: 4,
