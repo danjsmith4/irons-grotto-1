@@ -6,6 +6,7 @@ import { submitCompletionActionImpl } from './submit-completion-action';
 export async function submitCompletionAction(input: {
     taskId: string;
     clan: 'ironsGrotto' | 'ironDaddy';
+    points: number;
     userCompletions: {
         user: string;
         proof: string;

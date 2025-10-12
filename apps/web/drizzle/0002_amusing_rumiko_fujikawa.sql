@@ -1,0 +1,1 @@
+ALTER TABLE "bingo_completions" ADD COLUMN "points" text DEFAULT '0' NOT NULL;

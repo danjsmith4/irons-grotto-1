@@ -1,6 +1,6 @@
 {
-  "id": "c1fb4558-79e7-4814-8cbb-c342f9f9f40f",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "05162bb4-1ca1-471b-ba14-89ed17c1273e",
+  "prevId": "fd6fa850-06f5-44f0-a778-e6123b4a8f66",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -13,7 +13,7 @@
           "type": "uuid",
           "primaryKey": true,
           "notNull": true,
-          "default": "'gen_random_uuid()'"
+          "default": "gen_random_uuid()"
         },
         "task_id": {
           "name": "task_id",
@@ -45,6 +45,13 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "points": {
+          "name": "points",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0'"
         }
       },
       "indexes": {},

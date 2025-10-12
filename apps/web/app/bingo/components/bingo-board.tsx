@@ -5,6 +5,9 @@ import { BingoBoard } from '../types/bingo-tile';
 import { BingoTileComponent } from './bingo-tile';
 import { CompletionTable } from './completion-table';
 import { calculateClanProgress, getClanColor } from '../utils/clan-completions';
+import { loadMvpAction } from '../actions/load-mvp-action';
+import { useEffect, useState } from 'react';
+import { mvp } from '@/lib/db/completions';
 
 interface BingoBoardProps {
     board: BingoBoard;
@@ -12,6 +15,30 @@ interface BingoBoardProps {
 
 export function BingoBoardComponent({ board }: BingoBoardProps) {
     const gridSize = board.gridSize || Math.ceil(Math.sqrt(board.tiles.length));
+    
+    // State for MVP data
+    const [mvps, setMvps] = useState<{
+        ironsGrotto: mvp | null;
+        ironDaddy: mvp | null;
+    }>({
+        ironsGrotto: null,
+        ironDaddy: null
+    });
+    const [isLoadingMvps, setIsLoadingMvps] = useState(true);
+
+    // Load MVP data on component mount
+    useEffect(() => {
+        const loadMvps = async () => {
+            setIsLoadingMvps(true);
+            const result = await loadMvpAction();
+            if (result.success) {
+                setMvps(result.mvps);
+            }
+            setIsLoadingMvps(false);
+        };
+
+        void loadMvps();
+    }, []);
 
     // Calculate progress for both clans (board should already have completions applied)
     const ironsGrottoProgress = calculateClanProgress(board, 'ironsGrotto');
@@ -66,21 +93,45 @@ export function BingoBoardComponent({ board }: BingoBoardProps) {
                             </Text>
                         </Flex>
                     </Flex>
-
-                    {/* Overall Stats */}
+                    {/* MVP Stats */}
                     <Separator size="4" />
-                    <Flex justify="center" gap="6">
+                    <Flex justify="center" gap="8">
                         <Flex direction="column" align="center" gap="1">
-                            <Text size="2" color="gray">Total Tiles</Text>
-                            <Text size="4" weight="bold">{board.tiles.length}</Text>
+                            <Text size="2" color="gray" weight="medium">Iron's Grotto MVP</Text>
+                            {isLoadingMvps ? (
+                                <Text size="3" color="gray">Loading...</Text>
+                            ) : mvps.ironsGrotto ? (
+                                <Flex direction="column" align="center" gap="1">
+                                    <Text size="3" weight="bold" style={{ color: getClanColor('ironsGrotto') }}>
+                                        {mvps.ironsGrotto.user}
+                                    </Text>
+                                    <Text size="2" color="gray">
+                                        {mvps.ironsGrotto.points} pts • {mvps.ironsGrotto.completions} task{mvps.ironsGrotto.completions === 1 ? '' : 's'} completed
+                                    </Text>
+                                </Flex>
+                            ) : (
+                                <Text size="3" color="gray">None</Text>
+                            )}
                         </Flex>
+
+                        <Separator orientation="vertical" />
+
                         <Flex direction="column" align="center" gap="1">
-                            <Text size="2" color="gray">Total Tasks</Text>
-                            <Text size="4" weight="bold">{ironsGrottoProgress.totalTasks}</Text>
-                        </Flex>
-                        <Flex direction="column" align="center" gap="1">
-                            <Text size="2" color="gray">Total Points</Text>
-                            <Text size="4" weight="bold">{ironsGrottoProgress.totalPoints}</Text>
+                            <Text size="2" color="gray" weight="medium">Iron Daddy MVP</Text>
+                            {isLoadingMvps ? (
+                                <Text size="3" color="gray">Loading...</Text>
+                            ) : mvps.ironDaddy ? (
+                                <Flex direction="column" align="center" gap="1">
+                                    <Text size="3" weight="bold" style={{ color: getClanColor('ironDaddy') }}>
+                                        {mvps.ironDaddy.user}
+                                    </Text>
+                                    <Text size="2" color="gray">
+                                        {mvps.ironDaddy.points} pts • {mvps.ironDaddy.completions} task{mvps.ironDaddy.completions === 1 ? '' : 's'} completed
+                                    </Text>
+                                </Flex>
+                            ) : (
+                                <Text size="3" color="gray">None</Text>
+                            )}
                         </Flex>
                     </Flex>
                 </Flex>

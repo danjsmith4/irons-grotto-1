@@ -8,6 +8,7 @@ import { ADMIN_DISCORD_USER_IDS } from '@/config/admin-users';
 const SubmitCompletionSchema = z.object({
     taskId: z.string(),
     clan: z.enum(['ironsGrotto', 'ironDaddy']),
+    points: z.number().min(0), // Add points field
     userCompletions: z.array(z.object({
         user: z.string().min(1, 'User is required'),
         proof: z.string().url('Valid URL is required for proof'),
@@ -31,6 +32,7 @@ export const submitCompletionActionImpl = authActionClient
                 user: completion.user,
                 proof: completion.proof,
                 clan: parsedInput.clan,
+                points: parsedInput.points.toString(), // Convert to string as per schema
             });
             results.push(result);
         }
