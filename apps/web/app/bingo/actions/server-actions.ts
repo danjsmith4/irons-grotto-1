@@ -6,10 +6,10 @@ import { submitCompletionActionImpl } from './submit-completion-action';
 export async function submitCompletionAction(input: {
     taskId: string;
     clan: 'ironsGrotto' | 'ironDaddy';
-    userCompletions: Array<{
+    userCompletions: {
         user: string;
         proof: string;
-    }>;
+    }[];
 }) {
-    return submitCompletionAction(input);
+    return submitCompletionActionImpl(input);
 }

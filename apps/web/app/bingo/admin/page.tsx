@@ -1,6 +1,7 @@
-import { Box, Container, Heading, Text, Button, Flex } from '@radix-ui/themes';
-import { auth, signIn } from '@/auth';
+import { Box, Container, Heading, Text, Button } from '@radix-ui/themes';
+import { auth } from '@/auth';
 import { ADMIN_DISCORD_USER_IDS } from '@/config/admin-users';
+import { signInForAdmin } from '../actions/admin-auth-action';
 import { AdminForm } from './components/admin-form';
 
 export default async function AdminPage() {
@@ -10,7 +11,7 @@ export default async function AdminPage() {
     if (!session?.user?.id) {
         const handleLogin = async () => {
             'use server';
-            await signIn('discord', { redirectTo: '/bingo/admin' });
+            await signInForAdmin();
         };
 
         return (

@@ -56,6 +56,7 @@ export function AdminForm() {
         }
 
         try {
+            // eslint-disable-next-line @typescript-eslint/await-thenable
             await submitCompletion({
                 taskId: selectedTask.id,
                 clan: selectedClan,

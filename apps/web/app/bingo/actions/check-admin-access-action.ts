@@ -7,6 +7,7 @@ import { z } from 'zod';
 export const checkAdminAccessAction = authActionClient
     .metadata({ actionName: 'check-admin-access' })
     .schema(z.object({}))
+    // eslint-disable-next-line @typescript-eslint/require-await
     .action(async ({ ctx }) => {
         const hasAdminAccess = ADMIN_DISCORD_USER_IDS.includes(ctx.userId);
 

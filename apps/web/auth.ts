@@ -33,13 +33,20 @@ declare module 'next-auth/jwt' {
 export const config = {
   debug: /\*|nextauth/.test(process.env.DEBUG ?? ''),
   callbacks: {
-    async signIn({ account, profile, ...params }) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async signIn(params: any) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const { account, profile } = params;
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       if (!profile?.id) {
         throw new Error('Discord user not found');
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       Sentry.setUser({ id: profile.id, username: profile?.name ?? 'Unknown' });
 
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       if (!account?.access_token) {
         throw new Error('Access token not found');
       }
@@ -48,12 +55,18 @@ export const config = {
 
       // Check if this is an admin login flow by looking at the request URL
       // Admin logins come from /bingo/admin redirectTo parameter
-      const isAdminLogin = (params as any)?.redirectTo?.includes('/bingo/admin') ||
-        (params as any)?.callbackUrl?.includes('/bingo/admin');
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      const redirectTo = params.redirectTo as string | undefined;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      const callbackUrl = params.callbackUrl as string | undefined;
+      const isAdminLogin = redirectTo?.includes('/bingo/admin') ??
+        callbackUrl?.includes('/bingo/admin') ??
+        false;
 
       // Skip guild member check for admin logins
       if (!isAdminLogin) {
         try {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
           await discordBotClient.get(Routes.guildMember(guildId, profile.id));
         } catch (error) {
           if (
@@ -61,6 +74,7 @@ export const config = {
             error.code === RESTJSONErrorCodes.UnknownMember
           ) {
             Sentry.addBreadcrumb({
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
               data: { id: profile.id, username: profile.username },
               category: 'Auth',
               message: `User attempted to log in but was not found in the Discord server`,
@@ -73,9 +87,7 @@ export const config = {
       }
 
       return true;
-    },
-
-    async jwt({ profile, token, account }) {
+    }, async jwt({ profile, token, account }) {
       const { guildId } = serverConstants.discord;
 
       if (profile?.id) {
