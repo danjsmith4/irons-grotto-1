@@ -2,7 +2,7 @@
 
 import { getCompletionsPaginated } from '@/lib/db/completions';
 
-export async function loadCompletionsPaginatedAction(page: number = 1, pageSize: number = 10) {
+export async function loadCompletionsPaginatedAction(page = 1, pageSize = 10) {
     try {
         // Convert from 1-based (frontend) to 0-based (database) pagination
         const dbPage = page - 1;

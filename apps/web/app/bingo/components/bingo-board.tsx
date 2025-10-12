@@ -37,7 +37,7 @@ export function BingoBoardComponent({ board }: BingoBoardProps) {
             setIsLoadingMvps(false);
         };
 
-        loadMvps();
+        void loadMvps();
     }, []);
 
     // Calculate progress for both clans (board should already have completions applied)

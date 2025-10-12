@@ -15,6 +15,12 @@ interface CompletionWithTask extends BingoCompletion {
     taskDescription?: string;
 }
 
+interface TaskMapEntry {
+    title: string;
+    description: string;
+    tileHeader: string;
+}
+
 export function CompletionTable({ board }: CompletionTableProps) {
     const [completions, setCompletions] = useState<CompletionWithTask[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -22,7 +28,7 @@ export function CompletionTable({ board }: CompletionTableProps) {
     const [loading, setLoading] = useState(false);
 
     // Create a map of task IDs to task details for quick lookup
-    const taskMap = new Map();
+    const taskMap = new Map<string, TaskMapEntry>();
     board.tiles.forEach(tile => {
         tile.tasks.forEach(task => {
             taskMap.set(task.id, {
@@ -33,7 +39,7 @@ export function CompletionTable({ board }: CompletionTableProps) {
         });
     });
 
-    const loadCompletions = async (page: number, append: boolean = false) => {
+    const loadCompletions = async (page: number, append = false) => {
         setLoading(true);
         try {
             console.log('Loading completions for page:', page);
@@ -69,13 +75,13 @@ export function CompletionTable({ board }: CompletionTableProps) {
 
     // Load initial completions
     useEffect(() => {
-        loadCompletions(1);
+        void loadCompletions(1);
     }, []);
 
     const handleShowMore = () => {
         const nextPage = currentPage + 1;
         setCurrentPage(nextPage);
-        loadCompletions(nextPage, true);
+        void loadCompletions(nextPage, true);
     };
 
     const formatDate = (date: Date) => {
@@ -135,7 +141,7 @@ export function CompletionTable({ board }: CompletionTableProps) {
                                 <Table.Cell>
                                     <Flex direction="column" gap="1">
                                         <Text size="2" weight="medium">
-                                            {completion.taskTitle || completion.taskId}
+                                            {completion.taskTitle ?? completion.taskId}
                                         </Text>
                                         {completion.taskDescription && (
                                             <Text size="1" color="gray">

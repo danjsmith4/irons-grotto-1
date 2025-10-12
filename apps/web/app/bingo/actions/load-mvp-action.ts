@@ -1,6 +1,6 @@
 'use server';
 
-import { getMvp, type mvp } from '@/lib/db/completions';
+import { getMvp } from '@/lib/db/completions';
 
 export async function loadMvpAction() {
     try {

@@ -1,6 +1,6 @@
 import { db } from './index';
 import { bingoCompletions, type NewBingoCompletion } from './schema';
-import { eq, desc, count } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 
 export async function createCompletion(completion: NewBingoCompletion) {
     return await db.insert(bingoCompletions).values(completion).returning();
@@ -38,8 +38,8 @@ export async function getCompletionsForClan(clanName: 'ironsGrotto' | 'ironDaddy
 }
 
 export const getCompletionsPaginated = async (
-    page: number = 0,
-    limit: number = 10
+    page = 0,
+    limit = 10
 ) => {
     const offset = page * limit;
 
