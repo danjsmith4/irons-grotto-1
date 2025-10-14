@@ -1,13 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { Box, Button, Card, Flex, Heading, Text, Select } from '@radix-ui/themes';
-import { PlusIcon } from '@radix-ui/react-icons';
+import { Box, Button, Card, Flex, Heading, Text, Select, Callout } from '@radix-ui/themes';
+import { PlusIcon, ArrowLeftIcon, CheckIcon, ExclamationTriangleIcon } from '@radix-ui/react-icons';
 import { TaskSearch } from './task-search';
 import { UserCompletionForm } from './user-completion-form';
 import { BingoTask } from '../../types/bingo-tile';
 import { submitCompletionAction } from '../../actions/server-actions';
 import { useAction } from 'next-safe-action/hooks';
+import { useRouter } from 'next/navigation';
 
 interface UserCompletion {
     user: string;
@@ -16,14 +17,21 @@ interface UserCompletion {
 
 type ClanType = 'ironsGrotto' | 'ironDaddy';
 
+interface SubmissionStatus {
+    type: 'success' | 'error' | null;
+    message: string;
+}
+
 export function AdminForm() {
     const [selectedTask, setSelectedTask] = useState<BingoTask | null>(null);
     const [userCompletions, setUserCompletions] = useState<UserCompletion[]>([
         { user: '', proof: '' }
     ]);
     const [selectedClan, setSelectedClan] = useState<ClanType>('ironsGrotto');
-
-    const { execute: submitCompletion, isExecuting } = useAction(submitCompletionAction);
+    const [submissionStatus, setSubmissionStatus] = useState<SubmissionStatus>({ type: null, message: '' });
+    
+    const router = useRouter();
+    const { executeAsync: submitCompletion, isExecuting } = useAction(submitCompletionAction);
 
     const addUserCompletion = () => {
         setUserCompletions([...userCompletions, { user: '', proof: '' }]);
@@ -45,36 +53,84 @@ export function AdminForm() {
     const handleSubmit = async () => {
         if (!selectedTask) return;
 
+        // Clear previous status
+        setSubmissionStatus({ type: null, message: '' });
+
         // Filter out empty completions
         const validCompletions = userCompletions.filter(
             completion => completion.user.trim() && completion.proof.trim()
         );
 
         if (validCompletions.length === 0) {
-            alert('Please fill in at least one user completion');
+            setSubmissionStatus({ 
+                type: 'error', 
+                message: 'Please fill in at least one user completion' 
+            });
             return;
         }
 
         try {
-            // eslint-disable-next-line @typescript-eslint/await-thenable
-            await submitCompletion({
+            const result = await submitCompletion({
                 taskId: selectedTask.id,
                 clan: selectedClan,
-                points: selectedTask.points, // Pass the points from the selected task
+                points: selectedTask.points,
                 userCompletions: validCompletions,
             });
 
-            // Reset form on success
-            setSelectedTask(null);
-            setUserCompletions([{ user: '', proof: '' }]);
-            setSelectedClan('ironsGrotto');
+            if (result?.data) {
+                // Success
+                setSubmissionStatus({ 
+                    type: 'success', 
+                    message: `Successfully submitted ${validCompletions.length} completion(s) for "${selectedTask.title}"` 
+                });
+                
+                // Reset form on success
+                setSelectedTask(null);
+                setUserCompletions([{ user: '', proof: '' }]);
+                setSelectedClan('ironsGrotto');
+            } else {
+                // Handle action failure
+                const errorMessage = result?.serverError ?? 'Failed to submit completions';
+                setSubmissionStatus({ 
+                    type: 'error', 
+                    message: errorMessage 
+                });
+            }
         } catch (error) {
             console.error('Failed to submit completions:', error);
+            setSubmissionStatus({ 
+                type: 'error', 
+                message: 'An unexpected error occurred while submitting completions' 
+            });
         }
     };
 
     return (
         <Box>
+            {/* Back Button */}
+            <Flex mb="4">
+                <Button 
+                    variant="ghost" 
+                    onClick={() => router.push('/bingo')}
+                    style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}
+                >
+                    <ArrowLeftIcon />
+                    Back to Bingo Board
+                </Button>
+            </Flex>
+
+            {/* Status Messages */}
+            {submissionStatus.type && (
+                <Box mb="4">
+                    <Callout.Root color={submissionStatus.type === 'success' ? 'green' : 'red'}>
+                        <Callout.Icon>
+                            {submissionStatus.type === 'success' ? <CheckIcon /> : <ExclamationTriangleIcon />}
+                        </Callout.Icon>
+                        <Callout.Text>{submissionStatus.message}</Callout.Text>
+                    </Callout.Root>
+                </Box>
+            )}
+
             <Card size="4" mb="4">
                 <Heading size="6" mb="3">
                     Task Selection
@@ -89,7 +145,7 @@ export function AdminForm() {
                         <Text color="gray" size="3">
                             {selectedTask.description}
                         </Text>
-                        <Text size="2" color="gray" mt="2">
+                        <Text size="2" color="gray" mt="2" ml="5">
                             Points: {selectedTask.points}
                         </Text>
                     </Box>

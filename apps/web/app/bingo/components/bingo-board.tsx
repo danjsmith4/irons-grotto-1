@@ -49,9 +49,6 @@ export function BingoBoardComponent({ board }: BingoBoardProps) {
             {/* Header */}
             <Card>
                 <Flex direction="column" gap="4" p="4">
-                    <Text size="5" weight="bold" align="center">
-                        {board.title}
-                    </Text>
 
                     {/* Clan Progress Overview */}
                     <Flex justify="center" gap="8">

@@ -66,28 +66,65 @@ export async function getMvp(team: 'ironsGrotto' | 'ironDaddy'): Promise<mvp | n
         .from(bingoCompletions)
         .where(eq(bingoCompletions.clan, team));
 
-    // Group by user and calculate totals
-    const userStats = completions.reduce((acc, completion) => {
-        const user = completion.user;
-        const points = parseInt(completion.points, 10) || 0;
+    // Group completions by taskId to calculate proportional points
+    const taskGroups = completions.reduce((acc, completion) => {
+        const taskId = completion.taskId;
 
-        if (!acc[user]) {
-            acc[user] = { user, completions: 0, points: 0 };
+        if (!acc[taskId]) {
+            acc[taskId] = {
+                taskPoints: parseInt(completion.points, 10) || 0,
+                completions: []
+            };
         }
 
-        acc[user].completions += 1;
-        acc[user].points += points;
-
+        acc[taskId].completions.push(completion);
         return acc;
-    }, {} as Record<string, mvp>);
+    }, {} as Record<string, { taskPoints: number; completions: typeof completions }>);
+
+    // Calculate user stats with proportional points
+    const userStats = {} as Record<string, mvp>;
+
+    Object.values(taskGroups).forEach(taskGroup => {
+        const totalContributions = taskGroup.completions.length;
+        const pointsPerContribution = taskGroup.taskPoints / totalContributions;
+
+        // Count contributions per user for this task
+        const userContributions = taskGroup.completions.reduce((acc, completion) => {
+            const user = completion.user;
+            acc[user] = (acc[user] || 0) + 1;
+            return acc;
+        }, {} as Record<string, number>);
+
+        // Assign proportional points to each user
+        Object.entries(userContributions).forEach(([user, contributionCount]) => {
+            if (!userStats[user]) {
+                userStats[user] = { user, completions: 0, points: 0 };
+            }
+
+            // Add the user's share of points for this task
+            const userPointShare = pointsPerContribution * contributionCount;
+            userStats[user].points += userPointShare;
+            userStats[user].completions += contributionCount;
+        });
+    });
 
     // Convert to array and sort by points (then by completions as tiebreaker)
     const sortedUsers = Object.values(userStats).sort((a, b) => {
-        if (b.points !== a.points) {
-            return b.points - a.points; // Sort by points descending
+        if (Math.abs(b.points - a.points) < 0.01) { // Handle floating point precision
+            return b.completions - a.completions; // Tiebreaker: completions descending
         }
-        return b.completions - a.completions; // Tiebreaker: completions descending
+        return b.points - a.points; // Sort by points descending
     });
 
-    return sortedUsers.length > 0 ? sortedUsers[0] : null;
+    return sortedUsers.length > 0 ?
+        { ...sortedUsers[0], points: Math.round(sortedUsers[0].points * 100) / 100 } : // Round to 2 decimal places
+        null;
+}
+
+export async function getUserNames(): Promise<string[]> {
+    const users = await db
+        .selectDistinct({ user: bingoCompletions.user })
+        .from(bingoCompletions);
+
+    return users.map(row => row.user);
 }
