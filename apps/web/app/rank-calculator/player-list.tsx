@@ -98,9 +98,14 @@ export function PlayerList({ accounts }: PlayerListProps) {
             </Card>
           ),
         )}
-        <Button asChild size="3">
-          <Link href="/rank-calculator/players/add">Add new player</Link>
-        </Button>
+        <Flex gap="3">
+          <Button asChild size="3" style={{ flex: 1 }}>
+            <Link href="/rank-calculator/players/add">Add new player</Link>
+          </Button>
+          <Button asChild size="3" variant="outline" style={{ flex: 1 }}>
+            <Link href="/bingo">Bingo Board</Link>
+          </Button>
+        </Flex>
       </Flex>
     </Flex>
   );

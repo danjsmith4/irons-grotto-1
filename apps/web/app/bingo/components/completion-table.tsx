@@ -85,11 +85,12 @@ export function CompletionTable({ board }: CompletionTableProps) {
     };
 
     const formatDate = (date: Date) => {
-        return new Intl.DateTimeFormat('en-US', {
+        return new Intl.DateTimeFormat(undefined, {
             month: 'short',
             day: 'numeric',
             hour: '2-digit',
             minute: '2-digit',
+            timeZoneName: 'short',
         }).format(new Date(date));
     };
 
