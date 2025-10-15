@@ -117,7 +117,7 @@ export function BingoTileComponent({ tile }: BingoTileProps) {
                     </Dialog.Title>
 
                     <Dialog.Description size="2" mb="4">
-                        Complete tasks to earn points and progress through the bingo!
+                        {tile.description ?? ''}
                     </Dialog.Description>
 
                     <Separator size="4" mb="4" />

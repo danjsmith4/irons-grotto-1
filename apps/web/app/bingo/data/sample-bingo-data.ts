@@ -6,7 +6,7 @@ export const sampleBingoBoard: BingoBoard = {
     tiles: [
         {
             id: 'tile-1',
-            header: 'Cox',
+            header: 'CoX',
             image: 'Olmlet',
             tasks: [
                 {
@@ -18,63 +18,63 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: 'dhcb-buckler',
                     title: 'DHCB & Buckler',
-                    description: 'Obtain Dragon hunter crossbow and Twisted buckler.',
+                    description: 'Obtain Dragon Hunter Crossbow and Twisted Buckler.',
                     points: 6,
                 },
                 {
                     id: 'ancestral',
                     title: 'Full Ancestral',
-                    description: 'Obtain complete Ancestral Robe set.',
+                    description: 'Obtain all pieces of the Ancestral Robe set.',
                     points: 16,
                 },
             ],
         },
         {
             id: 'tile-2',
-            header: 'Tob',
+            header: 'ToB',
             image: 'Lil\'_Zik',
             tasks: [
                 {
                     id: 'avernic',
                     title: 'Avernic (x3)',
-                    description: 'Obtain 3 Avernic defenders.',
+                    description: 'Obtain 3 Avernic Defender Hilts.',
                     points: 4,
                 },
                 {
                     id: 'rapier-sang',
                     title: 'Rapier + Sang',
-                    description: 'Obtain Ghrazi rapier and Sanguinesti staff.',
+                    description: 'Obtain a Ghrazi Rapier and Sanguinesti Staff.',
                     points: 6,
                 },
                 {
                     id: 'scythe',
                     title: 'Scythe of Vitur',
-                    description: 'Obtain 1 Scythe of vitur.',
+                    description: 'Obtain 1 Scythe of Vitur.',
                     points: 15,
                 },
             ],
         },
         {
             id: 'tile-3',
-            header: 'TOA',
+            header: 'ToA',
             image: 'Tumeken\'s_shadow',
             tasks: [
                 {
                     id: 'lb-fang',
                     title: 'LB + Fang (x2)',
-                    description: 'Obtain 2 Lightbearers and 2 Osmumten\'s fangs.',
+                    description: 'Obtain 2 Lightbearers and 2 Osmumten\'s Fangs.',
                     points: 4,
                 },
                 {
                     id: 'masori',
                     title: 'Full Masori',
-                    description: 'Obtain complete Masori set.',
+                    description: 'Obtain all pieces of the Masori Armour set.',
                     points: 6,
                 },
                 {
                     id: 'shadow',
                     title: 'Shadow',
-                    description: 'Obtain 1 Tumeken\'s shadow.',
+                    description: 'Obtain 1 Tumeken\'s Shadow.',
                     points: 13,
                 },
             ],
@@ -86,20 +86,20 @@ export const sampleBingoBoard: BingoBoard = {
             tasks: [
                 {
                     id: '2m-tob-chest',
-                    title: '2m+ tob chest',
-                    description: 'Obtain TOB chest worth 2m+ value.',
+                    title: '<100k Chest',
+                    description: 'Obtain a monumental chest from HMT of non-unique items with a total value under 100k GP, that is not a cabbage.',
                     points: 1,
                 },
                 {
                     id: 'hmt-kit',
                     title: 'HMT kit (x2)',
-                    description: 'Obtain 2 Hard mode Theatre of Blood kits.',
-                    points: 5,
+                    description: 'Obtain any 2 Ornament kits from the Hard Mode Theatre of Blood.',
+                    points: 4,
                 },
                 {
                     id: 'hmt-dust',
                     title: 'HMT dust',
-                    description: 'Obtain 1 Hard mode Theatre of Blood dust.',
+                    description: 'Obtain 1 Sanguine Dust from the Hard mode Theatre of Blood.',
                     points: 10,
                 },
             ],
@@ -111,20 +111,20 @@ export const sampleBingoBoard: BingoBoard = {
             tasks: [
                 {
                     id: 'cm-kit',
-                    title: 'CM Kit (x2)',
-                    description: 'Obtain 2 Challenge Mode kits.',
-                    points: 2,
+                    title: 'Twisted Ancestral Colour Kit (x2)',
+                    description: 'Obtain 2 Twisted Ancestral Colour Kits.',
+                    points: 5,
                 },
                 {
                     id: 'cm-dust',
-                    title: 'CM Dust',
+                    title: 'Metamorphic Dust',
                     description: 'Obtain a metamorphic dust.',
                     points: 8,
                 },
                 {
                     id: 'cm-mega-rare',
                     title: 'Mega Rare',
-                    description: 'Obtain a mega rare from Chambers of Xeric.',
+                    description: 'Obtain one of the following items from Chambers of Xeric Challenge Mode: Kodai Insignia, Twisted Bow, and Elder Maul.',
                     points: 12,
                 },
             ],
@@ -135,15 +135,15 @@ export const sampleBingoBoard: BingoBoard = {
             image: 'Ultor_ring',
             tasks: [
                 {
-                    id: 'virtus',
-                    title: 'Any Virtus piece',
-                    description: 'Obtain any Virtus piece.',
-                    points: 2,
+                    id: 'ingots',
+                    title: 'Chromium Ingot (x6)',
+                    description: 'Obtain 6 Chromium Ingots.',
+                    points: 4,
                 },
                 {
                     id: 'virtus-full',
                     title: 'Full Virtus',
-                    description: 'Obtain complete Virtus set.',
+                    description: 'Obtain the complete Virtus Robe set.',
                     points: 8,
                 },
                 {
@@ -161,20 +161,20 @@ export const sampleBingoBoard: BingoBoard = {
             tasks: [
                 {
                     id: 'toa-500',
-                    title: '500 TOA CHALLENGE',
-                    description: 'TBD',
+                    title: '500 ToA Challenge',
+                    description: 'Complete the Tombs of Amascut while completing Amascut\'s Remnant and But... Damage in the same raid.',
                     points: 4,
                 },
                 {
                     id: 'deep-digger',
                     title: 'Delve 25+',
-                    description: 'Complete Delve 25 at the Doom Of Mokhaiotl',
+                    description: 'Complete Delve 25 at the Doom of Mokhaiotl',
                     points: 4,
                 },
                 {
-                    id: 'inferno',
-                    title: 'Inferno',
-                    description: 'TBD',
+                    id: 'hmt-challenge',
+                    title: 'HMT Duo',
+                    description: 'Complete the Theatre of Blood: Hard Mode with 2 players or fewer.',
                     points: 4,
                 },
             ],
@@ -186,20 +186,20 @@ export const sampleBingoBoard: BingoBoard = {
             tasks: [
                 {
                     id: 'twinflame-zombie-axe',
-                    title: 'Twinflame, Zombie axe',
-                    description: 'Obtain the Twinflame staff and Zombie axe.',
+                    title: 'Twinflame Staff & Zombie axe',
+                    description: 'Obtain the Twinflame Staff and Broken Zombie Axe.',
                     points: 2,
                 },
                 {
                     id: 'zenyte-4',
                     title: 'Zenyte (x4)',
-                    description: 'Obtain 4 Zenyte shards.',
+                    description: 'Obtain 4 Zenyte Shards.',
                     points: 4,
                 },
                 {
                     id: 'arax-fang-2',
                     title: 'Araxyte fang (x2)',
-                    description: 'Obtain 2 Araxyte fangs.',
+                    description: 'Obtain 2 Araxyte Fangs.',
                     points: 8,
                 },
             ],
@@ -212,7 +212,7 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: 'barrows',
                     title: 'Barrows Weapons (x5)',
-                    description: 'Obtain 5 Barrows weapons.',
+                    description: 'Obtain 5 Barrows Weapons.',
                     points: 2,
                 },
                 {
@@ -237,69 +237,70 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: 'bandos',
                     title: 'Full Bandos',
-                    description: 'Obtain complete Bandos armour set.',
+                    description: 'Obtain the complete Bandos Armour set, including boots.',
                     points: 3,
                 },
                 {
                     id: 'oathplate',
                     title: 'Full Oathplate',
-                    description: 'Obtain complete Oathplate armour set.',
+                    description: 'Obtain the complete Oathplate Armour set.',
                     points: 6,
                 },
                 {
                     id: 'torva',
                     title: 'Full Torva',
-                    description: 'Obtain complete Torva armour set.',
+                    description: 'Obtain the complete Torva Armour set.',
                     points: 10,
                 },
             ],
         },
         {
             id: 'tile-11',
-            header: 'Cox Challenge',
+            header: 'CoX Challenge',
             image: 'Ancient_chest',
+            description: 'You can only scale the board by 10.',
             tasks: [
                 {
                     id: 'cox-300k',
-                    title: '300k COX raid',
-                    description: 'Complete a raid gaining 300k+ points.',
+                    title: '300k Point CoX',
+                    description: 'Complete a raid gaining 300k+ points as a team from the Chambers of Xeric.',
                     points: 4,
                 },
                 {
                     id: 'cox-500k',
-                    title: '500k COX raid',
-                    description: 'Complete a raid gaining 500k+ points.',
+                    title: '500k Point CoX',
+                    description: 'Complete a raid gaining 500k+ points as a team from the Chambers of Xeric.',
                     points: 6,
                 },
                 {
                     id: 'cox-double-purple',
-                    title: 'Double purple cox',
-                    description: 'Complete a raid with enough points to roll two purples.',
+                    title: 'Double Purple CoX',
+                    description: 'Complete a raid gaining over 570,000 points as a team from the Chambers of Xeric.',
                     points: 12,
                 },
             ],
         },
         {
             id: 'tile-12',
-            header: 'Ranged Armor',
+            header: 'Ranged Upgrades',
             image: 'Armadyl_chestplate',
             tasks: [
                 {
                     id: 'arma-1',
                     title: 'Full Armadyl',
-                    description: 'Obtain complete Armadyl armour set.',
+                    description: 'Obtain the complete Armadyl Armour set.',
                     points: 4,
                 },
                 {
                     id: 'arma-2',
                     title: 'Zaryte vambraces (x2)',
-                    description: 'Obtain 2 Zaryte vambraces.',
+                    description: 'Obtain 2 Zaryte Vambraces.',
                     points: 6,
                 },
                 {
                     id: 'arma-3',
-                    title: 'Zaryte crossbow (x2)',
-                    description: 'Obtain 2 Zaryte crossbows.',
+                    title: 'Nihil Horn (x2)',
+                    description: 'Obtain 2 Nihil Horns.',
                     points: 12,
                 },
             ],
@@ -311,20 +312,20 @@ export const sampleBingoBoard: BingoBoard = {
             tasks: [
                 {
                     id: 'armour-seeds',
-                    title: '6x Armour seeds',
-                    description: 'Obtain 6 Crystal armour seeds.',
+                    title: 'Armour Seeds (x6)',
+                    description: 'Obtain 6 Crystal Armour Seeds from The Gauntlet.',
                     points: 3,
                 },
                 {
                     id: 'venator-shards-10',
                     title: 'Venator shards (x10)',
-                    description: 'Obtain 10 Venator shards.',
+                    description: 'Obtain 10 Venator shards from the Phantom Muspah.',
                     points: 6,
                 },
                 {
                     id: 'enhanced-weapon-seed-2',
                     title: 'Enhanced Weapon Seed (x2)',
-                    description: 'Obtain 2 Enhanced crystal weapons.',
+                    description: 'Obtain 2 Enhanced Crystal Weapon Seeds from The Gauntlet.',
                     points: 8,
                 },
             ],
@@ -337,19 +338,19 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: 'cloth',
                     title: 'Mokhaiotl cloth (x3)',
-                    description: 'Obtain 3 Mokhaiotl cloths.',
+                    description: 'Obtain 3 Mokhaiotl Cloths.',
                     points: 6,
                 },
                 {
                     id: 'eye-of-ayak',
                     title: 'Eye of Ayak (x3)',
-                    description: 'Obtain 3 Eye of Ayaks.',
+                    description: 'Obtain 3 Eyes of Ayak.',
                     points: 8,
                 },
                 {
                     id: 'avernic-treads',
                     title: 'Avernic treads (x3)',
-                    description: 'Obtain 3 Avernic treads.',
+                    description: 'Obtain 3 Avernic Treads.',
                     points: 10,
                 },
             ],
@@ -362,7 +363,7 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: 'spirit-shield-3',
                     title: 'Spirit shield (x3)',
-                    description: 'Obtain 3 Spirit shields.',
+                    description: 'Obtain 3 Spirit Shields.',
                     points: 1,
                 },
                 {
@@ -374,7 +375,7 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: 'sigil-1',
                     title: 'Sigil (x1)',
-                    description: 'Obtain 1 Sigil.',
+                    description: 'Obtain any Sigil.',
                     points: 10,
                 },
             ],
@@ -382,24 +383,25 @@ export const sampleBingoBoard: BingoBoard = {
         {
             id: 'tile-16',
             header: 'Budget',
+            description: 'You must provide a before & after screenshot, including all ammunition, charges, supplies, and runes in the items kept on death user interface, with all options selected, besides protect from item. Each clan member can only complete one of these challenges.',
             image: 'Coins_10000',
             tasks: [
                 {
                     id: 'fcape',
-                    title: 'Budget Fire cape',
-                    description: 'Obtain budget Fire cape.',
+                    title: 'Budget Fire Cape',
+                    description: 'Complete the Fight Caves with a budget of 10,000 GP.',
                     points: 4,
                 },
                 {
                     id: 'colosseum',
                     title: 'Budget Colosseum',
-                    description: 'Obtain budget Colossal blade.',
+                    description: 'Complete the Fortis Colosseum with a budget of 20m GP.',
                     points: 4,
                 },
                 {
                     id: 'budget-inferno',
                     title: 'Budget Inferno',
-                    description: 'Obtain budget Infernal cape.',
+                    description: 'Complete the Inferno with a budget of 50m GP.',
                     points: 4,
                 },
             ],
@@ -411,14 +413,14 @@ export const sampleBingoBoard: BingoBoard = {
             tasks: [
                 {
                     id: 'dragon-pickaxe-4',
-                    title: 'Dragon pickaxe (x4)',
-                    description: 'Obtain 4 Dragon pickaxes.',
+                    title: 'Dragon Pickaxe (x4)',
+                    description: 'Obtain 4 Dragon Pickaxes.',
                     points: 1,
                 },
                 {
                     id: 'wildy-ring-2',
-                    title: 'Wilderness ring (x2)',
-                    description: 'Obtain 2 Wilderness rings.',
+                    title: 'Wilderness Ring (x2)',
+                    description: 'Obtain any 2 Wilderness Rings.',
                     points: 3,
                 },
                 {
@@ -431,25 +433,25 @@ export const sampleBingoBoard: BingoBoard = {
         },
         {
             id: 'tile-18',
-            header: 'Kril',
+            header: 'K\'ril',
             image: 'K\'ril_Tsutsaroth',
             tasks: [
                 {
                     id: 'zamorak-spear-3',
-                    title: 'Zamorak spear (x3)',
-                    description: 'Obtain 3 Zamorak spears.',
+                    title: 'Zamorakian Spear (x3)',
+                    description: 'Obtain 3 Zamorakian Spears.',
                     points: 1,
                 },
                 {
                     id: 'sotd-steam',
-                    title: 'SOTD + Steam',
-                    description: 'Obtain a Staff of the dead and a Steam battlestaff.',
+                    title: 'SoTD & Steam',
+                    description: 'Obtain a Staff of the Dead and a Steam Battlestaff.',
                     points: 3,
                 },
                 {
                     id: 'zgs-from-scratch',
                     title: 'ZGS from scratch',
-                    description: 'Commplete a Zamorak godsword from scratch.',
+                    description: 'Complete a Zamorak Godsword from scratch, including shards.',
                     points: 6,
                 },
             ],
@@ -462,19 +464,19 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: 'light-sword-4',
                     title: 'Saradomin\'s Light/Sword (x4)',
-                    description: 'Obtain 4 of either Saradomin\'s Light or Sword.',
+                    description: 'Obtain 4 of either Saradomin\'s Light or Saradomin\'s Sword.',
                     points: 2,
                 },
                 {
                     id: 'acb-2',
-                    title: 'Armadyl crossbow (x2)',
-                    description: 'Obtain 2 Armadyl crossbows.',
+                    title: 'Armadyl Crossbow (x2)',
+                    description: 'Obtain 2 Armadyl Crossbows.',
                     points: 3,
                 },
                 {
                     id: 'sgs-from-scratch',
                     title: 'SGS from scratch',
-                    description: 'Commplete a Saradomin godsword from scratch.',
+                    description: 'Complete a Saradomin Godsword from scratch, including shards.',
                     points: 4,
                 },
             ],
@@ -486,20 +488,20 @@ export const sampleBingoBoard: BingoBoard = {
             tasks: [
                 {
                     id: 'dragon-knives-thrown-axe',
-                    title: 'Dragon knives + thrown axe',
-                    description: 'Obtain Dragon knives and thrown axe drops.',
+                    title: 'Dragon Knives & Dragon Thrownaxe',
+                    description: 'Obtain both Dragon Knives and Dragon Thrownaxe drops.',
                     points: 4,
                 },
                 {
                     id: 'dragon-sword-harpoon',
-                    title: 'Dragon sword + Harpoon',
-                    description: 'Obtain Dragon sword and Harpoon.',
+                    title: 'Dragon sword & Harpoon',
+                    description: 'Obtain a Dragon Sword and a Dragon Harpoon.',
                     points: 4,
                 },
                 {
                     id: 'crystal-tool-seed',
-                    title: 'Crystal tool seed',
-                    description: 'Obtain a Crystal tool seed.',
+                    title: 'Crystal Tool Seed',
+                    description: 'Obtain a Crystal Tool Seed.',
                     points: 8,
                 },
             ],
@@ -511,27 +513,27 @@ export const sampleBingoBoard: BingoBoard = {
             tasks: [
                 {
                     id: 'flared',
-                    title: 'Flared Trousers + Ham Joint',
-                    description: 'Obtain Flared trousers and ham joint.',
+                    title: 'Flared Trousers & Ham Joint',
+                    description: 'Obtain some Flared Trousers and a Ham Joint.',
                     points: 2,
                 },
                 {
                     id: 'boots',
                     title: 'Ranger Boots & Spiked Manacles',
-                    description: 'Obtain Ranger boots and Spiked manacles.',
+                    description: 'Obtain a pair of Ranger Boots and Spiked Manacles.',
                     points: 4,
                 },
                 {
                     id: 'clue-mega',
                     title: 'Clue Mega Rare',
-                    description: 'Obtain any clue scroll mega rare.',
+                    description: 'Obtain any item from any of the 3 rare clue collection logs.',
                     points: 10,
                 },
             ],
         },
         {
             id: 'tile-22',
-            header: 'Random Junk',
+            header: 'Retirement Home',
             image: 'Sarachnis_cudgel',
             tasks: [
                 {
@@ -562,7 +564,7 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: 'nm-staff',
                     title: 'Nightmare Staff',
-                    description: 'Obtain a Nightmare staff.',
+                    description: 'Obtain a Nightmare Staff.',
                     points: 2,
                 },
                 {
@@ -586,20 +588,20 @@ export const sampleBingoBoard: BingoBoard = {
             tasks: [
                 {
                     id: 'tele-crystal',
-                    title: 'Elven Teleport Crystal (x10)',
-                    description: 'Obtain 10 Elven teleport crystals.',
+                    title: 'Enhanced Crystal Teleport (x10)',
+                    description: 'Obtain 10 Enhanced Crystal Teleport Seeds.',
                     points: 2,
                 },
                 {
                     id: 'blood-shards',
                     title: 'Blood Shard (x10)',
-                    description: 'Obtain 10 Blood shards.',
+                    description: 'Obtain 10 Blood Shards.',
                     points: 6,
                 },
                 {
-                    id: 'dfh',
-                    title: 'Dragon full helm',
-                    description: 'Obtain a Dragon full helm.',
+                    id: 'sceptre',
+                    title: 'Pharaoh\'s Sceptre (x3)',
+                    description: 'Obtain 3 Pharaoh\'s Sceptres.',
                     points: 8,
                 },
             ],
@@ -610,9 +612,9 @@ export const sampleBingoBoard: BingoBoard = {
             image: 'Ring_of_endurance',
             tasks: [
                 {
-                    id: 'dlimbs',
-                    title: 'Dragon Limbs (x1)',
-                    description: 'Obtain a set of Dragon limbs.',
+                    id: 'lockpicks',
+                    title: 'Strange Old Lockpick (x10)',
+                    description: 'Obtain 10 Strange Old Lockpicks.',
                     points: 2,
                 },
                 {
@@ -633,23 +635,24 @@ export const sampleBingoBoard: BingoBoard = {
             id: 'tile-26',
             header: 'Hardmode Budget Challenges',
             image: 'Coins_1',
+            description: 'You must provide a before & after screenshot, including all ammunition, charges, supplies, and runes in the items kept on death user interface, with all options selected, besides protect from item. Each clan member can only complete one of these challenges.',
             tasks: [
                 {
                     id: 'budget-toa-400',
-                    title: 'Budget 400+ TOA',
-                    description: 'Complete a 400+ invocation TOA with budget gear.',
+                    title: 'Budget 400 TOA',
+                    description: 'Complete a solo deathless 400 invocation ToA with a budget of 5m GP.',
                     points: 4,
                 },
                 {
                     id: 'budget-delve',
                     title: 'Budget Delve',
-                    description: 'Complete a delve with budget gear.',
+                    description: 'Complete a deep delve with a budget of 5m GP.',
                     points: 4,
                 },
                 {
                     id: 'budget-cm',
                     title: 'Budget CM',
-                    description: 'Complete Chambers of Xeric Challenge Mode with budget gear.',
+                    description: 'Complete a deathless, solo Chambers of Xeric: Challenge Mode within time with a budget of 25m GP per player.',
                     points: 4,
                 },
             ],
@@ -661,20 +664,20 @@ export const sampleBingoBoard: BingoBoard = {
             tasks: [
                 {
                     id: 'cerb-crystals',
-                    title: 'All Cerb Crystals',
-                    description: 'Obtain all Cerberus crystals (Primordial, Pegasian, Eternal).',
+                    title: 'Cerberus Crystals',
+                    description: 'Obtain one of each Cerberus Crystal (Primordial, Pegasian, Eternal, Smouldering Stone).',
                     points: 4,
                 },
                 {
                     id: 'nally',
                     title: 'Noxious Halberd',
-                    description: 'Obtain a Noxious halberd from scratch.',
+                    description: 'Complete a Noxious Halberd from scratch.',
                     points: 6,
                 },
                 {
                     id: 'hydra-claw-leather',
-                    title: 'Hydra Claw + Leather',
-                    description: 'Obtain a Hydra claw and Hydra leather.',
+                    title: 'Hydra\'s Claw & Leather',
+                    description: 'Obtain a Hydra\'s Claw and Hydra Leather.',
                     points: 8,
                 },
             ],
@@ -687,19 +690,19 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: 'rev-totem-25m',
                     title: 'Rev Totems (25M)',
-                    description: 'Obtain Revenant totems with a cumulative value of 25M+.',
+                    description: 'Obtain Revenant Totems with a cumulative value of 25M+.',
                     points: 2,
                 },
                 {
                     id: 'rev-crystals-5',
-                    title: 'Rev Crystals (x5)',
-                    description: 'Obtain 5 Revenant crystals.',
+                    title: 'Ancient Crystal (x5)',
+                    description: 'Obtain 5 Ancient Crystals.',
                     points: 5,
                 },
                 {
                     id: 'rev-weapons-3',
                     title: 'Rev Weapon (x3)',
-                    description: 'Obtain any 3 Revenant weapons.',
+                    description: 'Obtain any 3 Revenant weapons (Craw\'s Bow, Thammaron\'s Sceptre, Viggora\'s Chainmace).',
                     points: 9,
                 },
             ],
@@ -711,21 +714,22 @@ export const sampleBingoBoard: BingoBoard = {
             tasks: [
                 {
                     id: 'gnome-rest-greenlog',
-                    title: 'Gnome Rest Greenlog',
-                    description: 'Complete the Gnome Restaurant greenlog.',
+                    title: 'Gnome Restauranteur',
+                    description: 'Complete the Gnome Restaurant Collection Log.',
                     points: 1,
+                },
+
+                {
+                    id: 'bone-necklace',
+                    title: 'Bone Necklace',
+                    description: 'Obtain a Bone necklace.',
+                    points: 2,
                 },
                 {
                     id: 'elder-chaos-set',
-                    title: 'Elder Chaos Set',
-                    description: 'Obtain the complete Elder Chaos druid set.',
+                    title: 'Elder Chaos Robes',
+                    description: 'Obtain the complete Elder Chaos Robe set.',
                     points: 3,
-                },
-                {
-                    id: 'champion-scroll-5',
-                    title: 'Champion Scroll (x5)',
-                    description: 'Obtain 5 Champion scrolls.',
-                    points: 4,
                 },
             ],
         },
@@ -737,7 +741,7 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: 'huey-hide-9',
                     title: 'Huey Hide (x9)',
-                    description: 'Obtain 9 Hueycoatl hide.',
+                    description: 'Obtain 9 Hueycoatl Hide.',
                     points: 3,
                 },
                 {
@@ -749,7 +753,7 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: 'huey-wand-1',
                     title: 'Dragon Hunter Wand (x1)',
-                    description: 'Obtain 1 Dragon Hunter Wand.',
+                    description: 'Obtain a Dragon Hunter Wand.',
                     points: 5,
                 },
             ],
@@ -774,7 +778,7 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: 'superior-item',
                     title: 'Eternal Gem or Imbued Heart',
-                    description: 'Obtain an Eternal gem or Imbued heart.',
+                    description: 'Obtain an Eternal Gem or Imbued Heart.',
                     points: 10,
                 }
 
@@ -788,7 +792,7 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: 'sunfire',
                     title: 'Full Sunfire',
-                    description: 'Obtain a full set of sunfire fanatic armour.',
+                    description: 'Obtain a complete set of Sunfire Fanatic Armour.',
                     points: 5,
                 },
                 {
@@ -800,27 +804,33 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: 'glory-run-58k',
                     title: '58k+ Glory Run',
-                    description: 'Complete a 58k+ glory charging run.',
+                    description: 'Complete the Fortis Colosseum while earning at least 58,000 glory.',
                     points: 12,
                 },
             ],
         },
         {
             id: 'tile-32',
-            header: 'Dragonfire',
+            header: 'Dragon Dance',
             image: 'Dragon_warhammer',
             tasks: [
                 {
+                    id: 'dlimbs',
+                    title: 'Dragon Limbs (x1)',
+                    description: 'Obtain a set of Dragon Limbs.',
+                    points: 2,
+                },
+                {
                     id: 'dwh-1',
                     title: 'Dragon Warhammer (x1)',
-                    description: 'Obtain 1 Dragon warhammer.',
+                    description: 'Obtain a Dragon Warhammer.',
                     points: 5,
                 },
                 {
-                    id: 'visage-1',
-                    title: 'Draconic Visage (x1)',
-                    description: 'Obtain 1 Draconic visage.',
-                    points: 8,
+                    id: 'dfh',
+                    title: 'Dragon Full Helm',
+                    description: 'Obtain a Dragon Full Helm.',
+                    points: 15,
                 },
             ],
         },
@@ -832,44 +842,44 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: 'zulrah-drops-6',
                     title: 'Zulrah Drops (x6)',
-                    description: 'Obtain 6 unique Zulrah drops.',
+                    description: 'Obtain 6 drops from Zulrah\'s unique table.',
                     points: 3,
                 },
                 {
                     id: 'pet-jar-1',
                     title: 'Pet/Jar (x1)',
-                    description: 'Obtain 1 pet or jar.',
+                    description: 'Obtain the Pet Snakeling or Jar of Swamp.',
                     points: 5,
                 },
                 {
                     id: 'mutagen-1',
                     title: 'Mutagen (x1)',
-                    description: 'Obtain 1 Zulrah mutagen.',
+                    description: 'Obtain a mutagen.',
                     points: 6,
                 },
             ],
         },
         {
             id: 'tile-34',
-            header: 'Champions & Bosses',
+            header: 'Champions Corner',
             image: 'Champion\'s_cape',
             tasks: [
                 {
-                    id: 'bone-necklace',
-                    title: 'Bone Necklace',
-                    description: 'Obtain a Bone necklace.',
-                    points: 2,
-                },
-                {
                     id: 'obor-club-byro-ess',
-                    title: 'Obor Club + Bryophyta\'s Essence',
-                    description: 'Obtain Obor club and Bryophyta\'s essence.',
+                    title: 'Obor Club & Bryophyta\'s Essence',
+                    description: 'Obtain a Hill Giant Club and Bryophyta\'s essence.',
                     points: 3,
                 },
                 {
+                    id: 'champion-scroll-5',
+                    title: 'Champion Scroll (x5)',
+                    description: 'Obtain any 5 Champion Scrolls.',
+                    points: 4,
+                },
+                {
                     id: 'slayer-heads-6',
-                    title: 'Slayer Heads (x6)',
-                    description: 'Obtain 6 Slayer heads.',
+                    title: 'Slayer Trophies (x6)',
+                    description: 'Obtain 6 Slayer Trophies, excluding Vorkath.',
                     points: 6,
                 },
             ],

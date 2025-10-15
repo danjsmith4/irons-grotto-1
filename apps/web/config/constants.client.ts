@@ -21,9 +21,6 @@ const ClientConfigSchema = z.object({
   discord: z.object({
     baseUrl: z.literal('https://discord.com/api/v10'),
   }),
-  bingo: z.object({
-    password: z.string(),
-  }),
 });
 
 export const clientConstants = ClientConfigSchema.parse({
@@ -45,8 +42,5 @@ export const clientConstants = ClientConfigSchema.parse({
   },
   discord: {
     baseUrl: 'https://discord.com/api/v10',
-  },
-  bingo: {
-    password: 'bingo2025clanvclan', // You can change this to your desired password
   },
 });
