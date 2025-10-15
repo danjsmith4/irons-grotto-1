@@ -1,6 +1,7 @@
 import css from './homepage.module.css';
 import { Cinzel, Open_Sans } from 'next/font/google';
 import backgroundImage from './images/homepage-background.png';
+import Link from 'next/link';
 
 import { auth, signIn } from '@/auth';
 import { redirect } from 'next/navigation';
@@ -69,6 +70,10 @@ export default async function HomePage() {
           >
             Visit TempleOSRS
           </a>
+
+          <Link href="/bingo" className={css.button}>
+            Bingo
+          </Link>
         </div>
 
         <div className={css['apply-section']}>

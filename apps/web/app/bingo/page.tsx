@@ -4,13 +4,8 @@ import { BingoBoardComponent } from './components/bingo-board';
 import { sampleBingoBoard } from './data/sample-bingo-data';
 import { applyClanCompletions } from './utils/clan-completions';
 import Link from 'next/link';
-import { auth } from '@/auth';
-import { ADMIN_DISCORD_USER_IDS } from '@/config/admin-users';
 
 export default async function BingoPage() {
-    // Check if user is an admin for showing admin panel button
-    const session = await auth();
-    const isAdmin = session?.user?.id && ADMIN_DISCORD_USER_IDS.includes(session.user.id);
 
     // Load completions from database using server action
     const completions = await loadCompletionsAction();
@@ -23,13 +18,11 @@ export default async function BingoPage() {
                     <Heading size="8">
                         Iron's Grotto vs Iron Daddy Bingo
                     </Heading>
-                    {isAdmin && (
-                        <Link href="/bingo/admin">
-                            <Button variant="outline" size="2">
-                                Admin Panel
-                            </Button>
-                        </Link>
-                    )}
+                    <Link href="/bingo/admin">
+                        <Button variant="outline" size="2">
+                            Admin Panel
+                        </Button>
+                    </Link>
                 </Flex>
             </Box>
 
