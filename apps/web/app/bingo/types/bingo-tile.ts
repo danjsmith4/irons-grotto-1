@@ -14,6 +14,7 @@ export interface BingoTile {
     image: string; // Single wiki name for image
     tasks: BingoTask[]; // 3 tiers of tasks
     completed?: boolean;
+    description?: string;
 }
 
 export interface BingoBoard {
