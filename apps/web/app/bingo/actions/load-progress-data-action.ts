@@ -58,16 +58,16 @@ export const loadProgressDataAction = actionClient
             // Sum points by team and date
             Array.from(taskCompletionMap.values()).forEach(({ team, date, points }) => {
                 const teamData = progressData.get(team)!;
-                const currentPoints = teamData.get(date) || 0;
+                const currentPoints = teamData.get(date) ?? 0;
                 teamData.set(date, currentPoints + points);
             });
 
             // Convert to cumulative points over time
             const teams = ['ironsGrotto', 'ironDaddy'];
-            const result: Array<{
+            const result: {
                 team: string;
-                data: Array<{ date: string; points: number; cumulativePoints: number }>;
-            }> = [];
+                data: { date: string; points: number; cumulativePoints: number }[];
+            }[] = [];
 
             teams.forEach(team => {
                 const teamData = progressData.get(team)!;

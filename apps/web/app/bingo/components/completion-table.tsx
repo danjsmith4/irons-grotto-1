@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, Table, Text, Badge, Flex, Separator, Button, Tabs } from '@radix-ui/themes';
+import { Card, Table, Text, Badge, Flex, Button, Tabs } from '@radix-ui/themes';
 import { BingoBoard } from '../types/bingo-tile';
 import { loadCompletionsPaginatedAction } from '../actions/load-completions-paginated-action';
 import { ProgressGraph } from './progress-graph';

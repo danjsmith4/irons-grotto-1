@@ -7,11 +7,11 @@ import { loadProgressDataAction } from '../actions/load-progress-data-action';
 
 interface ProgressData {
     team: string;
-    data: Array<{
+    data: {
         date: string;
         points: number;
         cumulativePoints: number;
-    }>;
+    }[];
 }
 
 export function ProgressGraph() {
@@ -54,8 +54,8 @@ export function ProgressGraph() {
 
     // Prepare data for graphing with all dates filled
     const prepareGraphData = () => {
-        const ironsGrottoData = progressData.find(d => d.team === 'ironsGrotto')?.data || [];
-        const ironDaddyData = progressData.find(d => d.team === 'ironDaddy')?.data || [];
+        const ironsGrottoData = progressData.find(d => d.team === 'ironsGrotto')?.data ?? [];
+        const ironDaddyData = progressData.find(d => d.team === 'ironDaddy')?.data ?? [];
 
         // Create lookup maps
         const ironsGrottoMap = new Map(ironsGrottoData.map(d => [d.date, d.cumulativePoints]));
