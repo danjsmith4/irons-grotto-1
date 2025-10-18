@@ -214,7 +214,7 @@ export function CompletionTable({ board }: CompletionTableProps) {
                     </Tabs.Content>
 
                     <Tabs.Content value="progress">
-                        <Flex mt="4">
+                        <Flex mt="4" justify="center">
                             <ProgressGraph />
                         </Flex>
                     </Tabs.Content>
