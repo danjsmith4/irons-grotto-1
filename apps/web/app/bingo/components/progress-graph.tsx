@@ -192,7 +192,7 @@ export function ProgressGraph() {
                         />
 
                         {/* Interactive data points - Iron's Grotto */}
-                        {graphData.filter(d => d.hasIronsGrottoData).map((d, i) => {
+                        {graphData.filter(d => d.hasIronsGrottoData).map((d, _) => {
                             const originalIndex = graphData.indexOf(d);
                             const x = 60 + (originalIndex * (690 / (graphData.length - 1)));
                             const y = 350 - (d.ironsGrotto / maxPoints) * 300;
@@ -221,7 +221,7 @@ export function ProgressGraph() {
                         })}
 
                         {/* Interactive data points - Iron Daddy */}
-                        {graphData.filter(d => d.hasIronDaddyData).map((d, i) => {
+                        {graphData.filter(d => d.hasIronDaddyData).map((d, _) => {
                             const originalIndex = graphData.indexOf(d);
                             const x = 60 + (originalIndex * (690 / (graphData.length - 1)));
                             const y = 350 - (d.ironDaddy / maxPoints) * 300;
