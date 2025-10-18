@@ -124,7 +124,7 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: 'cm-mega-rare',
                     title: 'Mega Rare',
-                    description: 'Obtain one of the following items from Chambers of Xeric Challenge Mode: Kodai Insignia, Twisted Bow, and Elder Maul.',
+                    description: 'Obtain one of the following items from Chambers of Xeric (CM or Normal): Kodai Insignia, Twisted Bow, and Elder Maul.',
                     points: 12,
                 },
             ],
@@ -149,7 +149,7 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: 'sra',
                     title: 'SRA',
-                    description: 'Complete the Soulreaper Axe from scratch.',
+                    description: 'Complete the Soulreaper Axe from scratch, obtain each of the following: Eye of the Duke, Leviathan\'s Lure, Executioner\'s Axe Head, and Siren\'s Staff.',
                     points: 12,
                 },
             ],
@@ -243,7 +243,7 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: 'oathplate',
                     title: 'Full Oathplate',
-                    description: 'Obtain the complete Oathplate Armour set.',
+                    description: 'Obtain the complete Oathplate Armour set, you must obtain the drops, you cannot craft a piece.',
                     points: 6,
                 },
                 {
@@ -258,7 +258,6 @@ export const sampleBingoBoard: BingoBoard = {
             id: 'tile-11',
             header: 'CoX Challenge',
             image: 'Ancient_chest',
-            description: 'You can only scale the board by 10.',
             tasks: [
                 {
                     id: 'cox-300k',
@@ -388,8 +387,8 @@ export const sampleBingoBoard: BingoBoard = {
             tasks: [
                 {
                     id: 'fcape',
-                    title: 'Budget Fire Cape',
-                    description: 'Complete the Fight Caves with a budget of 10,000 GP.',
+                    title: 'Six Jads',
+                    description: 'Complete the 6 Jad challenge with an empty inventory, you may prepot, but you cannot smuggle runes.',
                     points: 4,
                 },
                 {
@@ -595,7 +594,7 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: 'blood-shards',
                     title: 'Blood Shard (x10)',
-                    description: 'Obtain 10 Blood Shards.',
+                    description: 'Obtain 10 Blood Shards from either thieving or Vyres.',
                     points: 6,
                 },
                 {
@@ -652,7 +651,7 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: 'budget-cm',
                     title: 'Budget CM',
-                    description: 'Complete a deathless, solo Chambers of Xeric: Challenge Mode within time with a budget of 25m GP per player.',
+                    description: 'Complete a trio Chambers of Xeric: Challenge Mode within time with a total budget of 30m GP split between all players.',
                     points: 4,
                 },
             ],
@@ -671,7 +670,7 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: 'nally',
                     title: 'Noxious Halberd',
-                    description: 'Complete a Noxious Halberd from scratch.',
+                    description: 'Complete a Noxious Halberd from scratch, you must get one of each of the following items: Noxious Point, Noxious Pommel, and Noxious Blade.',
                     points: 6,
                 },
                 {
@@ -842,7 +841,7 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: 'zulrah-drops-6',
                     title: 'Zulrah Drops (x6)',
-                    description: 'Obtain 6 drops from Zulrah\'s unique table.',
+                    description: 'Obtain 6 drops from Zulrah\'s unique table (Serpentine Visage, Magic Fang, Tanzanite Fang, and Uncut Onyx).',
                     points: 3,
                 },
                 {
@@ -888,6 +887,7 @@ export const sampleBingoBoard: BingoBoard = {
             id: 'tile-35',
             header: 'Pets',
             image: 'Probita',
+            description: 'Chompy Chick, Chaos Elemental Pet & Lil\' Creator do not count for this tile.',
             tasks: [
                 {
                     id: 'skill-pet',

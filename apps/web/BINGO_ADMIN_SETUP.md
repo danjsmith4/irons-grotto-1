@@ -27,6 +27,7 @@ DATABASE_URL=postgresql://username:password@host:port/database
 ```
 
 For Neon PostgreSQL, this would look like:
+
 ```bash
 DATABASE_URL=postgresql://username:password@ep-xxx.us-east-1.aws.neon.tech/database?sslmode=require
 ```
@@ -41,6 +42,7 @@ yarn db:push
 ```
 
 Or for development, you can use the studio:
+
 ```bash
 yarn db:studio
 ```
@@ -59,6 +61,7 @@ export const ADMIN_DISCORD_USER_IDS: string[] = [
 ```
 
 To get a Discord user ID:
+
 1. Enable Developer Mode in Discord settings
 2. Right-click on a user and select "Copy User ID"
 
@@ -72,7 +75,7 @@ Navigate to `/bingo/admin` to access the admin interface.
 
 1. **Search for Task**: Use the search box to find tasks by name, description, or ID
 2. **Select Task**: Click on a task from the search results
-3. **Choose Clan**: Select which clan (Iron's Grotto or Iron Daddy) the completion is for
+3. **Choose Clan**: Select which clan (Iron's Grotto or Iron Daddys) the completion is for
 4. **Add Users**: Fill in user names and proof URLs
    - Each user should have their own entry
    - If a user contributed multiple items, create separate entries for each
@@ -81,6 +84,7 @@ Navigate to `/bingo/admin` to access the admin interface.
 ### Database Schema
 
 The `bingo_completions` table stores:
+
 - `id`: Unique identifier (UUID)
 - `task_id`: Reference to the bingo task
 - `user`: Username who completed the task
@@ -104,7 +108,7 @@ await createCompletion({
   taskId: 'scrolls',
   user: 'PlayerName',
   proof: 'https://discord.com/channels/...',
-  clan: 'ironsGrotto'
+  clan: 'ironsGrotto',
 });
 
 // Get completions for a specific clan

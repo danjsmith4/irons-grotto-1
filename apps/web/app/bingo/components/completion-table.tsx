@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, Table, Text, Badge, Flex, Separator, Button } from '@radix-ui/themes';
+import { Card, Table, Text, Badge, Flex, Separator, Button, Tabs } from '@radix-ui/themes';
 import { BingoBoard } from '../types/bingo-tile';
 import { loadCompletionsPaginatedAction } from '../actions/load-completions-paginated-action';
+import { ProgressGraph } from './progress-graph';
 import type { BingoCompletion } from '@/lib/db/schema';
 
 interface CompletionTableProps {
@@ -106,103 +107,118 @@ export function CompletionTable({ board }: CompletionTableProps) {
         <Card>
             <Flex direction="column" gap="4" p="4">
                 <Text size="4" weight="bold" align="center">
-                    Latest Completions
+                    Competition Tracking
                 </Text>
 
-                <Separator size="4" />
+                <Tabs.Root defaultValue="completions">
+                    <Tabs.List>
+                        <Tabs.Trigger value="completions">Latest Completions</Tabs.Trigger>
+                        <Tabs.Trigger value="progress">Progress Graph</Tabs.Trigger>
+                    </Tabs.List>
 
-                <Table.Root size="2">
-                    <Table.Header>
-                        <Table.Row>
-                            <Text asChild weight="bold">
-                                <Table.ColumnHeaderCell>User</Table.ColumnHeaderCell>
-                            </Text>
-                            <Text asChild weight="bold">
-                                <Table.ColumnHeaderCell>Task</Table.ColumnHeaderCell>
-                            </Text>
-                            <Text asChild weight="bold">
-                                <Table.ColumnHeaderCell>Clan</Table.ColumnHeaderCell>
-                            </Text>
-                            <Text asChild weight="bold">
-                                <Table.ColumnHeaderCell>Completed</Table.ColumnHeaderCell>
-                            </Text>
-                            <Text asChild weight="bold">
-                                <Table.ColumnHeaderCell align="center">Proof</Table.ColumnHeaderCell>
-                            </Text>
-                        </Table.Row>
-                    </Table.Header>
-                    <Table.Body>
-                        {completions.map((completion) => (
-                            <Table.Row key={completion.id}>
-                                <Table.Cell>
-                                    <Text size="2" weight="medium">
-                                        {completion.user}
-                                    </Text>
-                                </Table.Cell>
-                                <Table.Cell>
-                                    <Flex direction="column" gap="1">
-                                        <Text size="2" weight="medium">
-                                            {completion.taskTitle ?? completion.taskId}
+                    <Tabs.Content value="completions">
+                        <Flex direction="column" gap="4" mt="4">
+                            <Table.Root size="2">
+                                <Table.Header>
+                                    <Table.Row>
+                                        <Text asChild weight="bold">
+                                            <Table.ColumnHeaderCell>User</Table.ColumnHeaderCell>
                                         </Text>
-                                        {completion.taskDescription && (
-                                            <Text size="1" color="gray">
-                                                {completion.taskDescription}
-                                            </Text>
-                                        )}
-                                    </Flex>
-                                </Table.Cell>
-                                <Table.Cell>
-                                    <Badge
-                                        color={getClanColor(completion.clan)}
-                                        variant="soft"
-                                        size="2"
+                                        <Text asChild weight="bold">
+                                            <Table.ColumnHeaderCell>Task</Table.ColumnHeaderCell>
+                                        </Text>
+                                        <Text asChild weight="bold">
+                                            <Table.ColumnHeaderCell>Clan</Table.ColumnHeaderCell>
+                                        </Text>
+                                        <Text asChild weight="bold">
+                                            <Table.ColumnHeaderCell>Completed</Table.ColumnHeaderCell>
+                                        </Text>
+                                        <Text asChild weight="bold">
+                                            <Table.ColumnHeaderCell align="center">Proof</Table.ColumnHeaderCell>
+                                        </Text>
+                                    </Table.Row>
+                                </Table.Header>
+                                <Table.Body>
+                                    {completions.map((completion) => (
+                                        <Table.Row key={completion.id}>
+                                            <Table.Cell>
+                                                <Text size="2" weight="medium">
+                                                    {completion.user}
+                                                </Text>
+                                            </Table.Cell>
+                                            <Table.Cell>
+                                                <Flex direction="column" gap="1">
+                                                    <Text size="2" weight="medium">
+                                                        {completion.taskTitle ?? completion.taskId}
+                                                    </Text>
+                                                    {completion.taskDescription && (
+                                                        <Text size="1" color="gray">
+                                                            {completion.taskDescription}
+                                                        </Text>
+                                                    )}
+                                                </Flex>
+                                            </Table.Cell>
+                                            <Table.Cell>
+                                                <Badge
+                                                    color={getClanColor(completion.clan)}
+                                                    variant="soft"
+                                                    size="2"
+                                                >
+                                                    {getClanName(completion.clan)}
+                                                </Badge>
+                                            </Table.Cell>
+                                            <Table.Cell>
+                                                <Text size="2" color="gray">
+                                                    {formatDate(completion.createdAt)}
+                                                </Text>
+                                            </Table.Cell>
+                                            <Table.Cell align="center">
+                                                <a
+                                                    href={completion.proof}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    style={{
+                                                        color: 'var(--accent-9)',
+                                                        textDecoration: 'none',
+                                                        fontSize: 'var(--font-size-2)',
+                                                    }}
+                                                >
+                                                    View Proof
+                                                </a>
+                                            </Table.Cell>
+                                        </Table.Row>
+                                    ))}
+                                </Table.Body>
+                            </Table.Root>
+
+                            {hasMore && (
+                                <Flex justify="center" mt="4">
+                                    <Button
+                                        variant="outline"
+                                        onClick={handleShowMore}
+                                        disabled={loading}
                                     >
-                                        {getClanName(completion.clan)}
-                                    </Badge>
-                                </Table.Cell>
-                                <Table.Cell>
-                                    <Text size="2" color="gray">
-                                        {formatDate(completion.createdAt)}
+                                        {loading ? 'Loading...' : 'Show More'}
+                                    </Button>
+                                </Flex>
+                            )}
+
+                            {completions.length === 0 && !loading && (
+                                <Flex justify="center" align="center" py="6">
+                                    <Text size="3" color="gray">
+                                        No completions yet
                                     </Text>
-                                </Table.Cell>
-                                <Table.Cell align="center">
-                                    <a
-                                        href={completion.proof}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        style={{
-                                            color: 'var(--accent-9)',
-                                            textDecoration: 'none',
-                                            fontSize: 'var(--font-size-2)',
-                                        }}
-                                    >
-                                        View Proof
-                                    </a>
-                                </Table.Cell>
-                            </Table.Row>
-                        ))}
-                    </Table.Body>
-                </Table.Root>
+                                </Flex>
+                            )}
+                        </Flex>
+                    </Tabs.Content>
 
-                {hasMore && (
-                    <Flex justify="center" mt="4">
-                        <Button
-                            variant="outline"
-                            onClick={handleShowMore}
-                            disabled={loading}
-                        >
-                            {loading ? 'Loading...' : 'Show More'}
-                        </Button>
-                    </Flex>
-                )}
-
-                {completions.length === 0 && !loading && (
-                    <Flex justify="center" align="center" py="6">
-                        <Text size="3" color="gray">
-                            No completions yet
-                        </Text>
-                    </Flex>
-                )}
+                    <Tabs.Content value="progress">
+                        <Flex mt="4">
+                            <ProgressGraph />
+                        </Flex>
+                    </Tabs.Content>
+                </Tabs.Root>
             </Flex>
         </Card>
     );
