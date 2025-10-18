@@ -16,7 +16,7 @@ export default async function BingoPage() {
             <Box mb="6">
                 <Flex justify="between" align="center" mb="3">
                     <Heading size="8">
-                        Iron's Grotto vs Iron Daddy Bingo
+                        Iron's Grotto vs Iron Daddys Bingo
                     </Heading>
                     <Link href="/bingo/admin">
                         <Button variant="outline" size="2">

@@ -140,7 +140,7 @@ export function BingoTileComponent({ tile }: BingoTileProps) {
                                 </Text>
                                 <Text asChild weight="medium">
                                     <Table.ColumnHeaderCell align="center">
-                                        Iron Daddy
+                                        Iron Daddys
                                     </Table.ColumnHeaderCell>
                                 </Text>
                             </Table.Row>
