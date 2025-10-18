@@ -17,6 +17,13 @@ interface ProgressData {
 export function ProgressGraph() {
     const [progressData, setProgressData] = useState<ProgressData[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [hoveredPoint, setHoveredPoint] = useState<{
+        team: string;
+        date: string;
+        points: number;
+        x: number;
+        y: number;
+    } | null>(null);
     
     const { executeAsync: loadProgressData } = useAction(loadProgressDataAction);
 
@@ -66,18 +73,24 @@ export function ProgressGraph() {
         let ironDaddyCumulative = 0;
 
         return dateRange.map(date => {
+            // Track if this date has actual data
+            const hasIronsGrottoData = ironsGrottoMap.has(date);
+            const hasIronDaddyData = ironDaddyMap.has(date);
+
             // Update cumulative if we have data for this date
-            if (ironsGrottoMap.has(date)) {
+            if (hasIronsGrottoData) {
                 ironsGrottoCumulative = ironsGrottoMap.get(date)!;
             }
-            if (ironDaddyMap.has(date)) {
+            if (hasIronDaddyData) {
                 ironDaddyCumulative = ironDaddyMap.get(date)!;
             }
 
             return {
                 date,
                 ironsGrotto: ironsGrottoCumulative,
-                ironDaddy: ironDaddyCumulative
+                ironDaddy: ironDaddyCumulative,
+                hasIronsGrottoData,
+                hasIronDaddyData
             };
         });
     };
@@ -178,6 +191,64 @@ export function ProgressGraph() {
                             strokeWidth="3"
                         />
 
+                        {/* Interactive data points - Iron's Grotto */}
+                        {graphData.filter(d => d.hasIronsGrottoData).map((d, _) => {
+                            const originalIndex = graphData.indexOf(d);
+                            const x = 60 + (originalIndex * (690 / (graphData.length - 1)));
+                            const y = 350 - (d.ironsGrotto / maxPoints) * 300;
+                            return (
+                                <circle
+                                    key={`ig-${d.date}`}
+                                    cx={x}
+                                    cy={y}
+                                    r="5"
+                                    fill="var(--green-9)"
+                                    stroke="white"
+                                    strokeWidth="2"
+                                    style={{ cursor: 'pointer' }}
+                                    onMouseEnter={(e) => {
+                                        setHoveredPoint({
+                                            team: "Iron's Grotto",
+                                            date: d.date,
+                                            points: d.ironsGrotto,
+                                            x: e.currentTarget.getBoundingClientRect().left,
+                                            y: e.currentTarget.getBoundingClientRect().top
+                                        });
+                                    }}
+                                    onMouseLeave={() => setHoveredPoint(null)}
+                                />
+                            );
+                        })}
+
+                        {/* Interactive data points - Iron Daddy */}
+                        {graphData.filter(d => d.hasIronDaddyData).map((d, _) => {
+                            const originalIndex = graphData.indexOf(d);
+                            const x = 60 + (originalIndex * (690 / (graphData.length - 1)));
+                            const y = 350 - (d.ironDaddy / maxPoints) * 300;
+                            return (
+                                <circle
+                                    key={`id-${d.date}`}
+                                    cx={x}
+                                    cy={y}
+                                    r="5"
+                                    fill="var(--amber-9)"
+                                    stroke="white"
+                                    strokeWidth="2"
+                                    style={{ cursor: 'pointer' }}
+                                    onMouseEnter={(e) => {
+                                        setHoveredPoint({
+                                            team: "Iron Daddy",
+                                            date: d.date,
+                                            points: d.ironDaddy,
+                                            x: e.currentTarget.getBoundingClientRect().left,
+                                            y: e.currentTarget.getBoundingClientRect().top
+                                        });
+                                    }}
+                                    onMouseLeave={() => setHoveredPoint(null)}
+                                />
+                            );
+                        })}
+
                         {/* Legend */}
                         <g>
                             <line x1="600" y1="30" x2="630" y2="30" stroke="var(--green-9)" strokeWidth="3" />
@@ -191,9 +262,44 @@ export function ProgressGraph() {
                         <text x="400" y="395" fontSize="14" fill="var(--gray-12)" textAnchor="middle">Date</text>
                         <text x="25" y="200" fontSize="14" fill="var(--gray-12)" textAnchor="middle" transform="rotate(-90 25 200)">Points</text>
                         </svg>
+
+                        {/* Hover tooltip */}
+                        {hoveredPoint && (
+                            <div
+                                style={{
+                                    position: 'fixed',
+                                    left: hoveredPoint.x - 350,
+                                    top: hoveredPoint.y - 350,
+                                    backgroundColor: 'var(--color-panel-solid)',
+                                    border: '1px solid var(--gray-6)',
+                                    borderRadius: 'var(--radius-3)',
+                                    padding: '8px 12px',
+                                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                                    zIndex: 1000,
+                                    pointerEvents: 'none',
+                                    fontSize: '12px'
+                                }}
+                            >
+                                <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
+                                    {hoveredPoint.team}
+                                </div>
+                                <div style={{ color: 'var(--gray-11)' }}>
+                                    {new Date(hoveredPoint.date).toLocaleDateString('en-US', { 
+                                        month: 'short', 
+                                        day: 'numeric',
+                                        year: 'numeric'
+                                    })}
+                                </div>
+                                <div style={{ fontWeight: 'bold', marginTop: '2px' }}>
+                                    {hoveredPoint.points} points
+                                </div>
+                            </div>
+                        )}
                     </div>
-                </Flex>                {/* Current standings */}
-                <Flex justify="center" gap="6">
+                </Flex>
+                
+                {/* Current standings */}
+                <Flex justify="center" gap="6" mt="4">
                     <Flex direction="column" align="center" gap="1">
                         <Text size="2" color="gray" weight="medium">Iron's Grotto</Text>
                         <Text size="4" weight="bold" style={{ color: 'var(--green-9)' }}>
