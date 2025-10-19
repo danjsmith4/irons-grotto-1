@@ -588,7 +588,7 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: 'tele-crystal',
                     title: 'Enhanced Crystal Teleport (x10)',
-                    description: 'Obtain 10 Enhanced Crystal Teleport Seeds.',
+                    description: 'Obtain 10 Enhanced Crystal Teleport Seeds from thieving only.',
                     points: 2,
                 },
                 {
