@@ -174,7 +174,7 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: 'hmt-challenge',
                     title: 'HMT Duo',
-                    description: 'Complete the Hard Mode Theatre of Blood with 2 players or fewer. You must complete the raid under the challenge time of 35 minutes.',
+                    description: 'Complete the Hard Mode Theatre of Blood with 2 players. You must complete the raid under the challenge time of 35 minutes.',
                     points: 4,
                 },
             ],
