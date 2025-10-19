@@ -87,7 +87,7 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: '2m-tob-chest',
                     title: '<100k Chest',
-                    description: 'Obtain a monumental chest from HMT of non-unique items with a total value under 100k GP, that is not a cabbage.',
+                    description: 'Obtain a monumental chest from HMT with a total value under 100k GP, that is not a cabbage.',
                     points: 1,
                 },
                 {
@@ -450,7 +450,7 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: 'zgs-from-scratch',
                     title: 'ZGS from scratch',
-                    description: 'Complete a Zamorak Godsword from scratch, including shards.',
+                    description: 'Complete a Zamorak Godsword from scratch, including shards. Shards may be obtained from any boss, but you may not re-use shards from other tiles.',
                     points: 6,
                 },
             ],
@@ -475,7 +475,7 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: 'sgs-from-scratch',
                     title: 'SGS from scratch',
-                    description: 'Complete a Saradomin Godsword from scratch, including shards.',
+                    description: 'Complete a Saradomin Godsword from scratch, including shards. Shards may be obtained from any boss, but you may not re-use shards from other tiles.',
                     points: 4,
                 },
             ],
@@ -714,7 +714,7 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: 'gnome-rest-greenlog',
                     title: 'Gnome Restauranteur',
-                    description: 'Complete the Gnome Restaurant Collection Log.',
+                    description: 'Obtain a Grand Seed Pod, Gnome Scarf, Gnome Goggles, and Mint Cake',
                     points: 1,
                 },
 
@@ -771,7 +771,7 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: 'dagon-hai-dusk',
                     title: 'Dagon\'hai Robes / Dusk Mystic',
-                    description: 'Obtain Dagon\'hai Robes or Dusk Mystic set.',
+                    description: 'Complete the Dagon\'hai Robe set or Dusk Mystic set.',
                     points: 4,
                 },
                 {
@@ -898,7 +898,7 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: 'slayer-pet',
                     title: 'Slayer Pet',
-                    description: 'Obtain one of the following pets: Noon, Abyssal Orphan, Pet Kraken, Hellpuppy.',
+                    description: 'Obtain one of the following pets: Noon, Abyssal Orphan, Pet Kraken, Hellpuppy, Nid, Pet Smoke Devil, Ikkle Hydra.',
                     points: 8,
                 },
                 {
