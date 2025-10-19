@@ -98,7 +98,7 @@ export const sampleBingoBoard: BingoBoard = {
                 },
                 {
                     id: 'hmt-dust',
-                    title: 'HMT dust',
+                    title: 'Sanguine Dust',
                     description: 'Obtain 1 Sanguine Dust from the Hard mode Theatre of Blood.',
                     points: 10,
                 },
@@ -149,7 +149,7 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: 'sra',
                     title: 'SRA',
-                    description: 'Complete the Soulreaper Axe from scratch, obtain each of the following: Eye of the Duke, Leviathan\'s Lure, Executioner\'s Axe Head, and Siren\'s Staff.',
+                    description: "Obtain each of the following: Eye of the Duke, Leviathan's Lure, Executioner's Axe Head, and Siren's Staff.",
                     points: 12,
                 },
             ],
@@ -174,20 +174,20 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: 'hmt-challenge',
                     title: 'HMT Duo',
-                    description: 'Complete the Theatre of Blood: Hard Mode with 2 players or fewer.',
+                    description: 'Complete the Hard Mode Theatre of Blood with 2 players or fewer. You must complete the raid under the challenge time of 35 minutes.',
                     points: 4,
                 },
             ],
         },
         {
             id: 'tile-8',
-            header: 'Slayer',
+            header: 'Midgame Upgrades',
             image: 'Araxyte_fang',
             tasks: [
                 {
                     id: 'twinflame-zombie-axe',
                     title: 'Twinflame Staff & Zombie axe',
-                    description: 'Obtain the Twinflame Staff and Broken Zombie Axe.',
+                    description: 'Obtain the Ice Elemental Staff Crown, Fire Elemental Staff Crown, and Broken Zombie Axe.',
                     points: 2,
                 },
                 {
@@ -243,7 +243,7 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: 'oathplate',
                     title: 'Full Oathplate',
-                    description: 'Obtain the complete Oathplate Armour set, you must obtain the drops, you cannot craft a piece.',
+                    description: 'Obtain the complete Oathplate Armour set. You must obtain the drops; you cannot craft a piece.',
                     points: 6,
                 },
                 {
@@ -388,7 +388,7 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: 'fcape',
                     title: 'Six Jads',
-                    description: 'Complete the 6 Jad challenge with an empty inventory, you may prepot, but you cannot smuggle runes.',
+                    description: 'Complete the 6 Jad challenge with an empty inventory. You may prepot, but you cannot smuggle runes.',
                     points: 4,
                 },
                 {
@@ -443,7 +443,7 @@ export const sampleBingoBoard: BingoBoard = {
                 },
                 {
                     id: 'sotd-steam',
-                    title: 'SoTD & Steam',
+                    title: 'SoTD & Steam Battelstaff',
                     description: 'Obtain a Staff of the Dead and a Steam Battlestaff.',
                     points: 3,
                 },
@@ -493,7 +493,7 @@ export const sampleBingoBoard: BingoBoard = {
                 },
                 {
                     id: 'dragon-sword-harpoon',
-                    title: 'Dragon sword & Harpoon',
+                    title: 'Dragon Sword & Harpoon',
                     description: 'Obtain a Dragon Sword and a Dragon Harpoon.',
                     points: 4,
                 },
@@ -594,7 +594,7 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: 'blood-shards',
                     title: 'Blood Shard (x10)',
-                    description: 'Obtain 10 Blood Shards from either thieving or Vyres.',
+                    description: 'Obtain 10 Blood Shards from thieving only.',
                     points: 6,
                 },
                 {
@@ -624,8 +624,8 @@ export const sampleBingoBoard: BingoBoard = {
                 },
                 {
                     id: 'herbiboar-pet',
-                    title: 'Herbiboar Pet',
-                    description: 'Obtain a Herbiboar Pet.',
+                    title: 'Herbi',
+                    description: 'Obtain Herbi.',
                     points: 8,
                 },
             ],
@@ -670,7 +670,7 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: 'nally',
                     title: 'Noxious Halberd',
-                    description: 'Complete a Noxious Halberd from scratch, you must get one of each of the following items: Noxious Point, Noxious Pommel, and Noxious Blade.',
+                    description: 'Complete a Noxious Halberd from scratch. You must get one of each of the following items: Noxious Point, Noxious Pommel, and Noxious Blade.',
                     points: 6,
                 },
                 {
@@ -802,8 +802,8 @@ export const sampleBingoBoard: BingoBoard = {
                 },
                 {
                     id: 'glory-run-58k',
-                    title: '58k+ Glory Run',
-                    description: 'Complete the Fortis Colosseum while earning at least 58,000 glory.',
+                    title: '48k+ Glory Run',
+                    description: 'Complete the Fortis Colosseum while earning at least 48,000 glory.',
                     points: 12,
                 },
             ],
@@ -841,7 +841,7 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: 'zulrah-drops-6',
                     title: 'Zulrah Drops (x6)',
-                    description: 'Obtain 6 drops from Zulrah\'s unique table (Serpentine Visage, Magic Fang, Tanzanite Fang, and Uncut Onyx).',
+                    description: 'Obtain 6 drops from Zulrah\'s unique table (Serpentine Visage, Magic Fang, Tanzanite Fang).',
                     points: 3,
                 },
                 {
@@ -898,7 +898,7 @@ export const sampleBingoBoard: BingoBoard = {
                 {
                     id: 'slayer-pet',
                     title: 'Slayer Pet',
-                    description: 'Obtain any Slayer boss pet.',
+                    description: 'Obtain one of the following pets: Noon, Abyssal Orphan, Pet Kraken, Hellpuppy.',
                     points: 8,
                 },
                 {
