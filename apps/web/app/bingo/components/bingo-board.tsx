@@ -6,14 +6,15 @@ import { BingoTileComponent } from './bingo-tile';
 import { CompletionTable } from './completion-table';
 import { calculateClanProgress, getClanColor } from '../utils/clan-completions';
 import { loadMvpAction } from '../actions/load-mvp-action';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { mvp } from '@/lib/db/completions';
 
 interface BingoBoardProps {
     board: BingoBoard;
+    onRefresh?: () => Promise<void>;
 }
 
-export function BingoBoardComponent({ board }: BingoBoardProps) {
+export function BingoBoardComponent({ board, onRefresh }: BingoBoardProps) {
     const gridSize = board.gridSize || Math.ceil(Math.sqrt(board.tiles.length));
     
     // State for MVP data
@@ -25,6 +26,7 @@ export function BingoBoardComponent({ board }: BingoBoardProps) {
         ironDaddy: null
     });
     const [isLoadingMvps, setIsLoadingMvps] = useState(true);
+    const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
     // Load MVP data on component mount
     useEffect(() => {
@@ -39,6 +41,36 @@ export function BingoBoardComponent({ board }: BingoBoardProps) {
 
         void loadMvps();
     }, []);
+
+    // Set up polling for data refresh every 15 seconds
+    useEffect(() => {
+        const refreshData = async () => {
+            try {
+                // Refresh MVP data
+                const mvpResult = await loadMvpAction();
+                if (mvpResult.success) {
+                    setMvps(mvpResult.mvps);
+                }
+
+                // Refresh board data if callback is provided
+                if (onRefresh) {
+                    await onRefresh();
+                }
+            } catch (error) {
+                console.error('Error refreshing bingo board data:', error);
+            }
+        };
+
+        // Set up interval for polling every 15 seconds
+        intervalRef.current = setInterval(refreshData, 15000);
+
+        // Cleanup interval on unmount
+        return () => {
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current);
+            }
+        };
+    }, [onRefresh]);
 
     // Calculate progress for both clans (board should already have completions applied)
     const ironsGrottoProgress = calculateClanProgress(board, 'ironsGrotto');
