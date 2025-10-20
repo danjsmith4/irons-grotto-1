@@ -14,6 +14,7 @@ export const sampleBingoBoard: BingoBoard = {
                     title: 'Dex + Arcane (x2)',
                     description: 'Obtain 2 Dexterous prayer scrolls and 2 Arcane prayer scrolls.',
                     points: 4,
+                    components: 4, // 2 Dex + 2 Arcane
                 },
                 {
                     id: 'dhcb-buckler',
@@ -26,6 +27,7 @@ export const sampleBingoBoard: BingoBoard = {
                     title: 'Full Ancestral',
                     description: 'Obtain all pieces of the Ancestral Robe set.',
                     points: 16,
+                    components: 3
                 },
             ],
         },
@@ -39,12 +41,14 @@ export const sampleBingoBoard: BingoBoard = {
                     title: 'Avernic (x3)',
                     description: 'Obtain 3 Avernic Defender Hilts.',
                     points: 4,
+                    components: 3,
                 },
                 {
                     id: 'rapier-sang',
-                    title: 'Rapier + Sang',
+                    title: 'Rapier & Sang',
                     description: 'Obtain a Ghrazi Rapier and Sanguinesti Staff.',
                     points: 6,
+                    components: 2
                 },
                 {
                     id: 'scythe',
@@ -64,12 +68,14 @@ export const sampleBingoBoard: BingoBoard = {
                     title: 'LB + Fang (x2)',
                     description: 'Obtain 2 Lightbearers and 2 Osmumten\'s Fangs.',
                     points: 4,
+                    components: 4, // 2 LB + 2 Fang
                 },
                 {
                     id: 'masori',
                     title: 'Full Masori',
                     description: 'Obtain all pieces of the Masori Armour set.',
                     points: 6,
+                    components: 3
                 },
                 {
                     id: 'shadow',
@@ -95,6 +101,7 @@ export const sampleBingoBoard: BingoBoard = {
                     title: 'HMT kit (x2)',
                     description: 'Obtain any 2 Ornament kits from the Hard Mode Theatre of Blood.',
                     points: 4,
+                    components: 2,
                 },
                 {
                     id: 'hmt-dust',
@@ -114,6 +121,7 @@ export const sampleBingoBoard: BingoBoard = {
                     title: 'Twisted Ancestral Colour Kit (x2)',
                     description: 'Obtain 2 Twisted Ancestral Colour Kits.',
                     points: 5,
+                    components: 2,
                 },
                 {
                     id: 'cm-dust',
@@ -139,6 +147,7 @@ export const sampleBingoBoard: BingoBoard = {
                     title: 'Chromium Ingot (x6)',
                     description: 'Obtain 6 Chromium Ingots.',
                     points: 4,
+                    components: 6,
                 },
                 {
                     id: 'virtus-full',
@@ -189,18 +198,21 @@ export const sampleBingoBoard: BingoBoard = {
                     title: 'Twinflame Staff & Zombie axe',
                     description: 'Obtain the Ice Elemental Staff Crown, Fire Elemental Staff Crown, and Broken Zombie Axe.',
                     points: 2,
+                    components: 3,
                 },
                 {
                     id: 'zenyte-4',
                     title: 'Zenyte (x4)',
                     description: 'Obtain 4 Zenyte Shards.',
                     points: 4,
+                    components: 4,
                 },
                 {
                     id: 'arax-fang-2',
                     title: 'Araxyte fang (x2)',
                     description: 'Obtain 2 Araxyte Fangs.',
                     points: 8,
+                    components: 2,
                 },
             ],
         },
@@ -214,18 +226,21 @@ export const sampleBingoBoard: BingoBoard = {
                     title: 'Barrows Weapons (x5)',
                     description: 'Obtain 5 Barrows Weapons.',
                     points: 2,
+                    components: 5,
                 },
                 {
                     id: 'perilous-moons',
                     title: 'Perilous Moons Items (x12)',
                     description: 'Obtain 12 Perilous Moons items.',
                     points: 4,
+                    components: 12,
                 },
                 {
                     id: 'tormented-synapse',
                     title: 'Tormented Synapse (x3)',
                     description: 'Obtain 3 Tormented Synapses.',
                     points: 6,
+                    components: 3,
                 },
             ],
         },
@@ -239,18 +254,21 @@ export const sampleBingoBoard: BingoBoard = {
                     title: 'Full Bandos',
                     description: 'Obtain the complete Bandos Armour set, including boots.',
                     points: 3,
+                    components: 3
                 },
                 {
                     id: 'oathplate',
                     title: 'Full Oathplate',
                     description: 'Obtain the complete Oathplate Armour set. You must obtain the drops; you cannot craft a piece.',
                     points: 6,
+                    components: 3
                 },
                 {
                     id: 'torva',
                     title: 'Full Torva',
                     description: 'Obtain the complete Torva Armour set.',
                     points: 10,
+                    components: 3
                 },
             ],
         },
@@ -289,18 +307,21 @@ export const sampleBingoBoard: BingoBoard = {
                     title: 'Full Armadyl',
                     description: 'Obtain the complete Armadyl Armour set.',
                     points: 4,
+                    components: 3
                 },
                 {
                     id: 'arma-2',
                     title: 'Zaryte vambraces (x2)',
                     description: 'Obtain 2 Zaryte Vambraces.',
                     points: 6,
+                    components: 2,
                 },
                 {
                     id: 'arma-3',
                     title: 'Nihil Horn (x2)',
                     description: 'Obtain 2 Nihil Horns.',
                     points: 12,
+                    components: 2,
                 },
             ],
         },
@@ -314,18 +335,21 @@ export const sampleBingoBoard: BingoBoard = {
                     title: 'Armour Seeds (x6)',
                     description: 'Obtain 6 Crystal Armour Seeds from The Gauntlet.',
                     points: 3,
+                    components: 6,
                 },
                 {
                     id: 'venator-shards-10',
                     title: 'Venator shards (x10)',
                     description: 'Obtain 10 Venator shards from the Phantom Muspah.',
                     points: 6,
+                    components: 10,
                 },
                 {
                     id: 'enhanced-weapon-seed-2',
                     title: 'Enhanced Weapon Seed (x2)',
                     description: 'Obtain 2 Enhanced Crystal Weapon Seeds from The Gauntlet.',
                     points: 8,
+                    components: 2,
                 },
             ],
         },
@@ -339,18 +363,21 @@ export const sampleBingoBoard: BingoBoard = {
                     title: 'Mokhaiotl cloth (x3)',
                     description: 'Obtain 3 Mokhaiotl Cloths.',
                     points: 6,
+                    components: 3,
                 },
                 {
                     id: 'eye-of-ayak',
                     title: 'Eye of Ayak (x3)',
                     description: 'Obtain 3 Eyes of Ayak.',
                     points: 8,
+                    components: 3,
                 },
                 {
                     id: 'avernic-treads',
                     title: 'Avernic treads (x3)',
                     description: 'Obtain 3 Avernic Treads.',
                     points: 10,
+                    components: 3,
                 },
             ],
         },
@@ -364,12 +391,14 @@ export const sampleBingoBoard: BingoBoard = {
                     title: 'Spirit shield (x3)',
                     description: 'Obtain 3 Spirit Shields.',
                     points: 1,
+                    components: 3,
                 },
                 {
                     id: 'elixir-2',
                     title: 'Elixir (x2)',
                     description: 'Obtain 2 Holy Elixirs.',
                     points: 4,
+                    components: 2,
                 },
                 {
                     id: 'sigil-1',
@@ -415,18 +444,21 @@ export const sampleBingoBoard: BingoBoard = {
                     title: 'Dragon Pickaxe (x4)',
                     description: 'Obtain 4 Dragon Pickaxes.',
                     points: 1,
+                    components: 4,
                 },
                 {
                     id: 'wildy-ring-2',
                     title: 'Wilderness Ring (x2)',
                     description: 'Obtain any 2 Wilderness Rings.',
                     points: 3,
+                    components: 2,
                 },
                 {
                     id: 'voidwaker-1',
                     title: 'Voidwaker (x1)',
                     description: 'Complete a Voidwaker from scratch.',
                     points: 6,
+                    components: 3
                 },
             ],
         },
@@ -440,18 +472,21 @@ export const sampleBingoBoard: BingoBoard = {
                     title: 'Zamorakian Spear (x3)',
                     description: 'Obtain 3 Zamorakian Spears.',
                     points: 1,
+                    components: 3,
                 },
                 {
                     id: 'sotd-steam',
                     title: 'SoTD & Steam Battelstaff',
                     description: 'Obtain a Staff of the Dead and a Steam Battlestaff.',
                     points: 3,
+                    components: 2,
                 },
                 {
                     id: 'zgs-from-scratch',
                     title: 'ZGS from scratch',
                     description: 'Complete a Zamorak Godsword from scratch, including shards. Shards may be obtained from any boss, but you may not re-use shards from other tiles.',
                     points: 6,
+                    components: 4
                 },
             ],
         },
@@ -465,18 +500,21 @@ export const sampleBingoBoard: BingoBoard = {
                     title: 'Saradomin\'s Light/Sword (x4)',
                     description: 'Obtain 4 of either Saradomin\'s Light or Saradomin\'s Sword.',
                     points: 2,
+                    components: 4,
                 },
                 {
                     id: 'acb-2',
                     title: 'Armadyl Crossbow (x2)',
                     description: 'Obtain 2 Armadyl Crossbows.',
                     points: 3,
+                    components: 2,
                 },
                 {
                     id: 'sgs-from-scratch',
                     title: 'SGS from scratch',
                     description: 'Complete a Saradomin Godsword from scratch, including shards. Shards may be obtained from any boss, but you may not re-use shards from other tiles.',
                     points: 4,
+                    components: 4
                 },
             ],
         },
@@ -490,12 +528,14 @@ export const sampleBingoBoard: BingoBoard = {
                     title: 'Dragon Knives & Dragon Thrownaxe',
                     description: 'Obtain both Dragon Knives and Dragon Thrownaxe drops.',
                     points: 4,
+                    components: 2
                 },
                 {
                     id: 'dragon-sword-harpoon',
                     title: 'Dragon Sword & Harpoon',
                     description: 'Obtain a Dragon Sword and a Dragon Harpoon.',
                     points: 4,
+                    components: 2
                 },
                 {
                     id: 'crystal-tool-seed',
@@ -515,12 +555,14 @@ export const sampleBingoBoard: BingoBoard = {
                     title: 'Flared Trousers & Ham Joint',
                     description: 'Obtain some Flared Trousers and a Ham Joint.',
                     points: 2,
+                    components: 2
                 },
                 {
                     id: 'boots',
                     title: 'Ranger Boots & Spiked Manacles',
                     description: 'Obtain a pair of Ranger Boots and Spiked Manacles.',
                     points: 4,
+                    components: 2
                 },
                 {
                     id: 'clue-mega',
@@ -540,17 +582,19 @@ export const sampleBingoBoard: BingoBoard = {
                     title: 'Sarachnis Cudgel (x3)',
                     description: 'Obtain 3 Sarachnis Cudgels.',
                     points: 1,
+                    components: 3,
                 },
                 {
                     id: 'unsired',
                     title: 'Unsired (x5)',
                     description: 'Obtain 5 Unsired.',
                     points: 5,
+                    components: 5,
                 },
                 {
                     id: 'mace',
                     title: 'Inquisitor\'s Mace',
-                    description: 'Obtain 1 Inquisitor\'s Mace.',
+                    description: 'Obtain an Inquisitor\'s Mace.',
                     points: 10,
                 },
             ],
@@ -571,6 +615,7 @@ export const sampleBingoBoard: BingoBoard = {
                     title: 'Inquisitor (x3)',
                     description: 'Obtain 3 pieces of the Inquisitor Armour Set.',
                     points: 6,
+                    components: 3,
                 },
                 {
                     id: 'nm-3',
@@ -590,18 +635,21 @@ export const sampleBingoBoard: BingoBoard = {
                     title: 'Enhanced Crystal Teleport (x10)',
                     description: 'Obtain 10 Enhanced Crystal Teleport Seeds from thieving only.',
                     points: 2,
+                    components: 10,
                 },
                 {
                     id: 'blood-shards',
                     title: 'Blood Shard (x10)',
                     description: 'Obtain 10 Blood Shards from thieving only.',
                     points: 6,
+                    components: 10,
                 },
                 {
                     id: 'sceptre',
                     title: 'Pharaoh\'s Sceptre (x3)',
                     description: 'Obtain 3 Pharaoh\'s Sceptres.',
                     points: 8,
+                    components: 3,
                 },
             ],
         },
@@ -615,6 +663,7 @@ export const sampleBingoBoard: BingoBoard = {
                     title: 'Strange Old Lockpick (x10)',
                     description: 'Obtain 10 Strange Old Lockpicks.',
                     points: 2,
+                    components: 10,
                 },
                 {
                     id: 'ring-of-endurance',
@@ -672,12 +721,14 @@ export const sampleBingoBoard: BingoBoard = {
                     title: 'Noxious Halberd',
                     description: 'Complete a Noxious Halberd from scratch. You must get one of each of the following items: Noxious Point, Noxious Pommel, and Noxious Blade.',
                     points: 6,
+                    components: 3
                 },
                 {
                     id: 'hydra-claw-leather',
                     title: 'Hydra\'s Claw & Leather',
                     description: 'Obtain a Hydra\'s Claw and Hydra Leather.',
                     points: 8,
+                    components: 2
                 },
             ],
         },
@@ -697,12 +748,14 @@ export const sampleBingoBoard: BingoBoard = {
                     title: 'Ancient Crystal (x5)',
                     description: 'Obtain 5 Ancient Crystals.',
                     points: 5,
+                    components: 5,
                 },
                 {
                     id: 'rev-weapons-3',
                     title: 'Rev Weapon (x3)',
                     description: 'Obtain any 3 Revenant weapons (Craw\'s Bow, Thammaron\'s Sceptre, Viggora\'s Chainmace).',
                     points: 9,
+                    components: 3,
                 },
             ],
         },
@@ -716,6 +769,7 @@ export const sampleBingoBoard: BingoBoard = {
                     title: 'Gnome Restauranteur',
                     description: 'Obtain a Grand Seed Pod, Gnome Scarf, Gnome Goggles, and Mint Cake',
                     points: 1,
+                    components: 4
                 },
 
                 {
@@ -729,6 +783,7 @@ export const sampleBingoBoard: BingoBoard = {
                     title: 'Elder Chaos Robes',
                     description: 'Obtain the complete Elder Chaos Robe set.',
                     points: 3,
+                    components: 3
                 },
             ],
         },
@@ -742,12 +797,14 @@ export const sampleBingoBoard: BingoBoard = {
                     title: 'Huey Hide (x9)',
                     description: 'Obtain 9 Hueycoatl Hide.',
                     points: 3,
+                    components: 9,
                 },
                 {
                     id: 'huey-tome-2',
                     title: 'Huey Tome (x2)',
                     description: 'Obtain 2 Tomes of Earth.',
                     points: 4,
+                    components: 2,
                 },
                 {
                     id: 'huey-wand-1',
@@ -767,12 +824,13 @@ export const sampleBingoBoard: BingoBoard = {
                     title: 'Slayer Enchantment (x2)',
                     description: 'Obtain 2 Slayer\'s enchantments.',
                     points: 2,
+                    components: 2,
                 },
                 {
                     id: 'dagon-hai-dusk',
                     title: 'Dagon\'hai Robes / Dusk Mystic',
                     description: 'Complete the Dagon\'hai Robe set or Dusk Mystic set.',
-                    points: 4,
+                    points: 4
                 },
                 {
                     id: 'superior-item',
@@ -793,6 +851,7 @@ export const sampleBingoBoard: BingoBoard = {
                     title: 'Full Sunfire',
                     description: 'Obtain a complete set of Sunfire Fanatic Armour.',
                     points: 5,
+                    components: 3
                 },
                 {
                     id: 'ralos',
@@ -843,6 +902,7 @@ export const sampleBingoBoard: BingoBoard = {
                     title: 'Zulrah Drops (x6)',
                     description: 'Obtain 6 drops from Zulrah\'s unique table (Serpentine Visage, Magic Fang, Tanzanite Fang).',
                     points: 3,
+                    components: 6,
                 },
                 {
                     id: 'pet-jar-1',
@@ -868,18 +928,21 @@ export const sampleBingoBoard: BingoBoard = {
                     title: 'Obor Club & Bryophyta\'s Essence',
                     description: 'Obtain a Hill Giant Club and Bryophyta\'s essence.',
                     points: 3,
+                    components: 2
                 },
                 {
                     id: 'champion-scroll-5',
                     title: 'Champion Scroll (x5)',
                     description: 'Obtain any 5 Champion Scrolls.',
                     points: 4,
+                    components: 5,
                 },
                 {
                     id: 'slayer-heads-6',
                     title: 'Slayer Trophies (x6)',
                     description: 'Obtain 6 Slayer Trophies, excluding Vorkath.',
                     points: 6,
+                    components: 6,
                 },
             ],
         },
