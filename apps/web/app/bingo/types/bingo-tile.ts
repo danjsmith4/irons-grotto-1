@@ -6,6 +6,7 @@ export interface BingoTask {
     completed?: boolean;
     ironsGrottoCompleted?: boolean;
     ironDaddyCompleted?: boolean;
+    components?: number; // Optional: number of required components for multi-part tasks
 }
 
 export interface BingoTile {
