@@ -62,7 +62,9 @@ export function BingoBoardComponent({ board, onRefresh }: BingoBoardProps) {
         };
 
         // Set up interval for polling every 15 seconds
-        intervalRef.current = setInterval(refreshData, 15000);
+        intervalRef.current = setInterval(() => {
+            void refreshData();
+        }, 15000);
 
         // Cleanup interval on unmount
         return () => {
