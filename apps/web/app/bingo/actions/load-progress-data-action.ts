@@ -64,7 +64,7 @@ export const loadProgressDataAction = actionClient
 
             taskTeamCompletions.forEach((data, key) => {
                 const { taskInfo, completions } = data;
-                const requiredComponents = taskInfo.components || 1;
+                const requiredComponents = taskInfo.components ?? 1;
 
                 // Sort completions by date to find when we reached the required amount
                 const sortedCompletions = completions.sort((a, b) => a.date.localeCompare(b.date));
@@ -92,7 +92,7 @@ export const loadProgressDataAction = actionClient
             // Sum points by team and completion date
             Array.from(taskCompletionDates.values()).forEach(({ team, completionDate, points }) => {
                 const teamData = progressData.get(team)!;
-                const currentPoints = teamData.get(completionDate) || 0;
+                const currentPoints = teamData.get(completionDate) ?? 0;
                 teamData.set(completionDate, currentPoints + points);
             });
 
