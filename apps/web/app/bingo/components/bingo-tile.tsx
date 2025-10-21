@@ -165,18 +165,18 @@ export function BingoTileComponent({ tile }: BingoTileProps) {
                                     </Table.Cell>
                                     <Table.Cell align="center">
                                         <Badge
-                                            color={task.ironsGrottoCompleted ? 'green' : 'gray'}
-                                            variant={task.ironsGrottoCompleted ? 'solid' : 'soft'}
+                                            color={(task.modalIronsGrottoCompleted ?? task.ironsGrottoCompleted) ? 'green' : 'gray'}
+                                            variant={(task.modalIronsGrottoCompleted ?? task.ironsGrottoCompleted) ? 'solid' : 'soft'}
                                         >
-                                            {task.ironsGrottoCompleted ? '✓' : '○'}
+                                            {(task.modalIronsGrottoCompleted ?? task.ironsGrottoCompleted) ? '✓' : '○'}
                                         </Badge>
                                     </Table.Cell>
                                     <Table.Cell align="center">
                                         <Badge
-                                            color={task.ironDaddyCompleted ? 'amber' : 'gray'}
-                                            variant={task.ironDaddyCompleted ? 'solid' : 'soft'}
+                                            color={(task.modalIronDaddyCompleted ?? task.ironDaddyCompleted) ? 'amber' : 'gray'}
+                                            variant={(task.modalIronDaddyCompleted ?? task.ironDaddyCompleted) ? 'solid' : 'soft'}
                                         >
-                                            {task.ironDaddyCompleted ? '✓' : '○'}
+                                            {(task.modalIronDaddyCompleted ?? task.ironDaddyCompleted) ? '✓' : '○'}
                                         </Badge>
                                     </Table.Cell>
                                 </Table.Row>

@@ -13,14 +13,17 @@ export const loadProgressDataAction = actionClient
             // Get all completions from database
             const completions = await getAllCompletions();
 
-            // Create a map of task ID to required components and points
+            // Create maps for task validation
             const taskInfoMap = new Map<string, { components?: number; points: number }>();
+            const taskToTileIndexMap = new Map<string, { tileId: string; taskIndex: number }>();
+
             sampleBingoBoard.tiles.forEach(tile => {
-                tile.tasks.forEach(task => {
+                tile.tasks.forEach((task, index) => {
                     taskInfoMap.set(task.id, {
                         components: task.components,
                         points: task.points
                     });
+                    taskToTileIndexMap.set(task.id, { tileId: tile.id, taskIndex: index });
                 });
             });
 
@@ -54,13 +57,41 @@ export const loadProgressDataAction = actionClient
                 });
             });
 
-            // Calculate when each task was actually completed based on component logic
+            // Calculate when each task was actually completed based on component logic AND predecessor constraint
             const taskCompletionDates = new Map<string, {
                 taskId: string;
                 team: string;
                 completionDate: string; // Date when task was actually completed
                 points: number;
             }>();
+
+            // Helper function to check if a task can be completed (predecessor constraint)
+            const canTaskBeCompleted = (taskId: string, team: string): boolean => {
+                const taskInfo = taskToTileIndexMap.get(taskId);
+                if (!taskInfo) return false;
+
+                // Find the tile containing this task
+                const tile = sampleBingoBoard.tiles.find(t => t.id === taskInfo.tileId);
+                if (!tile) return false;
+
+                // Check if all predecessor tasks in this tile are completed for this team
+                for (let i = 0; i < taskInfo.taskIndex; i++) {
+                    const predecessorTask = tile.tasks[i];
+                    const predecessorKey = `${predecessorTask.id}-${team}`;
+                    const predecessorData = taskTeamCompletions.get(predecessorKey);
+
+                    if (!predecessorData) {
+                        return false; // Predecessor task has no completions
+                    }
+
+                    const requiredComponents = predecessorData.taskInfo.components ?? 1;
+                    if (predecessorData.completions.length < requiredComponents) {
+                        return false; // Predecessor task doesn't have enough completions
+                    }
+                }
+
+                return true;
+            };
 
             taskTeamCompletions.forEach((data, key) => {
                 const { taskInfo, completions } = data;
@@ -69,8 +100,8 @@ export const loadProgressDataAction = actionClient
                 // Sort completions by date to find when we reached the required amount
                 const sortedCompletions = completions.sort((a, b) => a.date.localeCompare(b.date));
 
-                if (sortedCompletions.length >= requiredComponents) {
-                    // Task is completed - use the date of the Nth completion
+                if (sortedCompletions.length >= requiredComponents && canTaskBeCompleted(data.taskId, data.team)) {
+                    // Task is completed and all prerequisites are met - use the date of the Nth completion
                     const completionDate = sortedCompletions[requiredComponents - 1].date;
 
                     taskCompletionDates.set(key, {

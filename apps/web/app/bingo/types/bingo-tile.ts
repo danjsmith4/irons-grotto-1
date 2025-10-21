@@ -6,6 +6,8 @@ export interface BingoTask {
     completed?: boolean;
     ironsGrottoCompleted?: boolean;
     ironDaddyCompleted?: boolean;
+    modalIronsGrottoCompleted?: boolean; // For modal display - component-only validation
+    modalIronDaddyCompleted?: boolean; // For modal display - component-only validation
     components?: number; // Optional: number of required components for multi-part tasks
 }
 

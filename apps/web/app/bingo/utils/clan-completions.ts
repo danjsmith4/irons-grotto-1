@@ -16,6 +16,26 @@ export function applyClanCompletions(board: BingoBoard, completions: ClanComplet
     return updatedBoard;
 }
 
+// Function to apply modal completions to board (for display only, not scoring)
+export function applyModalCompletions(board: BingoBoard, modalCompletions: ClanCompletions, scoringCompletions: ClanCompletions): BingoBoard {
+    const updatedBoard = { ...board };
+
+    updatedBoard.tiles = board.tiles.map(tile => ({
+        ...tile,
+        tasks: tile.tasks.map(task => ({
+            ...task,
+            // Use modal completions for display in the modal (component-only validation)
+            modalIronsGrottoCompleted: modalCompletions.ironsGrotto.includes(task.id),
+            modalIronDaddyCompleted: modalCompletions.ironDaddy.includes(task.id),
+            // Use scoring completions for points calculation (component + predecessor validation)
+            ironsGrottoCompleted: scoringCompletions.ironsGrotto.includes(task.id),
+            ironDaddyCompleted: scoringCompletions.ironDaddy.includes(task.id),
+        }))
+    }));
+
+    return updatedBoard;
+}
+
 export function calculateClanProgress(board: BingoBoard, clanName: 'ironsGrotto' | 'ironDaddy'): ClanProgress {
     const totalTasks = board.tiles.reduce((sum, tile) => sum + tile.tasks.length, 0);
     const totalPoints = board.tiles.reduce((sum, tile) =>
