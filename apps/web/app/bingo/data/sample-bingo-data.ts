@@ -715,6 +715,7 @@ export const sampleBingoBoard: BingoBoard = {
                     title: 'Cerberus Crystals',
                     description: 'Obtain one of each Cerberus Crystal (Primordial, Pegasian, Eternal, Smouldering Stone).',
                     points: 4,
+                    components: 4
                 },
                 {
                     id: 'nally',

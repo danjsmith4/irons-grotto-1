@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Box, Button, Card, Flex, Heading, Text, Select, Callout } from '@radix-ui/themes';
 import { PlusIcon, ArrowLeftIcon, CheckIcon, ExclamationTriangleIcon } from '@radix-ui/react-icons';
 import { TaskSearch } from './task-search';
@@ -18,6 +18,44 @@ interface UserCompletion {
 
 type ClanType = 'ironsGrotto' | 'ironDaddy';
 
+// Cookie key for storing last selected clan
+const LAST_CLAN_COOKIE_KEY = 'bingo-admin-last-clan';
+
+// Cookie utility functions
+const getClanFromCookie = (): ClanType => {
+    if (typeof document === 'undefined') return 'ironsGrotto'; // Default for SSR
+    
+    try {
+        const cookies = document.cookie.split(';');
+        const clanCookie = cookies.find(cookie => 
+            cookie.trim().startsWith(`${LAST_CLAN_COOKIE_KEY}=`)
+        );
+        
+        if (clanCookie) {
+            const value = clanCookie.split('=')[1]?.trim();
+            return (value === 'ironDaddy') ? 'ironDaddy' : 'ironsGrotto';
+        }
+    } catch (error) {
+        console.warn('Failed to read clan cookie:', error);
+    }
+    
+    return 'ironsGrotto'; // Default fallback
+};
+
+const setClanCookie = (clan: ClanType): void => {
+    if (typeof document === 'undefined') return; // Skip for SSR
+    
+    try {
+        // Set cookie to expire in 1 year
+        const expiryDate = new Date();
+        expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+        
+        document.cookie = `${LAST_CLAN_COOKIE_KEY}=${clan}; expires=${expiryDate.toUTCString()}; path=/; SameSite=Lax`;
+    } catch (error) {
+        console.warn('Failed to set clan cookie:', error);
+    }
+};
+
 interface SubmissionStatus {
     type: 'success' | 'error' | null;
     message: string;
@@ -30,9 +68,32 @@ export function AdminForm() {
     ]);
     const [selectedClan, setSelectedClan] = useState<ClanType>('ironsGrotto');
     const [submissionStatus, setSubmissionStatus] = useState<SubmissionStatus>({ type: null, message: '' });
+    const [clanLoadedFromCookie, setClanLoadedFromCookie] = useState(false);
     
     const router = useRouter();
     const { executeAsync: submitCompletion, isExecuting } = useAction(submitCompletionAction);
+
+    // Initialize clan selection from cookie on component mount
+    useEffect(() => {
+        const savedClan = getClanFromCookie();
+        setSelectedClan(savedClan);
+        
+        // Check if we actually loaded a saved preference (not the default)
+        if (typeof document !== 'undefined') {
+            const cookies = document.cookie.split(';');
+            const clanCookie = cookies.find(cookie => 
+                cookie.trim().startsWith(`${LAST_CLAN_COOKIE_KEY}=`)
+            );
+            setClanLoadedFromCookie(!!clanCookie);
+        }
+    }, []);
+
+    // Handle clan selection change and save to cookie
+    const handleClanChange = (clan: ClanType) => {
+        setSelectedClan(clan);
+        setClanCookie(clan);
+        setClanLoadedFromCookie(true); // Mark as having a saved preference
+    };
 
     const addUserCompletion = () => {
         setUserCompletions([...userCompletions, { user: '', proof: '', multiplier: 1 }]);
@@ -99,7 +160,7 @@ export function AdminForm() {
                     message: `Successfully submitted ${totalSubmissions} completion(s) for ${uniqueUsers} user(s) for "${selectedTask.title}"` 
                 });
                 
-                // Reset form on success
+                // Reset form on success (keep the user's preferred clan)
                 setSelectedTask(null);
                 setUserCompletions([{ user: '', proof: '', multiplier: 1 }]);
                 setSelectedClan('ironsGrotto');
@@ -174,10 +235,17 @@ export function AdminForm() {
                     </Heading>
 
                     <Box mb="4">
-                        <Text size="2" weight="medium" mb="2" style={{ display: 'block' }}>
-                            Clan
-                        </Text>
-                        <Select.Root value={selectedClan} onValueChange={(value) => setSelectedClan(value as ClanType)}>
+                        <Flex justify="between" align="center" mb="2">
+                            <Text size="2" weight="medium">
+                                Clan
+                            </Text>
+                            {clanLoadedFromCookie && (
+                                <Text size="1" color="blue">
+                                    Preference saved
+                                </Text>
+                            )}
+                        </Flex>
+                        <Select.Root value={selectedClan} onValueChange={handleClanChange}>
                             <Select.Trigger />
                             <Select.Content>
                                 <Select.Item value="ironsGrotto">Iron's Grotto</Select.Item>

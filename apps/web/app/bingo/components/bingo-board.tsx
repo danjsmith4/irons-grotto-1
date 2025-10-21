@@ -107,7 +107,7 @@ export function BingoBoardComponent({ board, onRefresh }: BingoBoardProps) {
                         <Separator orientation="vertical" />
 
                         <Flex direction="column" align="center" gap="2">
-                            <Text size="2" color="gray" weight="medium">Iron Daddy</Text>
+                            <Text size="2" color="gray" weight="medium">Iron Daddys</Text>
                             <Badge 
                                 color="amber" 
                                 size="3"
@@ -148,7 +148,7 @@ export function BingoBoardComponent({ board, onRefresh }: BingoBoardProps) {
                         <Separator orientation="vertical" />
 
                         <Flex direction="column" align="center" gap="1">
-                            <Text size="2" color="gray" weight="medium">Iron Daddy MVP</Text>
+                            <Text size="2" color="gray" weight="medium">Iron Daddys MVP</Text>
                             {isLoadingMvps ? (
                                 <Text size="3" color="gray">Loading...</Text>
                             ) : mvps.ironDaddy ? (

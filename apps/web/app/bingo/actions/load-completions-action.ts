@@ -12,36 +12,63 @@ export async function loadCompletionsAction(): Promise<ClanCompletions> {
             getCompletionsForClan('ironDaddy')
         ]);
 
-        // Create a map of task ID to required components for validation
+        // Create maps for task validation
         const taskComponentsMap = new Map<string, number>();
+        const taskToTileIndexMap = new Map<string, { tileId: string; taskIndex: number }>();
+
         sampleBingoBoard.tiles.forEach(tile => {
-            tile.tasks.forEach(task => {
+            tile.tasks.forEach((task, index) => {
                 if (task.components) {
                     taskComponentsMap.set(task.id, task.components);
                 }
+                taskToTileIndexMap.set(task.id, { tileId: tile.id, taskIndex: index });
             });
         });
 
-        // Function to get completed task IDs based on component validation
+        // Function to get completed task IDs based on component validation and predecessor constraint
         const getCompletedTaskIds = (completions: typeof ironsGrottoCompletions) => {
             const taskCounts = completions.reduce((acc, completion) => {
                 acc[completion.taskId] = (acc[completion.taskId] || 0) + 1;
                 return acc;
             }, {} as Record<string, number>);
 
-            const completedTasks: string[] = [];
-            Object.entries(taskCounts).forEach(([taskId, count]) => {
-                const requiredComponents = taskComponentsMap.get(taskId);
+            // Helper function to check if a task can be completed (predecessor constraint)
+            const canTaskBeCompleted = (taskId: string, completedTasks: string[]): boolean => {
+                const taskInfo = taskToTileIndexMap.get(taskId);
+                if (!taskInfo) return false;
 
-                if (requiredComponents) {
-                    // Task has defined components - check if we have enough completions
-                    if (count >= requiredComponents) {
-                        completedTasks.push(taskId);
+                // Find the tile containing this task
+                const tile = sampleBingoBoard.tiles.find(t => t.id === taskInfo.tileId);
+                if (!tile) return false;
+
+                // Check if all predecessor tasks in this tile are completed
+                for (let i = 0; i < taskInfo.taskIndex; i++) {
+                    const predecessorTask = tile.tasks[i];
+                    if (!completedTasks.includes(predecessorTask.id)) {
+                        return false; // Predecessor task not completed yet
                     }
-                } else {
-                    // Task has no defined components - any completion marks it as complete
-                    completedTasks.push(taskId);
                 }
+
+                return true;
+            };
+
+            const completedTasks: string[] = [];
+
+            // We need to process tasks in tile order to respect predecessor constraints
+            sampleBingoBoard.tiles.forEach(tile => {
+                tile.tasks.forEach(task => {
+                    const taskId = task.id;
+                    const count = taskCounts[taskId] || 0;
+                    const requiredComponents = taskComponentsMap.get(taskId) ?? 1;
+
+                    // Check if this task has enough completions
+                    if (count >= requiredComponents) {
+                        // Check if predecessor tasks are completed
+                        if (canTaskBeCompleted(taskId, completedTasks)) {
+                            completedTasks.push(taskId);
+                        }
+                    }
+                });
             });
 
             return completedTasks;
