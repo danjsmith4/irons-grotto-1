@@ -13,6 +13,7 @@ import { useRouter } from 'next/navigation';
 interface UserCompletion {
     user: string;
     proof: string;
+    multiplier: number;
 }
 
 type ClanType = 'ironsGrotto' | 'ironDaddy';
@@ -25,7 +26,7 @@ interface SubmissionStatus {
 export function AdminForm() {
     const [selectedTask, setSelectedTask] = useState<BingoTask | null>(null);
     const [userCompletions, setUserCompletions] = useState<UserCompletion[]>([
-        { user: '', proof: '' }
+        { user: '', proof: '', multiplier: 1 }
     ]);
     const [selectedClan, setSelectedClan] = useState<ClanType>('ironsGrotto');
     const [submissionStatus, setSubmissionStatus] = useState<SubmissionStatus>({ type: null, message: '' });
@@ -34,10 +35,10 @@ export function AdminForm() {
     const { executeAsync: submitCompletion, isExecuting } = useAction(submitCompletionAction);
 
     const addUserCompletion = () => {
-        setUserCompletions([...userCompletions, { user: '', proof: '' }]);
+        setUserCompletions([...userCompletions, { user: '', proof: '', multiplier: 1 }]);
     };
 
-    const updateUserCompletion = (index: number, field: keyof UserCompletion, value: string) => {
+    const updateUserCompletion = (index: number, field: keyof UserCompletion, value: string | number) => {
         const updated = [...userCompletions];
         updated[index] = { ...updated[index], [field]: value };
         setUserCompletions(updated);
@@ -56,7 +57,7 @@ export function AdminForm() {
         // Clear previous status
         setSubmissionStatus({ type: null, message: '' });
 
-        // Filter out empty completions
+        // Filter out empty completions and expand multipliers
         const validCompletions = userCompletions.filter(
             completion => completion.user.trim() && completion.proof.trim()
         );
@@ -69,24 +70,38 @@ export function AdminForm() {
             return;
         }
 
+        // Expand completions based on multiplier
+        const expandedCompletions = validCompletions.flatMap(completion => {
+            const entries = [];
+            for (let i = 0; i < completion.multiplier; i++) {
+                entries.push({
+                    user: completion.user,
+                    proof: completion.proof
+                });
+            }
+            return entries;
+        });
+
         try {
             const result = await submitCompletion({
                 taskId: selectedTask.id,
                 clan: selectedClan,
                 points: selectedTask.points,
-                userCompletions: validCompletions,
+                userCompletions: expandedCompletions,
             });
 
             if (result?.data) {
-                // Success
+                // Success - show total expanded submissions
+                const totalSubmissions = expandedCompletions.length;
+                const uniqueUsers = new Set(validCompletions.map(c => c.user)).size;
                 setSubmissionStatus({ 
                     type: 'success', 
-                    message: `Successfully submitted ${validCompletions.length} completion(s) for "${selectedTask.title}"` 
+                    message: `Successfully submitted ${totalSubmissions} completion(s) for ${uniqueUsers} user(s) for "${selectedTask.title}"` 
                 });
                 
                 // Reset form on success
                 setSelectedTask(null);
-                setUserCompletions([{ user: '', proof: '' }]);
+                setUserCompletions([{ user: '', proof: '', multiplier: 1 }]);
                 setSelectedClan('ironsGrotto');
             } else {
                 // Handle action failure
@@ -192,8 +207,21 @@ export function AdminForm() {
                     </Button>
 
                     <Text size="2" color="gray" mt="3" style={{ display: 'block' }}>
-                        Note: If a user contributed more than one item, they should get one proof entry per contribution.
+                        Note: Use the multiplier field if a user contributed multiple items. Each completion will be counted the specified number of times.
                     </Text>
+
+                    {/* Show total submissions preview */}
+                    {userCompletions.some(c => c.user.trim() && c.proof.trim()) && (
+                        <Box mt="3" p="2" style={{ backgroundColor: 'var(--blue-3)', borderRadius: 'var(--radius-2)' }}>
+                            <Text size="2" weight="medium" color="blue">
+                                Total submissions to be created: {
+                                    userCompletions
+                                        .filter(c => c.user.trim() && c.proof.trim())
+                                        .reduce((sum, c) => sum + c.multiplier, 0)
+                                }
+                            </Text>
+                        </Box>
+                    )}
                 </Card>
             )}
 
@@ -201,7 +229,7 @@ export function AdminForm() {
                 <Flex gap="3" justify="end">
                     <Button variant="outline" onClick={() => {
                         setSelectedTask(null);
-                        setUserCompletions([{ user: '', proof: '' }]);
+                        setUserCompletions([{ user: '', proof: '', multiplier: 1 }]);
                         setSelectedClan('ironsGrotto');
                     }}>
                         Cancel

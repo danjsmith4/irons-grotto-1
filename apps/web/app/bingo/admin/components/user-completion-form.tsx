@@ -9,12 +9,13 @@ import { loadUsersAction } from '../../actions/load-users-action';
 interface UserCompletion {
     user: string;
     proof: string;
+    multiplier: number;
 }
 
 interface UserCompletionFormProps {
     completion: UserCompletion;
     index: number;
-    onUpdate: (field: keyof UserCompletion, value: string) => void;
+    onUpdate: (field: keyof UserCompletion, value: string | number) => void;
     onRemove: () => void;
     canRemove: boolean;
 }
@@ -183,6 +184,38 @@ export function UserCompletionForm({
                 />
                 <Text size="1" color="gray" mt="1" style={{ display: 'block' }}>
                     Link to external proof (Discord, Imgur, etc.)
+                </Text>
+            </Box>
+
+            <Box mt="3">
+                <Flex justify="between" align="end" mb="2">
+                    <Text size="2" weight="medium">
+                        Multiplier
+                    </Text>
+                    {completion.multiplier > 1 && (
+                        <Text size="1" color="blue" weight="medium">
+                            Will create {completion.multiplier} submissions
+                        </Text>
+                    )}
+                </Flex>
+                <TextField.Root
+                    type="number"
+                    placeholder="1"
+                    min="1"
+                    max="50"
+                    value={completion.multiplier.toString()}
+                    onChange={(e) => {
+                        const value = parseInt(e.target.value, 10);
+                        if (!isNaN(value) && value >= 1 && value <= 50) {
+                            onUpdate('multiplier', value);
+                        } else if (e.target.value === '') {
+                            onUpdate('multiplier', 1);
+                        }
+                    }}
+                    style={{ maxWidth: '100px' }}
+                />
+                <Text size="1" color="gray" mt="1" style={{ display: 'block' }}>
+                    How many items this user contributed (default: 1)
                 </Text>
             </Box>
         </Box>
