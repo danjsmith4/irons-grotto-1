@@ -1,6 +1,7 @@
 import { db } from './index';
 import { bingoCompletions, type NewBingoCompletion } from './schema';
 import { eq, desc } from 'drizzle-orm';
+import { sampleBingoBoard } from '../../app/bingo/data/sample-bingo-data';
 
 export async function createCompletion(completion: NewBingoCompletion) {
     return await db.insert(bingoCompletions).values(completion).returning();
@@ -66,6 +67,16 @@ export async function getMvp(team: 'ironsGrotto' | 'ironDaddy'): Promise<mvp | n
         .from(bingoCompletions)
         .where(eq(bingoCompletions.clan, team));
 
+    // Create a map of task ID to required components for validation
+    const taskComponentsMap = new Map<string, number>();
+    sampleBingoBoard.tiles.forEach(tile => {
+        tile.tasks.forEach(task => {
+            if (task.components) {
+                taskComponentsMap.set(task.id, task.components);
+            }
+        });
+    });
+
     // Group completions by taskId to calculate proportional points
     const taskGroups = completions.reduce((acc, completion) => {
         const taskId = completion.taskId;
@@ -73,20 +84,38 @@ export async function getMvp(team: 'ironsGrotto' | 'ironDaddy'): Promise<mvp | n
         if (!acc[taskId]) {
             acc[taskId] = {
                 taskPoints: parseInt(completion.points, 10) || 0,
-                completions: []
+                completions: [],
+                requiredComponents: taskComponentsMap.get(taskId)
             };
         }
 
         acc[taskId].completions.push(completion);
         return acc;
-    }, {} as Record<string, { taskPoints: number; completions: typeof completions }>);
+    }, {} as Record<string, { taskPoints: number; completions: typeof completions; requiredComponents?: number }>);
 
     // Calculate user stats with proportional points
     const userStats = {} as Record<string, mvp>;
 
     Object.values(taskGroups).forEach(taskGroup => {
         const totalContributions = taskGroup.completions.length;
-        const pointsPerContribution = taskGroup.taskPoints / totalContributions;
+        const requiredComponents = taskGroup.requiredComponents;
+
+        // Only award points if task is actually completed based on component logic
+        if (requiredComponents && totalContributions < requiredComponents) {
+            // Task not completed yet - no points awarded
+            return;
+        }
+
+        // Calculate points per contribution based on component logic
+        let pointsPerContribution: number;
+
+        if (requiredComponents) {
+            // For tasks with components: total points / required components
+            pointsPerContribution = taskGroup.taskPoints / requiredComponents;
+        } else {
+            // For tasks without components: total points / actual contributions
+            pointsPerContribution = taskGroup.taskPoints / totalContributions;
+        }
 
         // Count contributions per user for this task
         const userContributions = taskGroup.completions.reduce((acc, completion) => {
@@ -101,10 +130,16 @@ export async function getMvp(team: 'ironsGrotto' | 'ironDaddy'): Promise<mvp | n
                 userStats[user] = { user, completions: 0, points: 0 };
             }
 
+            // For tasks with components, limit the contribution count to avoid over-awarding
+            let effectiveContributions = contributionCount;
+            if (requiredComponents) {
+                effectiveContributions = Math.min(contributionCount, requiredComponents);
+            }
+
             // Add the user's share of points for this task
-            const userPointShare = pointsPerContribution * contributionCount;
+            const userPointShare = pointsPerContribution * effectiveContributions;
             userStats[user].points += userPointShare;
-            userStats[user].completions += contributionCount;
+            userStats[user].completions += effectiveContributions;
         });
     });
 
