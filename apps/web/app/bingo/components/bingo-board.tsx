@@ -1,12 +1,12 @@
 'use client';
 
-import { Grid, Text, Card, Flex, Badge, Separator } from '@radix-ui/themes';
+import { Grid, Text, Card, Flex, Badge, Separator, Button } from '@radix-ui/themes';
 import { BingoBoard } from '../types/bingo-tile';
 import { BingoTileComponent } from './bingo-tile';
 import { CompletionTable } from './completion-table';
 import { calculateClanProgress, getClanColor } from '../utils/clan-completions';
 import { loadMvpAction } from '../actions/load-mvp-action';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { mvp } from '@/lib/db/completions';
 
 interface BingoBoardProps {
@@ -26,7 +26,92 @@ export function BingoBoardComponent({ board, onRefresh }: BingoBoardProps) {
         ironDaddy: null
     });
     const [isLoadingMvps, setIsLoadingMvps] = useState(true);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [lastActivity, setLastActivity] = useState(Date.now());
+    const [isPollingActive, setIsPollingActive] = useState(true);
+    const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
+    
+    // Refs for managing intervals and activity tracking
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
+    const activityTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const lastRefreshRef = useRef<number>(Date.now());
+
+    // Constants for intelligent polling
+    const ACTIVE_POLL_INTERVAL = 60000; // 15 seconds when active
+    const INACTIVE_POLL_INTERVAL = 2 * 60000; // 1 minute when less active
+    const ACTIVITY_TIMEOUT = 2 * 60 * 1000; // 5 minutes of inactivity before slowing down
+    const MIN_REFRESH_INTERVAL = 60000; // Minimum 5 seconds between refreshes
+
+    // Manual refresh function
+    const handleManualRefresh = useCallback(async () => {
+        const now = Date.now();
+        if (now - lastRefreshRef.current < MIN_REFRESH_INTERVAL) {
+            return; // Prevent too frequent refreshes
+        }
+        
+        setIsRefreshing(true);
+        lastRefreshRef.current = now;
+        
+        try {
+            // Refresh MVP data
+            const mvpResult = await loadMvpAction();
+            if (mvpResult.success) {
+                setMvps(mvpResult.mvps);
+            }
+
+            // Refresh board data if callback is provided
+            if (onRefresh) {
+                await onRefresh();
+            }
+        } catch (error) {
+            console.error('Error refreshing bingo board data:', error);
+        } finally {
+            setIsRefreshing(false);
+            setLastRefreshTime(new Date());
+        }
+    }, [onRefresh]);
+
+    // Activity tracking function
+    const trackActivity = useCallback(() => {
+        const now = Date.now();
+        setLastActivity(now);
+        
+        // Reset activity timeout
+        if (activityTimeoutRef.current) {
+            clearTimeout(activityTimeoutRef.current);
+        }
+        
+        // Set new activity timeout
+        activityTimeoutRef.current = setTimeout(() => {
+            setIsPollingActive(false);
+        }, ACTIVITY_TIMEOUT);
+        
+        // Reactivate polling if it was inactive
+        if (!isPollingActive) {
+            setIsPollingActive(true);
+        }
+    }, [isPollingActive]);
+
+    // Set up activity listeners
+    useEffect(() => {
+        const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+        
+        events.forEach(event => {
+            document.addEventListener(event, trackActivity, { passive: true });
+        });
+        
+        // Set initial activity timeout
+        trackActivity();
+        
+        return () => {
+            events.forEach(event => {
+                document.removeEventListener(event, trackActivity);
+            });
+            if (activityTimeoutRef.current) {
+                clearTimeout(activityTimeoutRef.current);
+            }
+        };
+    }, [trackActivity]);
 
     // Load MVP data on component mount
     useEffect(() => {
@@ -37,42 +122,80 @@ export function BingoBoardComponent({ board, onRefresh }: BingoBoardProps) {
                 setMvps(result.mvps);
             }
             setIsLoadingMvps(false);
+            setLastRefreshTime(new Date());
         };
 
         void loadMvps();
     }, []);
 
-    // Set up polling for data refresh every 15 seconds
+    // Intelligent polling based on user activity and page visibility
     useEffect(() => {
-        const refreshData = async () => {
-            try {
-                // Refresh MVP data
-                const mvpResult = await loadMvpAction();
-                if (mvpResult.success) {
-                    setMvps(mvpResult.mvps);
-                }
+        const shouldPoll = () => {
+            // Don't poll if document is hidden
+            if (document.hidden) return false;
+            
+            // Don't poll if user has been inactive for too long
+            const timeSinceActivity = Date.now() - lastActivity;
+            if (timeSinceActivity > ACTIVITY_TIMEOUT) return false;
+            
+            return true;
+        };
 
-                // Refresh board data if callback is provided
-                if (onRefresh) {
-                    await onRefresh();
+        const setupPolling = () => {
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current);
+            }
+
+            if (!shouldPoll()) return;
+
+            // Determine polling interval based on activity
+            const timeSinceActivity = Date.now() - lastActivity;
+            const interval = timeSinceActivity > ACTIVITY_TIMEOUT / 2 
+                ? INACTIVE_POLL_INTERVAL 
+                : ACTIVE_POLL_INTERVAL;
+
+            intervalRef.current = setInterval(() => {
+                if (shouldPoll()) {
+                    void handleManualRefresh();
+                } else {
+                    // Stop polling if conditions aren't met
+                    if (intervalRef.current) {
+                        clearInterval(intervalRef.current);
+                        intervalRef.current = null;
+                    }
                 }
-            } catch (error) {
-                console.error('Error refreshing bingo board data:', error);
+            }, interval);
+        };
+
+        // Set up initial polling
+        setupPolling();
+
+        // Handle visibility change
+        const handleVisibilityChange = () => {
+            if (document.hidden) {
+                // Page is hidden, stop polling
+                if (intervalRef.current) {
+                    clearInterval(intervalRef.current);
+                    intervalRef.current = null;
+                }
+            } else {
+                // Page is visible again, restart polling and refresh data
+                trackActivity(); // Mark as active
+                void handleManualRefresh();
+                setupPolling();
             }
         };
 
-        // Set up interval for polling every 15 seconds
-        intervalRef.current = setInterval(() => {
-            void refreshData();
-        }, 15000);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
 
-        // Cleanup interval on unmount
+        // Cleanup
         return () => {
             if (intervalRef.current) {
                 clearInterval(intervalRef.current);
             }
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
-    }, [onRefresh]);
+    }, [lastActivity, handleManualRefresh, trackActivity]);
 
     // Calculate progress for both clans (board should already have completions applied)
     const ironsGrottoProgress = calculateClanProgress(board, 'ironsGrotto');
@@ -83,6 +206,34 @@ export function BingoBoardComponent({ board, onRefresh }: BingoBoardProps) {
             {/* Header */}
             <Card>
                 <Flex direction="column" gap="4" p="4">
+                    {/* Header with refresh button */}
+                    <Flex justify="between" align="center">
+                        <Flex direction="column" gap="1">
+                            <Flex align="center" gap="3">
+                                <Text size="4" weight="bold">
+                                    Competition Status
+                                </Text>
+                                {!isPollingActive && (
+                                    <Badge variant="soft" color="orange" size="1">
+                                        Auto-refresh paused
+                                    </Badge>
+                                )}
+                            </Flex>
+                            {lastRefreshTime && (
+                                <Text size="1" color="gray">
+                                    Last updated: {lastRefreshTime.toLocaleTimeString()}
+                                </Text>
+                            )}
+                        </Flex>
+                        <Button
+                            variant="outline"
+                            size="2"
+                            onClick={handleManualRefresh}
+                            disabled={isRefreshing}
+                        >
+                            {isRefreshing ? 'Refreshing...' : 'Refresh'}
+                        </Button>
+                    </Flex>
 
                     {/* Clan Progress Overview */}
                     <Flex justify="center" gap="8">
