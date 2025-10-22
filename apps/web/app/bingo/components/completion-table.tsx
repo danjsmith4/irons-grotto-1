@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card, Table, Text, Badge, Flex, Button, Tabs } from '@radix-ui/themes';
 import { BingoBoard } from '../types/bingo-tile';
 import { loadCompletionsPaginatedAction } from '../actions/load-completions-paginated-action';
+import { loadTaskCompletionCountsAction, type TaskCompletionCount } from '../actions/load-task-completion-counts-action';
 import { ProgressGraph } from './progress-graph';
 import type { BingoCompletion } from '@/lib/db/schema';
 
@@ -14,19 +15,24 @@ interface CompletionTableProps {
 interface CompletionWithTask extends BingoCompletion {
     taskTitle?: string;
     taskDescription?: string;
+    tileHeader?: string;
+    components?: number;
 }
 
 interface TaskMapEntry {
     title: string;
     description: string;
     tileHeader: string;
+    components?: number;
 }
 
 export function CompletionTable({ board }: CompletionTableProps) {
     const [completions, setCompletions] = useState<CompletionWithTask[]>([]);
+    const [taskCounts, setTaskCounts] = useState<TaskCompletionCount[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [hasMore, setHasMore] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [loadingTaskCounts, setLoadingTaskCounts] = useState(false);
 
     // Create a map of task IDs to task details for quick lookup
     const taskMap = new Map<string, TaskMapEntry>();
@@ -35,7 +41,8 @@ export function CompletionTable({ board }: CompletionTableProps) {
             taskMap.set(task.id, {
                 title: task.title,
                 description: task.description,
-                tileHeader: tile.header
+                tileHeader: tile.header,
+                components: task.components
             });
         });
     });
@@ -48,15 +55,17 @@ export function CompletionTable({ board }: CompletionTableProps) {
             console.log('Completions result:', result);
             
             if (result.success) {
-                // Enrich completions with task details
-                const enrichedCompletions = result.completions.map(completion => ({
-                    ...completion,
-                    taskTitle: taskMap.get(completion.taskId)?.title,
-                    taskDescription: taskMap.get(completion.taskId)?.description,
-                    tileHeader: taskMap.get(completion.taskId)?.tileHeader,
-                }));
-
-                console.log('Enriched completions:', enrichedCompletions);
+        // Enrich completions with task details
+        const enrichedCompletions = result.completions.map(completion => {
+            const taskInfo = taskMap.get(completion.taskId);
+            return {
+                ...completion,
+                taskTitle: taskInfo?.title,
+                taskDescription: taskInfo?.description,
+                tileHeader: taskInfo?.tileHeader,
+                components: taskInfo?.components,
+            };
+        });                console.log('Enriched completions:', enrichedCompletions);
 
                 if (append) {
                     setCompletions(prev => [...prev, ...enrichedCompletions]);
@@ -74,9 +83,26 @@ export function CompletionTable({ board }: CompletionTableProps) {
         }
     };
 
-    // Load initial completions
+    const loadTaskCounts = async () => {
+        setLoadingTaskCounts(true);
+        try {
+            const result = await loadTaskCompletionCountsAction();
+            if (result.success) {
+                setTaskCounts(result.taskCounts);
+            } else {
+                console.error('Failed to load task counts:', result.error);
+            }
+        } catch (error) {
+            console.error('Failed to load task counts:', error);
+        } finally {
+            setLoadingTaskCounts(false);
+        }
+    };
+
+    // Load initial completions and task counts
     useEffect(() => {
         void loadCompletions(1);
+        void loadTaskCounts();
     }, []);
 
     const handleShowMore = () => {
@@ -113,6 +139,7 @@ export function CompletionTable({ board }: CompletionTableProps) {
                 <Tabs.Root defaultValue="completions">
                     <Tabs.List>
                         <Tabs.Trigger value="completions">Latest Completions</Tabs.Trigger>
+                        <Tabs.Trigger value="status">Task Status</Tabs.Trigger>
                         <Tabs.Trigger value="progress">Progress Graph</Tabs.Trigger>
                     </Tabs.List>
 
@@ -148,12 +175,24 @@ export function CompletionTable({ board }: CompletionTableProps) {
                                             </Table.Cell>
                                             <Table.Cell>
                                                 <Flex direction="column" gap="1">
-                                                    <Text size="2" weight="medium">
-                                                        {completion.taskTitle ?? completion.taskId}
-                                                    </Text>
+                                                    <Flex align="center" gap="2">
+                                                        <Text size="2" weight="medium">
+                                                            {completion.taskTitle ?? completion.taskId}
+                                                        </Text>
+                                                        {completion.components && (
+                                                            <Badge variant="soft" color="blue" size="1">
+                                                                Component-based
+                                                            </Badge>
+                                                        )}
+                                                    </Flex>
                                                     {completion.taskDescription && (
                                                         <Text size="1" color="gray">
                                                             {completion.taskDescription}
+                                                        </Text>
+                                                    )}
+                                                    {completion.components && (
+                                                        <Text size="1" color="gray">
+                                                            {completion.tileHeader} • Requires {completion.components} components
                                                         </Text>
                                                     )}
                                                 </Flex>
@@ -209,6 +248,80 @@ export function CompletionTable({ board }: CompletionTableProps) {
                                         No completions yet
                                     </Text>
                                 </Flex>
+                            )}
+                        </Flex>
+                    </Tabs.Content>
+
+                    <Tabs.Content value="status">
+                        <Flex direction="column" gap="4" mt="4">
+                            {loadingTaskCounts ? (
+                                <Flex justify="center" align="center" py="6">
+                                    <Text size="3" color="gray">
+                                        Loading task status...
+                                    </Text>
+                                </Flex>
+                            ) : (
+                                <Table.Root size="2">
+                                    <Table.Header>
+                                        <Table.Row>
+                                            <Text asChild weight="bold">
+                                                <Table.ColumnHeaderCell>Task</Table.ColumnHeaderCell>
+                                            </Text>
+                                            <Text asChild weight="bold">
+                                                <Table.ColumnHeaderCell align="center">Iron's Grotto</Table.ColumnHeaderCell>
+                                            </Text>
+                                            <Text asChild weight="bold">
+                                                <Table.ColumnHeaderCell align="center">Iron Daddy</Table.ColumnHeaderCell>
+                                            </Text>
+                                        </Table.Row>
+                                    </Table.Header>
+                                    <Table.Body>
+                                        {taskCounts.map((task) => (
+                                            <Table.Row key={task.taskId}>
+                                                <Table.Cell>
+                                                    <Flex direction="column" gap="1">
+                                                        <Text size="2" weight="medium">
+                                                            {task.taskTitle}
+                                                        </Text>
+                                                        <Text size="1" color="gray">
+                                                            {task.tileHeader} • {task.taskDescription}
+                                                        </Text>
+                                                    </Flex>
+                                                </Table.Cell>
+                                                <Table.Cell align="center">
+                                                    <Flex direction="column" align="center" gap="1">
+                                                        <Badge
+                                                            color={task.components && task.ironsGrottoCount >= task.components ? 'green' : 'gray'}
+                                                            variant={task.components && task.ironsGrottoCount >= task.components ? 'solid' : 'soft'}
+                                                        >
+                                                            {task.components ? `${task.ironsGrottoCount}/${task.components}` : task.ironsGrottoCount}
+                                                        </Badge>
+                                                        {task.components && (
+                                                            <Text size="1" color="gray">
+                                                                {task.ironsGrottoCount >= task.components ? 'Complete' : 'In Progress'}
+                                                            </Text>
+                                                        )}
+                                                    </Flex>
+                                                </Table.Cell>
+                                                <Table.Cell align="center">
+                                                    <Flex direction="column" align="center" gap="1">
+                                                        <Badge
+                                                            color={task.components && task.ironDaddyCount >= task.components ? 'amber' : 'gray'}
+                                                            variant={task.components && task.ironDaddyCount >= task.components ? 'solid' : 'soft'}
+                                                        >
+                                                            {task.components ? `${task.ironDaddyCount}/${task.components}` : task.ironDaddyCount}
+                                                        </Badge>
+                                                        {task.components && (
+                                                            <Text size="1" color="gray">
+                                                                {task.ironDaddyCount >= task.components ? 'Complete' : 'In Progress'}
+                                                            </Text>
+                                                        )}
+                                                    </Flex>
+                                                </Table.Cell>
+                                            </Table.Row>
+                                        ))}
+                                    </Table.Body>
+                                </Table.Root>
                             )}
                         </Flex>
                     </Tabs.Content>
