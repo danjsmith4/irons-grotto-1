@@ -160,6 +160,7 @@ export const sampleBingoBoard: BingoBoard = {
                     title: 'SRA',
                     description: "Obtain each of the following: Eye of the Duke, Leviathan's Lure, Executioner's Axe Head, and Siren's Staff.",
                     points: 12,
+                    components: 4,
                 },
             ],
         },
