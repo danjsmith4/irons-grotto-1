@@ -253,6 +253,16 @@ export function BingoBoardComponent({ board, onRefresh }: BingoBoardProps) {
                             <Text size="3" weight="bold" style={{ color: getClanColor('ironsGrotto') }}>
                                 {ironsGrottoProgress.progressPercentage}%
                             </Text>
+                            <Flex direction="column" align="center" gap="1" mt="1">
+                                <Text size="1" color="gray">
+                                    {ironsGrottoProgress.completedTasks} tasks completed
+                                </Text>
+                                {ironsGrottoProgress.readyTasks > 0 && (
+                                    <Text size="1" color="orange">
+                                        {ironsGrottoProgress.readyTasks} ready to unlock
+                                    </Text>
+                                )}
+                            </Flex>
                         </Flex>
 
                         <Separator orientation="vertical" />
@@ -273,6 +283,16 @@ export function BingoBoardComponent({ board, onRefresh }: BingoBoardProps) {
                             <Text size="3" weight="bold" style={{ color: getClanColor('ironDaddy') }}>
                                 {ironDaddyProgress.progressPercentage}%
                             </Text>
+                            <Flex direction="column" align="center" gap="1" mt="1">
+                                <Text size="1" color="gray">
+                                    {ironDaddyProgress.completedTasks} tasks completed
+                                </Text>
+                                {ironDaddyProgress.readyTasks > 0 && (
+                                    <Text size="1" color="orange">
+                                        {ironDaddyProgress.readyTasks} ready to unlock
+                                    </Text>
+                                )}
+                            </Flex>
                         </Flex>
                     </Flex>
                     {/* MVP Stats */}

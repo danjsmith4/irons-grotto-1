@@ -39,4 +39,5 @@ export interface ClanProgress {
     earnedPoints: number;
     totalPoints: number;
     progressPercentage: number;
+    readyTasks: number; // Tasks that are completed but waiting on predecessors
 }

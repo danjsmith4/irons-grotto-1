@@ -44,8 +44,9 @@ export function calculateClanProgress(board: BingoBoard, clanName: 'ironsGrotto'
 
     let completedTaskCount = 0;
     let earnedPoints = 0;
+    let readyTaskCount = 0;
 
-    // Calculate points based on sequential completion per tile
+    // First pass: calculate completed tasks and points (sequential within tiles)
     board.tiles.forEach(tile => {
         for (const task of tile.tasks) {
             const isCompleted = clanName === 'ironsGrotto'
@@ -62,6 +63,25 @@ export function calculateClanProgress(board: BingoBoard, clanName: 'ironsGrotto'
         }
     });
 
+    // Second pass: count ready tasks (tasks that are modal-completed but not scoring-completed)
+    board.tiles.forEach(tile => {
+        tile.tasks.forEach(task => {
+            const isCompleted = clanName === 'ironsGrotto'
+                ? task.ironsGrottoCompleted
+                : task.ironDaddyCompleted;
+            
+            const isModalCompleted = clanName === 'ironsGrotto'
+                ? task.modalIronsGrottoCompleted
+                : task.modalIronDaddyCompleted;
+
+            // Task is "ready" if it's modal-completed (component requirements met)
+            // but not scoring-completed (blocked by predecessors)
+            if (isModalCompleted && !isCompleted) {
+                readyTaskCount++;
+            }
+        });
+    });
+
     const progressPercentage = totalTasks > 0 ? Math.round((completedTaskCount / totalTasks) * 100) : 0;
 
     return {
@@ -71,10 +91,9 @@ export function calculateClanProgress(board: BingoBoard, clanName: 'ironsGrotto'
         earnedPoints,
         totalPoints,
         progressPercentage,
+        readyTasks: readyTaskCount,
     };
-}
-
-export function calculateTilePoints(tile: BingoTile, clanName: 'ironsGrotto' | 'ironDaddy'): number {
+}export function calculateTilePoints(tile: BingoTile, clanName: 'ironsGrotto' | 'ironDaddy'): number {
     let earnedPoints = 0;
 
     // Loop through tasks in order, add points only if previous tasks are completed
