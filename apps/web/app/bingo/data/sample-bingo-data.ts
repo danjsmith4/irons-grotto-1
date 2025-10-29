@@ -21,6 +21,7 @@ export const sampleBingoBoard: BingoBoard = {
                     title: 'DHCB & Buckler',
                     description: 'Obtain Dragon Hunter Crossbow and Twisted Buckler.',
                     points: 6,
+                    components: 2,
                 },
                 {
                     id: 'ancestral',
