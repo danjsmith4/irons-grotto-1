@@ -30,6 +30,7 @@ export function BingoBoardComponent({ board, onRefresh }: BingoBoardProps) {
     const [lastActivity, setLastActivity] = useState(Date.now());
     const [isPollingActive, setIsPollingActive] = useState(true);
     const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
     
     // Refs for managing intervals and activity tracking
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -68,6 +69,7 @@ export function BingoBoardComponent({ board, onRefresh }: BingoBoardProps) {
         } finally {
             setIsRefreshing(false);
             setLastRefreshTime(new Date());
+            setRefreshTrigger(prev => prev + 1); // Trigger refresh for child components
         }
     }, [onRefresh]);
 
@@ -356,7 +358,7 @@ export function BingoBoardComponent({ board, onRefresh }: BingoBoardProps) {
             </Grid>
 
             {/* Completion Tracking Table */}
-            <CompletionTable board={board} />
+            <CompletionTable board={board} refreshTrigger={refreshTrigger} />
         </Flex>
     );
 }

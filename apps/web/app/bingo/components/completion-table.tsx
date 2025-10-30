@@ -4,12 +4,13 @@ import { useState, useEffect } from 'react';
 import { Card, Table, Text, Badge, Flex, Button, Tabs } from '@radix-ui/themes';
 import { BingoBoard } from '../types/bingo-tile';
 import { loadCompletionsPaginatedAction } from '../actions/load-completions-paginated-action';
-import { loadTaskCompletionCountsAction, type TaskCompletionCount } from '../actions/load-task-completion-counts-action';
 import { ProgressGraph } from './progress-graph';
+import { CompetitionTracking } from './competition-tracking';
 import type { BingoCompletion } from '@/lib/db/schema';
 
 interface CompletionTableProps {
     board: BingoBoard;
+    refreshTrigger?: number;
 }
 
 interface CompletionWithTask extends BingoCompletion {
@@ -26,13 +27,11 @@ interface TaskMapEntry {
     components?: number;
 }
 
-export function CompletionTable({ board }: CompletionTableProps) {
+export function CompletionTable({ board, refreshTrigger }: CompletionTableProps) {
     const [completions, setCompletions] = useState<CompletionWithTask[]>([]);
-    const [taskCounts, setTaskCounts] = useState<TaskCompletionCount[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [hasMore, setHasMore] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [loadingTaskCounts, setLoadingTaskCounts] = useState(false);
 
     // Create a map of task IDs to task details for quick lookup
     const taskMap = new Map<string, TaskMapEntry>();
@@ -83,26 +82,9 @@ export function CompletionTable({ board }: CompletionTableProps) {
         }
     };
 
-    const loadTaskCounts = async () => {
-        setLoadingTaskCounts(true);
-        try {
-            const result = await loadTaskCompletionCountsAction();
-            if (result.success) {
-                setTaskCounts(result.taskCounts);
-            } else {
-                console.error('Failed to load task counts:', result.error);
-            }
-        } catch (error) {
-            console.error('Failed to load task counts:', error);
-        } finally {
-            setLoadingTaskCounts(false);
-        }
-    };
-
-    // Load initial completions and task counts
+    // Load initial completions
     useEffect(() => {
         void loadCompletions(1);
-        void loadTaskCounts();
     }, []);
 
     const handleShowMore = () => {
@@ -139,7 +121,7 @@ export function CompletionTable({ board }: CompletionTableProps) {
                 <Tabs.Root defaultValue="completions">
                     <Tabs.List>
                         <Tabs.Trigger value="completions">Latest Completions</Tabs.Trigger>
-                        <Tabs.Trigger value="status">Task Status</Tabs.Trigger>
+                        <Tabs.Trigger value="leaderboard">Leaderboard</Tabs.Trigger>
                         <Tabs.Trigger value="progress">Progress Graph</Tabs.Trigger>
                     </Tabs.List>
 
@@ -252,78 +234,8 @@ export function CompletionTable({ board }: CompletionTableProps) {
                         </Flex>
                     </Tabs.Content>
 
-                    <Tabs.Content value="status">
-                        <Flex direction="column" gap="4" mt="4">
-                            {loadingTaskCounts ? (
-                                <Flex justify="center" align="center" py="6">
-                                    <Text size="3" color="gray">
-                                        Loading task status...
-                                    </Text>
-                                </Flex>
-                            ) : (
-                                <Table.Root size="2">
-                                    <Table.Header>
-                                        <Table.Row>
-                                            <Text asChild weight="bold">
-                                                <Table.ColumnHeaderCell>Task</Table.ColumnHeaderCell>
-                                            </Text>
-                                            <Text asChild weight="bold">
-                                                <Table.ColumnHeaderCell align="center">Iron's Grotto</Table.ColumnHeaderCell>
-                                            </Text>
-                                            <Text asChild weight="bold">
-                                                <Table.ColumnHeaderCell align="center">Iron Daddy</Table.ColumnHeaderCell>
-                                            </Text>
-                                        </Table.Row>
-                                    </Table.Header>
-                                    <Table.Body>
-                                        {taskCounts.map((task) => (
-                                            <Table.Row key={task.taskId}>
-                                                <Table.Cell>
-                                                    <Flex direction="column" gap="1">
-                                                        <Text size="2" weight="medium">
-                                                            {task.taskTitle}
-                                                        </Text>
-                                                        <Text size="1" color="gray">
-                                                            {task.tileHeader} • {task.taskDescription}
-                                                        </Text>
-                                                    </Flex>
-                                                </Table.Cell>
-                                                <Table.Cell align="center">
-                                                    <Flex direction="column" align="center" gap="1">
-                                                        <Badge
-                                                            color={task.components && task.ironsGrottoCount >= task.components ? 'green' : 'gray'}
-                                                            variant={task.components && task.ironsGrottoCount >= task.components ? 'solid' : 'soft'}
-                                                        >
-                                                            {task.components ? `${task.ironsGrottoCount}/${task.components}` : task.ironsGrottoCount}
-                                                        </Badge>
-                                                        {task.components && (
-                                                            <Text size="1" color="gray">
-                                                                {task.ironsGrottoCount >= task.components ? 'Complete' : 'In Progress'}
-                                                            </Text>
-                                                        )}
-                                                    </Flex>
-                                                </Table.Cell>
-                                                <Table.Cell align="center">
-                                                    <Flex direction="column" align="center" gap="1">
-                                                        <Badge
-                                                            color={task.components && task.ironDaddyCount >= task.components ? 'amber' : 'gray'}
-                                                            variant={task.components && task.ironDaddyCount >= task.components ? 'solid' : 'soft'}
-                                                        >
-                                                            {task.components ? `${task.ironDaddyCount}/${task.components}` : task.ironDaddyCount}
-                                                        </Badge>
-                                                        {task.components && (
-                                                            <Text size="1" color="gray">
-                                                                {task.ironDaddyCount >= task.components ? 'Complete' : 'In Progress'}
-                                                            </Text>
-                                                        )}
-                                                    </Flex>
-                                                </Table.Cell>
-                                            </Table.Row>
-                                        ))}
-                                    </Table.Body>
-                                </Table.Root>
-                            )}
-                        </Flex>
+                    <Tabs.Content value="leaderboard">
+                        <CompetitionTracking refreshTrigger={refreshTrigger} />
                     </Tabs.Content>
 
                     <Tabs.Content value="progress">

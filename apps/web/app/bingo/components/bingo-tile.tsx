@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, Flex, Separator, Table, Text, Badge, Dialog } from '@radix-ui/themes';
 import { BingoTile } from '../types/bingo-tile';
 import { formatWikiImageUrl } from '../utils/format-wiki-image-url';
 import { EntityImage } from '../../rank-calculator/components/entity-image';
 import { parseInitials } from '../../rank-calculator/utils/parse-initials';
 import { calculateTilePoints } from '../utils/clan-completions';
+import { loadTaskCompletionCountsAction, type TaskCompletionCount } from '../actions/load-task-completion-counts-action';
 
 interface BingoTileProps {
     tile: BingoTile;
@@ -14,11 +15,40 @@ interface BingoTileProps {
 
 export function BingoTileComponent({ tile }: BingoTileProps) {
     const [isOpen, setIsOpen] = useState(false);
+    const [taskCounts, setTaskCounts] = useState<TaskCompletionCount[]>([]);
+    const [isLoadingCounts, setIsLoadingCounts] = useState(false);
     const imageUrl = tile.image ? formatWikiImageUrl(tile.image, 80) : '';
 
     const totalPoints = tile.tasks.reduce((sum, task) => sum + task.points, 0);
     const ironsGrottoPoints = calculateTilePoints(tile, 'ironsGrotto');
     const ironDaddyPoints = calculateTilePoints(tile, 'ironDaddy');
+
+    // Load task completion counts when modal opens
+    useEffect(() => {
+        if (isOpen && taskCounts.length === 0) {
+            const loadCounts = async () => {
+                setIsLoadingCounts(true);
+                try {
+                    const result = await loadTaskCompletionCountsAction();
+                    if (result.success) {
+                        setTaskCounts(result.taskCounts);
+                    }
+                } catch (error) {
+                    console.error('Failed to load task counts:', error);
+                } finally {
+                    setIsLoadingCounts(false);
+                }
+            };
+            void loadCounts();
+        }
+    }, [isOpen, taskCounts.length]);
+
+    // Helper function to get completion count for a specific task
+    const getTaskCount = (taskId: string, clan: 'ironsGrotto' | 'ironDaddy'): number => {
+        const taskCount = taskCounts.find(tc => tc.taskId === taskId);
+        if (!taskCount) return 0;
+        return clan === 'ironsGrotto' ? taskCount.ironsGrottoCount : taskCount.ironDaddyCount;
+    };
 
     return (
         <>
@@ -164,20 +194,42 @@ export function BingoTileComponent({ tile }: BingoTileProps) {
                                         </Text>
                                     </Table.Cell>
                                     <Table.Cell align="center">
-                                        <Badge
-                                            color={(task.modalIronsGrottoCompleted ?? task.ironsGrottoCompleted) ? 'green' : 'gray'}
-                                            variant={(task.modalIronsGrottoCompleted ?? task.ironsGrottoCompleted) ? 'solid' : 'soft'}
-                                        >
-                                            {(task.modalIronsGrottoCompleted ?? task.ironsGrottoCompleted) ? '✓' : '○'}
-                                        </Badge>
+                                        {isLoadingCounts ? (
+                                            <Text size="1" color="gray">Loading...</Text>
+                                        ) : task.components ? (
+                                            <Badge
+                                                color={getTaskCount(task.id, 'ironsGrotto') >= task.components ? 'green' : 'gray'}
+                                                variant={getTaskCount(task.id, 'ironsGrotto') >= task.components ? 'solid' : 'soft'}
+                                            >
+                                                {getTaskCount(task.id, 'ironsGrotto')}/{task.components}
+                                            </Badge>
+                                        ) : (
+                                            <Badge
+                                                color={(task.modalIronsGrottoCompleted ?? task.ironsGrottoCompleted) ? 'green' : 'gray'}
+                                                variant={(task.modalIronsGrottoCompleted ?? task.ironsGrottoCompleted) ? 'solid' : 'soft'}
+                                            >
+                                                {(task.modalIronsGrottoCompleted ?? task.ironsGrottoCompleted) ? '✓' : '○'}
+                                            </Badge>
+                                        )}
                                     </Table.Cell>
                                     <Table.Cell align="center">
-                                        <Badge
-                                            color={(task.modalIronDaddyCompleted ?? task.ironDaddyCompleted) ? 'amber' : 'gray'}
-                                            variant={(task.modalIronDaddyCompleted ?? task.ironDaddyCompleted) ? 'solid' : 'soft'}
-                                        >
-                                            {(task.modalIronDaddyCompleted ?? task.ironDaddyCompleted) ? '✓' : '○'}
-                                        </Badge>
+                                        {isLoadingCounts ? (
+                                            <Text size="1" color="gray">Loading...</Text>
+                                        ) : task.components ? (
+                                            <Badge
+                                                color={getTaskCount(task.id, 'ironDaddy') >= task.components ? 'amber' : 'gray'}
+                                                variant={getTaskCount(task.id, 'ironDaddy') >= task.components ? 'solid' : 'soft'}
+                                            >
+                                                {getTaskCount(task.id, 'ironDaddy')}/{task.components}
+                                            </Badge>
+                                        ) : (
+                                            <Badge
+                                                color={(task.modalIronDaddyCompleted ?? task.ironDaddyCompleted) ? 'amber' : 'gray'}
+                                                variant={(task.modalIronDaddyCompleted ?? task.ironDaddyCompleted) ? 'solid' : 'soft'}
+                                            >
+                                                {(task.modalIronDaddyCompleted ?? task.ironDaddyCompleted) ? '✓' : '○'}
+                                            </Badge>
+                                        )}
                                     </Table.Cell>
                                 </Table.Row>
                             ))}

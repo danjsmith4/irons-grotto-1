@@ -69,7 +69,7 @@ export function calculateClanProgress(board: BingoBoard, clanName: 'ironsGrotto'
             const isCompleted = clanName === 'ironsGrotto'
                 ? task.ironsGrottoCompleted
                 : task.ironDaddyCompleted;
-            
+
             const isModalCompleted = clanName === 'ironsGrotto'
                 ? task.modalIronsGrottoCompleted
                 : task.modalIronDaddyCompleted;
@@ -93,7 +93,7 @@ export function calculateClanProgress(board: BingoBoard, clanName: 'ironsGrotto'
         progressPercentage,
         readyTasks: readyTaskCount,
     };
-}export function calculateTilePoints(tile: BingoTile, clanName: 'ironsGrotto' | 'ironDaddy'): number {
+} export function calculateTilePoints(tile: BingoTile, clanName: 'ironsGrotto' | 'ironDaddy'): number {
     let earnedPoints = 0;
 
     // Loop through tasks in order, add points only if previous tasks are completed
