@@ -786,6 +786,7 @@ export const earlyGamePlayerFixture = {
     },
   },
   levels: {
+    Sailing: 68,
     Hunter: 71,
     Thieving: 74,
     Runecraft: 99,
@@ -2360,6 +2361,7 @@ export const midGamePlayerFixture = {
     },
   },
   levels: {
+    Sailing: 93,
     Agility: 85,
     Attack: 99,
     Construction: 99,
@@ -3947,6 +3949,7 @@ export const endGamePlayerFixture = {
     },
   },
   levels: {
+    Sailing: 99,
     Hunter: 99,
     Thieving: 99,
     Runecraft: 99,
