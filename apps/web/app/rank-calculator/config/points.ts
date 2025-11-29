@@ -44,8 +44,9 @@ export const totalLevelMilestonePoints = {
   1500: 150,
   1750: 250,
   2000: 500,
-  2200: 775,
-  [maximumTotalLevel]: 1750,
+  2200: 600,
+  2300: 925,
+  [maximumTotalLevel]: 1000,
 } as const satisfies Record<number, number>;
 
 export const combatAchievementTierPoints = {
