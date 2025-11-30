@@ -122,6 +122,7 @@ export const petEhcRates = {
   'Rock golem': 118.3,
   Rocky: 25,
   Tangleroot: 82,
+  Soup: 100,
 } satisfies Partial<Record<CollectionLogItemName, number>>;
 
 export const estimatedHoursForImbuedHeart = 125;

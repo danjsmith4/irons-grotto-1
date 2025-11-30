@@ -1790,7 +1790,8 @@ export const CollectionLogItemName = z.enum([
   'Eye of ayak (uncharged)',
   'Avernic treads',
   'Dom',
-  'Earthbound tecpatl'
+  'Earthbound tecpatl',
+  'Soup'
 ]);
 
 export type CollectionLogItemName = z.infer<typeof CollectionLogItemName>;

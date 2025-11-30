@@ -43,6 +43,9 @@ export const skillingPets: ItemCategory = {
       points: calculateXpOrTimeBasedItemPoints(petEhcRates.Tangleroot),
     },
     'Tiny tempor': {},
+    'Soup': {
+      points: calculateXpOrTimeBasedItemPoints(petEhcRates.Soup)
+    }
   } satisfies Partial<
     Record<
       CollectionLogItemName,
