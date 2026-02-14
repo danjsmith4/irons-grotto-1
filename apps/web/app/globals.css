@@ -6,8 +6,27 @@
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
+
+  /* Custom Irons Grotto Color Palette */
+  --ig-purple-deep: #1a0d2e;
+  --ig-purple-mid: #2d1b4e;
+  --ig-pink: #e91e63;
+  --ig-purple-accent: #9c27b0;
+  --ig-purple-light: #ce93d8;
+  --ig-text-primary: #ffffff;
+  --ig-text-secondary: #b39ddb;
+}
+.rt-ProgressRoot {
+  background-color: rgba(45, 27, 78, 0.6) !important;
 }
 
+.rt-ProgressIndicator {
+  background: linear-gradient(
+    90deg,
+    var(--ig-pink),
+    var(--ig-purple-accent)
+  ) !important;
+}
 @media (prefers-color-scheme: dark) {
   :root {
     --foreground-rgb: 255, 255, 255;
@@ -16,14 +35,88 @@
   }
 }
 
+/* Override Radix UI theme colors to match Irons Grotto palette */
+.dark-theme,
+[data-theme='dark'] {
+  /* Background colors */
+  --color-background: var(--ig-purple-deep);
+  --color-surface: var(--ig-purple-mid);
+  --color-panel: var(--ig-purple-mid);
+
+  /* Accent colors - using pink/purple gradient concept */
+  --accent-1: #2a0d1a;
+  --accent-2: #3d1427;
+  --accent-3: #4f1c34;
+  --accent-4: #5f2241;
+  --accent-5: #6e294e;
+  --accent-6: #7d305b;
+  --accent-7: #8d3968;
+  --accent-8: #a04575;
+  --accent-9: var(--ig-pink);
+  --accent-10: #f02d72;
+  --accent-11: #f54881;
+  --accent-12: #fadde6;
+
+  /* Accent alpha colors */
+  --accent-a1: rgba(233, 30, 99, 0.05);
+  --accent-a2: rgba(233, 30, 99, 0.1);
+  --accent-a3: rgba(233, 30, 99, 0.15);
+  --accent-a4: rgba(233, 30, 99, 0.2);
+  --accent-a5: rgba(233, 30, 99, 0.25);
+  --accent-a6: rgba(233, 30, 99, 0.3);
+  --accent-a7: rgba(233, 30, 99, 0.4);
+  --accent-a8: rgba(233, 30, 99, 0.5);
+  --accent-a9: rgba(233, 30, 99, 0.7);
+  --accent-a10: rgba(233, 30, 99, 0.8);
+  --accent-a11: rgba(233, 30, 99, 0.9);
+  --accent-a12: rgba(233, 30, 99, 0.95);
+
+  /* Override gray scale with purple variants */
+  --gray-1: #2a0d1a;
+  --gray-2: #3d1427;
+  --gray-3: #4f1c34;
+  --gray-4: var(--ig-purple-mid);
+  --gray-5: #6e294e;
+  --gray-6: #7d305b;
+  --gray-7: #8d3968;
+  --gray-8: #a04575;
+  --gray-9: #b854a0;
+  --gray-10: #ce93d8;
+  --gray-11: var(--ig-text-secondary);
+  --gray-12: var(--ig-text-primary);
+
+  /* Gray alpha variants */
+  --gray-a1: rgba(206, 147, 216, 0.05);
+  --gray-a2: rgba(206, 147, 216, 0.1);
+  --gray-a3: rgba(206, 147, 216, 0.15);
+  --gray-a4: rgba(206, 147, 216, 0.2);
+  --gray-a5: rgba(206, 147, 216, 0.3);
+  --gray-a6: rgba(206, 147, 216, 0.4);
+  --gray-a7: rgba(206, 147, 216, 0.5);
+  --gray-a8: rgba(206, 147, 216, 0.6);
+  --gray-a9: rgba(206, 147, 216, 0.7);
+  --gray-a10: rgba(206, 147, 216, 0.8);
+  --gray-a11: rgba(206, 147, 216, 0.9);
+  --gray-a12: rgba(206, 147, 216, 0.95);
+}
+
+/* Apply background gradient similar to landing page */
+#theme-root {
+  background: radial-gradient(
+    ellipse at center,
+    var(--ig-purple-mid) 0%,
+    var(--ig-purple-deep) 70%
+  ) !important;
+  min-height: 100vh;
+}
+
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background: radial-gradient(
+    ellipse at center,
+    var(--ig-purple-mid) 0%,
+    var(--ig-purple-deep) 70%
+  );
 }
 
 @layer utilities {
@@ -231,6 +324,20 @@ img.rt-AvatarImage {
 
 .save-dropdown-button {
   position: relative !important;
+  background: linear-gradient(
+    135deg,
+    var(--ig-pink) 0%,
+    var(--ig-purple-accent) 100%
+  ) !important;
+  color: var(--ig-text-primary) !important;
+  border: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.save-dropdown-button:hover {
+  background: linear-gradient(135deg, #f02d72 0%, #b030cc 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(233, 30, 99, 0.4) !important;
 }
 
 .save-dropdown-button:before {
@@ -242,9 +349,118 @@ img.rt-AvatarImage {
   height: var(--height);
   top: calc(var(--height) / 2) %;
   left: -0.5px;
-  background-color: var(--accent-a4);
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.save-dropdown-button[disabled] {
+  background: rgba(45, 27, 78, 0.6) !important;
+  color: rgba(255, 255, 255, 0.5) !important;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 .save-dropdown-button[disabled]:before {
-  background-color: var(--gray-a4);
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Additional Irons Grotto theme overrides */
+.rt-Card {
+  background-color: rgba(45, 27, 78, 0.6) !important;
+  border: 1px solid rgba(233, 30, 99, 0.2) !important;
+  backdrop-filter: blur(10px);
+}
+
+.rt-Card:hover {
+  border-color: rgba(233, 30, 99, 0.4) !important;
+  box-shadow: 0 4px 20px rgba(233, 30, 99, 0.3) !important;
+}
+
+/* BaseCard styling */
+.rt-BaseCard {
+  background-color: rgba(45, 27, 78, 0.6) !important;
+  border: 1px solid rgba(233, 30, 99, 0.2) !important;
+  backdrop-filter: blur(10px);
+}
+
+.rt-BaseCard:hover {
+  border-color: rgba(233, 30, 99, 0.4) !important;
+  box-shadow: 0 4px 20px rgba(233, 30, 99, 0.3) !important;
+}
+
+.rt-Button:where(.rt-variant-solid) {
+  background: linear-gradient(
+    135deg,
+    var(--ig-pink) 0%,
+    var(--ig-purple-accent) 100%
+  ) !important;
+  color: var(--ig-text-primary) !important;
+  border: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.rt-Button:where(.rt-variant-solid):hover {
+  background: linear-gradient(135deg, #f02d72 0%, #b030cc 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(233, 30, 99, 0.4) !important;
+}
+
+.rt-Button:where(.rt-variant-soft),
+.rt-Button:where(.rt-variant-outline) {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid var(--ig-purple-light) !important;
+  color: var(--ig-text-primary) !important;
+  backdrop-filter: blur(10px);
+  transition: all 0.2s ease !important;
+}
+
+.rt-Button:where(.rt-variant-soft):hover,
+.rt-Button:where(.rt-variant-outline):hover {
+  background: rgba(233, 30, 99, 0.2) !important;
+  border-color: var(--ig-pink) !important;
+  transform: translateY(-2px);
+}
+
+.rt-Heading {
+  color: var(--ig-purple-light) !important;
+}
+
+.rt-Text {
+  color: var(--ig-text-secondary) !important;
+}
+
+/* Form elements */
+.rt-TextFieldInput,
+.rt-TextAreaInput {
+  background-color: rgba(45, 27, 78, 0.8) !important;
+  border: 1px solid rgba(206, 147, 216, 0.3) !important;
+  color: var(--ig-text-primary) !important;
+}
+
+.rt-TextFieldInput:focus,
+.rt-TextAreaInput:focus {
+  border-color: var(--ig-pink) !important;
+  box-shadow: 0 0 0 1px var(--ig-pink) !important;
+}
+
+.rt-Select .rt-SelectTrigger {
+  background-color: rgba(45, 27, 78, 0.8) !important;
+  border: 1px solid rgba(206, 147, 216, 0.3) !important;
+  color: var(--ig-text-primary) !important;
+}
+
+.rt-SelectContent {
+  background-color: var(--ig-purple-mid) !important;
+  border: 1px solid rgba(233, 30, 99, 0.3) !important;
+  backdrop-filter: blur(10px);
+}
+
+/* Disable animations specifically for IronsButton components */
+.irons-button {
+  transition: none !important;
+  transform: none !important;
+}
+
+.irons-button:hover {
+  transition: none !important;
+  transform: none !important;
 }

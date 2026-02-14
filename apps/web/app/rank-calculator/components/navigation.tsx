@@ -40,9 +40,10 @@ export function Navigation({
         md: 'auto',
       }}
       style={{
-        background: 'var(--color-background)',
-        borderBottom: '1px solid var(--gray-5)',
+        background: 'rgba(45, 27, 78, 0.95)',
+        borderBottom: '1px solid rgba(233, 30, 99, 0.3)',
         zIndex: 100,
+        backdropFilter: 'blur(10px)',
       }}
     >
       <Flex align="center" justify="between" asChild>

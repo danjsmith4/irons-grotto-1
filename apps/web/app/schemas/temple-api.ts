@@ -95,11 +95,35 @@ export interface PlayerStatsError {
   };
 }
 
+
+const sqlDateStringToDate = z
+  .string()
+  .transform((value, ctx) => {
+    // Convert "YYYY-MM-DD HH:mm:ss"
+    // → ISO format "YYYY-MM-DDTHH:mm:ss"
+    const iso = value.replace(" ", "T");
+
+    const date = new Date(iso);
+
+    if (isNaN(date.getTime())) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Invalid date format",
+      });
+      return z.NEVER;
+    }
+
+    return date;
+  });
+
 const TempleOSRSCollectionLogItem = z.object({
   count: z.number().nonnegative(),
   id: z.number().nonnegative(),
   name: z.string().min(1),
+  date: sqlDateStringToDate,
 });
+
+export type TempleOSRSCollectionLogItem = z.infer<typeof TempleOSRSCollectionLogItem>;
 
 export const TempleOSRSPlayerCollectionLog = z.object({
   data: z.object({

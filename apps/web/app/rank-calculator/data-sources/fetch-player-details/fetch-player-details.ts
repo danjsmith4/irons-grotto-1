@@ -34,6 +34,7 @@ import { mergeTzhaarCapes } from './utils/merge-tzhaar-capes';
 import { isAchievementDiaryCapeAchieved } from '../../utils/is-achievement-diary-cape-achieved';
 import { fetchUserDiscordRoles } from '../fetch-user-discord-roles';
 import { calculateCombatDiaryTierBonusPoints } from '../../utils/calculators/calculate-custom-diary-tier-multipliers';
+import { syncPlayerToDatabase, bulkUpsertCollectionLogItems } from '@/lib/db/player-operations';
 
 export interface PlayerDetailsResponse
   extends Omit<RankCalculatorSchema, 'rank' | 'points'> {
@@ -71,7 +72,7 @@ export const emptyResponse = {
   totalLevel: 0,
   playerName: '',
   rankStructure: 'Standard',
-  proofLink: null,
+  proofLink: undefined,
   hasTemplePlayerStats: false,
   hasTempleCollectionLog: false,
   hasWikiSyncData: false,
@@ -152,6 +153,11 @@ export async function fetchPlayerDetails(
         fetchTemplePlayerCollectionLog(player),
         fetchUserDiscordRoles(userId),
       ]);
+
+    bulkUpsertCollectionLogItems(playerRecord.rsn, templeCollectionLog ? templeCollectionLog.items : []).catch((error: any) => {
+      Sentry.captureException(error);
+      console.error(error)
+    })
 
     const hasThirdPartyData = Boolean(
       wikiSyncData ?? templePlayerStats ?? templeCollectionLog,
@@ -269,7 +275,7 @@ export async function fetchPlayerDetails(
       savedData?.proofLink ??
       (templeCollectionLog
         ? `${clientConstants.temple.baseUrl}/player/collection-log.php?player=${player}`
-        : null);
+        : undefined);
 
     const hasInfernalCape = zukKillCount ? zukKillCount > 0 : false;
     const hasFireCape =
@@ -301,7 +307,7 @@ export async function fetchPlayerDetails(
     const { combatBonusPoints, collectionLogBonusPoints } =
       calculateCombatDiaryTierBonusPoints(discordRoles);
 
-    return {
+    const result = {
       success: true,
       error: null,
       data: {
@@ -358,6 +364,14 @@ export async function fetchPlayerDetails(
         },
       },
     };
+
+
+    // Sync to shadow dataset if we have third-party data
+    if (hasThirdPartyData) {
+      await syncPlayerToDatabase(result.data);
+    }
+
+    return result
   } catch (error) {
     Sentry.captureException(error);
 

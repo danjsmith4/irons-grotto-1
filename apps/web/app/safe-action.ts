@@ -26,12 +26,6 @@ export const actionClient = createSafeActionClient({
   .use(async ({ next, clientInput, metadata }) => {
     const result = await next();
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`Input: ${JSON.stringify(clientInput, null, 2)}`);
-      console.log(`Result: ${JSON.stringify(result, null, 2)}`);
-      console.log(`Metadata: ${JSON.stringify(metadata, null, 2)}`);
-    }
-
     return result;
   })
   .use(async ({ next, metadata }) =>

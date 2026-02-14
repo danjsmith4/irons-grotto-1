@@ -1,162 +1,371 @@
-@value primaryGold: #ffd700; /* Gold */
-@value secondaryBlue: #2e86c1; /* Original button blue */
-@value darkBackground: rgba(0, 0, 0, 0.85); /* Slightly darker, less transparent background */
-@value lightText: #e0e0e0; /* Off-white for body text */
-@value greyText: #b0b0b0; /* Lighter grey for subtle text */
-@value borderColor: #444; /* Dark grey for subtle borders */
-@value boxShadowColor: rgba(0, 0, 0, 0.5);
-@value transitionSpeed: 0.3s ease;
-
-.outer-container {
-  font-family: 'Open Sans', sans-serif; /* Modern sans-serif for body */
-  margin: 0;
-  padding: 0;
-  color: lightText;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start; /* Align items to the start, allow content to flow down */
+/* Main page container */
+.page-container {
   min-height: 100vh;
-  padding: 2rem 1rem; /* Padding for small screens */
-  box-sizing: border-box; /* Include padding in element's total width and height */
+  background: radial-gradient(ellipse at center, #2d1b4e 0%, #1a0d2e 70%);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
 }
 
-.container {
-  max-width: 880px; /* Slightly wider container */
-  width: 100%;
-  background-color: darkBackground;
-  padding: 2.5rem; /* More padding for a less cramped feel */
-  border-radius: 10px; /* Slightly more rounded corners */
-  box-shadow: 0 10px 30px boxShadowColor; /* More pronounced shadow */
+/* Animated rays background */
+.rays-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100vw;
+  height: 100vw;
+  pointer-events: none;
+}
+
+.ray {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2px;
+  height: 50vw;
+  background: linear-gradient(
+    transparent 0%,
+    rgba(233, 30, 99, 0.1) 40%,
+    rgba(156, 39, 176, 0.15) 50%,
+    rgba(233, 30, 99, 0.1) 60%,
+    transparent 100%
+  );
+  transform-origin: bottom center;
+  opacity: 0.6;
+  animation: rotateRays 20s linear infinite;
+}
+
+@keyframes rotateRays {
+  from {
+    transform: translate(-50%, -100%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -100%) rotate(360deg);
+  }
+}
+
+/* Individual ray positioning */
+.ray-1 {
+  transform: translate(-50%, -100%) rotate(0deg);
+  animation-delay: 0s;
+}
+.ray-2 {
+  transform: translate(-50%, -100%) rotate(30deg);
+  animation-delay: -1.67s;
+}
+.ray-3 {
+  transform: translate(-50%, -100%) rotate(60deg);
+  animation-delay: -3.33s;
+}
+.ray-4 {
+  transform: translate(-50%, -100%) rotate(90deg);
+  animation-delay: -5s;
+}
+.ray-5 {
+  transform: translate(-50%, -100%) rotate(120deg);
+  animation-delay: -6.67s;
+}
+.ray-6 {
+  transform: translate(-50%, -100%) rotate(150deg);
+  animation-delay: -8.33s;
+}
+.ray-7 {
+  transform: translate(-50%, -100%) rotate(180deg);
+  animation-delay: -10s;
+}
+.ray-8 {
+  transform: translate(-50%, -100%) rotate(210deg);
+  animation-delay: -11.67s;
+}
+.ray-9 {
+  transform: translate(-50%, -100%) rotate(240deg);
+  animation-delay: -13.33s;
+}
+.ray-10 {
+  transform: translate(-50%, -100%) rotate(270deg);
+  animation-delay: -15s;
+}
+.ray-11 {
+  transform: translate(-50%, -100%) rotate(300deg);
+  animation-delay: -16.67s;
+}
+.ray-12 {
+  transform: translate(-50%, -100%) rotate(330deg);
+  animation-delay: -18.33s;
+}
+
+/* Main content container */
+.main-content {
   text-align: center;
-  margin-top: 2rem; /* Initial margin from the top */
-  border: 1px solid borderColor; /* Subtle border */
-  overflow: hidden; /* Clear any floats/margins from children */
+  z-index: 10;
+  position: relative;
+  max-width: 1200px;
+  width: 100%;
 }
 
-.heading-1,
-.heading-2 {
-  font-family: 'Cinzel', serif; /* More elegant, thematic font for headings */
-  color: primaryGold;
-  margin-top: 0;
-  margin-bottom: 1.5rem; /* Consistent spacing below headings */
-  text-transform: uppercase; /* A classic OSRS text feel */
-  letter-spacing: 0.05em; /* Slightly spaced out letters */
-  font-weight: 700; /* Bolder text for emphasis */
+/* Logo section */
+.logo-section {
+  margin-bottom: 2.5rem;
 }
 
-.heading-1 {
-  font-size: 2.8rem; /* Larger main heading */
+.logo-container {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 1.5rem;
 }
 
-.heading-2 {
-  font-size: 2.2rem; /* Slightly smaller section headings */
-  border-bottom: 2px solid primaryGold; /* Underline for section headings */
-  padding-bottom: 0.5rem;
-  display: inline-block; /* Make border only as wide as text */
+.logo {
+  position: relative;
+  z-index: 2;
+  border-radius: 50%;
+  animation: logoFloat 3s ease-in-out infinite;
+  filter: drop-shadow(0 0 20px #e91e63);
 }
 
-.paragraph {
-  color: greyText;
-  line-height: 1.7; /* Better readability */
-  margin-bottom: 1.5rem; /* Consistent spacing below paragraphs */
+@keyframes logoFloat {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
-.button-container {
-  margin-top: 2rem;
-  margin-bottom: 2rem;
-  display: flex; /* Use flexbox for button layout */
-  flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
-  justify-content: center; /* Center buttons horizontally */
-  gap: 1.5rem; /* Space between buttons */
+.logo-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, #e91e63 0%, transparent 70%);
+  opacity: 0.3;
+  animation: pulseGlow 2s ease-in-out infinite;
+  border-radius: 50%;
+}
+
+@keyframes pulseGlow {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.1);
+    opacity: 0.5;
+  }
+}
+
+.main-title {
+  font-size: clamp(2rem, 6vw, 4rem);
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  text-shadow:
+    0 0 10px #e91e63,
+    0 0 20px #e91e63,
+    0 0 40px #e91e63;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.subtitle {
+  font-size: clamp(1rem, 3vw, 1.25rem);
+  color: #b39ddb;
+  margin: 1rem 0 0 0;
+  font-weight: 300;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Action buttons */
+.action-buttons {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 3rem;
 }
 
 .button {
-  display: inline-block;
-  padding: 0.8rem 2.2rem; /* Larger padding for better touch targets */
-  background-color: secondaryBlue;
-  color: white;
-  text-decoration: none;
+  padding: 1rem 2rem;
   border: none;
-  border-radius: 5px; /* Slightly more rounded */
-  cursor: pointer;
-  transition:
-    background-color transitionSpeed,
-    transform transitionSpeed,
-    box-shadow transitionSpeed;
-  font-weight: 600; /* Bolder text for buttons */
+  border-radius: 50px;
   font-size: 1.1rem;
-  letter-spacing: 0.03em;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Subtle button shadow */
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  min-width: 160px;
 }
 
-.button:hover {
-  background-color: #2671ae; /* Darker blue on hover */
-  transform: translateY(-3px); /* Subtle lift effect */
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+.primary-button {
+  background: linear-gradient(
+    135deg,
+    var(--accent-pink) 0%,
+    var(--accent-purple) 100%
+  );
+  color: var(--text-primary);
+  box-shadow:
+    0 4px 15px rgba(233, 30, 99, 0.4),
+    0 0 20px rgba(233, 30, 99, 0.2);
 }
 
-.button.apply-here {
-  background-color: #4caf50; /* A distinct green for "Apply" */
+.primary-button:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 8px 25px rgba(233, 30, 99, 0.6),
+    0 0 30px rgba(233, 30, 99, 0.4);
 }
 
-.button.apply-here:hover {
-  background-color: #45a049; /* Darker green on hover */
+.secondary-button {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border: 2px solid #ce93d8;
+  backdrop-filter: blur(10px);
 }
 
-.about-section,
-.leadership,
-.apply-section {
-  /* All sections now share this top margin and border */
-  margin-top: 3.5rem; /* More space between sections */
-  padding-top: 2rem; /* Padding inside sections */
-  border-top: 1px dashed borderColor; /* Dashed line separator */
+.secondary-button:hover {
+  background: rgba(233, 30, 99, 0.2);
+  border-color: #e91e63;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(233, 30, 99, 0.3);
 }
 
-.leadership ul {
-  list-style-type: none;
-  padding: 0;
-  margin-top: 1.5rem;
+/* Info cards */
+.info-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
-.leadership ul li {
-  margin-bottom: 0.8rem;
-  font-size: 1.05rem;
+.card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(233, 30, 99, 0.2);
+  border-radius: 20px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-.leadership strong {
-  color: primaryGold; /* Make titles stand out */
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #e91e63, #9c27b0);
 }
 
-/* Responsive adjustments */
+.card:hover {
+  transform: translateY(-5px);
+  border-color: #e91e63;
+  box-shadow: 0 10px 30px rgba(233, 30, 99, 0.3);
+}
+
+.card h3 {
+  color: #ce93d8;
+  font-size: 1.3rem;
+  margin: 0 0 1rem 0;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.card p {
+  color: #b39ddb;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.card-link {
+  color: #e91e63;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.card-link:hover {
+  color: #ffffff;
+  text-shadow: 0 0 10px #e91e63;
+}
+
+/* Responsive design */
 @media (max-width: 768px) {
-  .heading-1 {
-    font-size: 2.2rem;
+  .page-container {
+    padding: 1rem;
   }
-  .heading-2 {
-    font-size: 1.8rem;
+
+  .action-buttons {
+    flex-direction: column;
+    align-items: center;
   }
-  .container {
-    padding: 1.5rem;
-    margin: 1rem; /* Reduce margin on smaller screens */
-  }
-  .button-container {
-    flex-direction: column; /* Stack buttons vertically on small screens */
-    align-items: stretch; /* Make buttons full width */
-  }
+
   .button {
-    width: 100%; /* Full width buttons */
-    margin: 0.5rem 0; /* Adjust vertical margin */
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .info-cards {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .card {
+    padding: 1.5rem;
+  }
+
+  .logo {
+    width: 150px;
+    height: 150px;
+  }
+
+  .logo-glow {
+    width: 180px;
+    height: 180px;
   }
 }
 
 @media (max-width: 480px) {
-  .heading-1 {
-    font-size: 1.8rem;
+  .main-title {
+    font-size: 2.5rem;
   }
-  .heading-2 {
-    font-size: 1.5rem;
+
+  .logo {
+    width: 120px;
+    height: 120px;
   }
-  .container {
-    padding: 1rem;
+
+  .logo-glow {
+    width: 150px;
+    height: 150px;
   }
+}
+
+/* Performance optimizations */
+.ray {
+  will-change: transform;
+}
+
+.logo {
+  will-change: transform;
+}
+
+.logo-glow {
+  will-change: transform, opacity;
 }

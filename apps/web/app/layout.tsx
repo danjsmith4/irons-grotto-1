@@ -35,6 +35,7 @@ export default function RootLayout({
           id="theme-root"
           panelBackground="solid"
           radius="small"
+          className="dark-theme"
         >
           <Providers>{children}</Providers>
           <ToastContainer
