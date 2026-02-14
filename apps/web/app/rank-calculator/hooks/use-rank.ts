@@ -1,7 +1,7 @@
 import { useWatch } from 'react-hook-form';
 import { RankCalculatorSchema } from '../[player]/submit-rank-calculator-validation';
 import { calculateRank } from '../utils/calculators/calculate-rank';
-import { updatePlayerPoints } from '@/lib/db/player-operations';
+import { updatePlayerPointsAction } from '../actions/update-player-points-action';
 import { useEffect } from 'react';
 
 export function useRank(pointsAwarded: number, playerName: string) {
@@ -28,8 +28,11 @@ export function useRank(pointsAwarded: number, playerName: string) {
   // Update player points when points change
   useEffect(() => {
     if (pointsAwarded > 0) {
-      updatePlayerPoints(playerName, pointsAwarded).catch((error) => {
-        console.error(`Failed to update points for player ${playerName}:`, error);
+      updatePlayerPointsAction(playerName, pointsAwarded).catch((error) => {
+        console.error(
+          `Failed to update points for player ${playerName}:`,
+          error,
+        );
       });
     }
   }, [playerName, pointsAwarded]);

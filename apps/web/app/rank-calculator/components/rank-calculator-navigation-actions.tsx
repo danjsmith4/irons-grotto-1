@@ -45,7 +45,7 @@ export function RankCalculatorNavigationActions({
 
   return (
     <Flex gap="1">
-      <IronsButton asChild variant="ghost" size="2">
+      <IronsButton asChild size="2" variant="primary">
         <Link
           href="https://discord.com/channels/697877518455144468/1385071226837274808"
           target="_blank"
@@ -54,7 +54,7 @@ export function RankCalculatorNavigationActions({
         </Link>
       </IronsButton>
       <IronsButton
-        variant="secondary"
+        variant="primary"
         size="2"
         onClick={async () => {
           await fetch('/api/logout', { method: 'POST' });
