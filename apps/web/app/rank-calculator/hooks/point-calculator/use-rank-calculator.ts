@@ -9,6 +9,7 @@ import { RankCalculatorSchema } from '../../[player]/submit-rank-calculator-vali
 import { RankData } from '../../utils/calculators/calculate-rank';
 import { calculateTotalPoints } from '../../utils/calculators/calculate-total-points';
 import { rankThresholds } from '@/config/ranks';
+import { useCurrentPlayer } from '../../contexts/current-player-context';
 
 export type RankCalculatorData = CommonPointCalculatorData & RankData;
 
@@ -16,6 +17,8 @@ export function useRankCalculator() {
   const rankStructure = useWatch<RankCalculatorSchema, 'rankStructure'>({
     name: 'rankStructure',
   });
+
+  const { playerName } = useCurrentPlayer();
 
   const { pointsAwarded: totalCollectionLogPoints } =
     useCollectionLogAndCluesPointCalculator();
@@ -34,7 +37,7 @@ export function useRankCalculator() {
     totalCombatPoints,
   );
 
-  const { rank, nextRank, throttleReason } = useRank(pointsAwarded);
+  const { rank, nextRank, throttleReason } = useRank(pointsAwarded, playerName);
 
   const currentRankThreshold = rankThresholds[rankStructure][rank]!;
 

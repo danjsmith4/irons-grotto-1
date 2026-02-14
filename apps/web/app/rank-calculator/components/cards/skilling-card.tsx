@@ -62,19 +62,19 @@ export function SkillingCard() {
       <Separator size="4" />
       <DataCard.Row
         left={
-          <Text color="gray" weight="medium" size="2">
+          <Text style={{ color: '#b39ddb' }} weight="medium" size="2">
             Category
           </Text>
         }
         right={
-          <Text color="gray" weight="medium" size="2">
+          <Text style={{ color: '#b39ddb' }} weight="medium" size="2">
             Points
           </Text>
         }
       />
       <DataCard.Row
         left={
-          <Text color="gray" size="2">
+          <Text style={{ color: '#b39ddb' }} size="2">
             EHP
           </Text>
         }
@@ -92,7 +92,7 @@ export function SkillingCard() {
         right={
           <Text
             aria-label="Efficient hours played points"
-            color="gray"
+            style={{ color: '#b39ddb' }}
             size="2"
           >
             {formatNumber(ehpPoints)}
@@ -101,7 +101,7 @@ export function SkillingCard() {
       />
       <DataCard.Row
         left={
-          <Text color="gray" size="2">
+          <Text style={{ color: '#b39ddb' }} size="2">
             Total level
           </Text>
         }
@@ -118,7 +118,11 @@ export function SkillingCard() {
           />
         }
         right={
-          <Text aria-label="Total level points" color="gray" size="2">
+          <Text
+            aria-label="Total level points"
+            style={{ color: '#b39ddb' }}
+            size="2"
+          >
             {formatNumber(totalLevelPoints)}
           </Text>
         }
@@ -127,7 +131,7 @@ export function SkillingCard() {
         <DataCard.Row
           key={location}
           left={
-            <Text color="gray" size="2">
+            <Text style={{ color: '#b39ddb' }} size="2">
               {location}
             </Text>
           }
@@ -148,7 +152,11 @@ export function SkillingCard() {
             />
           }
           right={
-            <Text aria-label={`${location} diary points`} color="gray" size="2">
+            <Text
+              aria-label={`${location} diary points`}
+              style={{ color: '#b39ddb' }}
+              size="2"
+            >
               {formatNumber(achievementDiariesPoints[location])}
             </Text>
           }
@@ -158,7 +166,7 @@ export function SkillingCard() {
         left={
           <ValidationTooltip
             error={errors.hasAchievementDiaryCape}
-            color="gray"
+            style={{ color: '#b39ddb' }}
             size="2"
           >
             <Text>Diary cape</Text>
@@ -174,7 +182,7 @@ export function SkillingCard() {
         right={
           <Text
             aria-label="Achievement diary cape points"
-            color="gray"
+            style={{ color: '#b39ddb' }}
             size="2"
           >
             {formatNumber(achievementDiaryCapePoints)}
@@ -183,7 +191,7 @@ export function SkillingCard() {
       />
       <DataCard.Row
         left={
-          <Text color="gray" size="2">
+          <Text style={{ color: '#b39ddb' }} size="2">
             Progress
           </Text>
         }
@@ -193,7 +201,11 @@ export function SkillingCard() {
           </Text>
         }
         right={
-          <Text aria-label="Skilling points remaining" color="gray" size="2">
+          <Text
+            aria-label="Skilling points remaining"
+            style={{ color: '#b39ddb' }}
+            size="2"
+          >
             {getPointsRemainingLabel(pointsRemaining)}
           </Text>
         }

@@ -8,6 +8,7 @@ import { useRankCalculator } from '../hooks/point-calculator/use-rank-calculator
 import { getRankName } from '../utils/get-rank-name';
 import { formatNumber } from '../utils/format-number';
 import { getRankImageUrl } from '../utils/get-rank-image-url';
+import { useCurrentPlayer } from '../contexts/current-player-context';
 
 interface NavigationProps {
   actions: ReactNode;
@@ -19,7 +20,8 @@ export function Navigation({
   shouldRenderBackButton,
 }: NavigationProps) {
   const { pointsAwarded } = useRankCalculator();
-  const { rank } = useRank(pointsAwarded);
+  const { playerName } = useCurrentPlayer();
+  const { rank } = useRank(pointsAwarded, playerName);
   const rankName = getRankName(rank);
 
   return (
@@ -40,9 +42,10 @@ export function Navigation({
         md: 'auto',
       }}
       style={{
-        background: 'var(--color-background)',
-        borderBottom: '1px solid var(--gray-5)',
+        background: 'rgba(45, 27, 78, 0.95)',
+        borderBottom: '1px solid rgba(233, 30, 99, 0.3)',
         zIndex: 100,
+        backdropFilter: 'blur(10px)',
       }}
     >
       <Flex align="center" justify="between" asChild>

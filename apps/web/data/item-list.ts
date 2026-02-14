@@ -60,7 +60,7 @@ export const itemList: ItemCategoryMap = {
   'Alchemical Hydra': alchemicalHydra,
   Araxxor: araxxor,
   'Barbarian Assault': barbarianAssault,
-  'Barrows': barrows,
+  Barrows: barrows,
   'Callisto and Artio': callistoAndArtio,
   Cerberus: cerberus,
   'Chambers of Xeric': chambersOfXeric,

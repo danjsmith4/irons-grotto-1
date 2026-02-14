@@ -39,6 +39,10 @@ import { calculateBloodTorvaPoints } from '@/app/rank-calculator/utils/calculato
 import { calculateDizanasQuiverPoints } from '@/app/rank-calculator/utils/calculators/calculate-dizanas-quiver-points';
 import { calculateClueScrollPoints } from '@/app/rank-calculator/utils/calculators/calculate-clue-scroll-points';
 import { calculateRadiantOathplatePoints } from '@/app/rank-calculator/utils/calculators/calculate-radiant-oathplate-points';
+import {
+  syncPlayerToDatabase,
+  updatePlayerPoints,
+} from '@/lib/db/player-operations';
 
 export async function GET(request: NextRequest) {
   try {
@@ -86,6 +90,9 @@ export async function GET(request: NextRequest) {
     if (!hasThirdPartyData) {
       return NextResponse.json({ success: true });
     }
+
+    // Sync player data to postgres database for future relational queries
+    await syncPlayerToDatabase(playerDetails.data);
 
     const dropRates = await fetchItemDropRates([...generateRequiredItemList()]);
     const items = Object.entries(await buildNotableItemList(dropRates));
@@ -167,6 +174,11 @@ export async function GET(request: NextRequest) {
       totalPointsAwarded,
       rankStructure,
     );
+
+    // Update player points in database
+    await updatePlayerPoints(playerName, totalPointsAwarded).catch((error) => {
+      console.error(`Failed to update points for player ${playerName}:`, error);
+    });
 
     if (rank !== currentRank) {
       const hashKey = `${discordId}:${player.toLowerCase()}`;

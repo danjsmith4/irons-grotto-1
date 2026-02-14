@@ -22,7 +22,7 @@ export async function assignAchievementDiscordRoles(
       }
       const role =
         achievementDiscordRoles[
-        roleName as keyof typeof achievementDiscordRoles
+          roleName as keyof typeof achievementDiscordRoles
         ];
 
       if (!shouldApply || roles.includes(role)) {

@@ -17,9 +17,7 @@ export const clogDiaryTierBonusPoints = {
   Medium: 500,
   Hard: 750,
   Elite: 1500,
-  Grandmaster: 4000
-}
+  Grandmaster: 4000,
+};
 
-export const clogDiaryTierNameByBonusPoints = invert(
-  clogDiaryTierBonusPoints
-);
+export const clogDiaryTierNameByBonusPoints = invert(clogDiaryTierBonusPoints);

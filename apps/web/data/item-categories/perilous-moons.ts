@@ -24,7 +24,7 @@ export const perilousMoons: ItemCategory = {
         { clogName: 'Blood moon helm' },
         { clogName: 'Blood moon chestplate' },
         { clogName: 'Blood moon tassets' },
-        { clogName: 'Dual macuahuitl' }
+        { clogName: 'Dual macuahuitl' },
       ],
       collectionLogCategories: ['moons_of_peril'],
     }),
@@ -35,7 +35,7 @@ export const perilousMoons: ItemCategory = {
         { clogName: 'Blue moon helm' },
         { clogName: 'Blue moon chestplate' },
         { clogName: 'Blue moon tassets' },
-        { clogName: 'Blue moon spear' }
+        { clogName: 'Blue moon spear' },
       ],
       collectionLogCategories: ['moons_of_peril'],
     }),

@@ -6,7 +6,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { ToastContainer } from 'react-toastify';
 import { SpeedInsights } from '@vercel/speed-insights/next';
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from '@vercel/analytics/next';
 import Providers from './providers';
 
 if (process.env.NEXT_PUBLIC_API_MOCKING === 'enabled') {
@@ -35,6 +35,7 @@ export default function RootLayout({
           id="theme-root"
           panelBackground="solid"
           radius="small"
+          className="dark-theme"
         >
           <Providers>{children}</Providers>
           <ToastContainer

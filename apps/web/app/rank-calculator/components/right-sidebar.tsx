@@ -7,7 +7,7 @@ import { SearchCard } from './cards/search-card';
 interface RightSidebarProps {
   query: string;
   onChange: (value: string) => void;
-};
+}
 
 export function RightSidebar({ query, onChange }: RightSidebarProps) {
   const mainHeightCss = usePageHeight();

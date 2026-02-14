@@ -1,0 +1,1 @@
+ALTER TABLE "players" ADD COLUMN "points" real DEFAULT 0 NOT NULL;

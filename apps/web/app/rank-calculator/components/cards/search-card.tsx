@@ -19,11 +19,11 @@ export function SearchCard({
       />
       <Flex mt="2">
         <Input
-        value={query}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="Search your clog..."
-        size="1"
-        hasError={false}
+          value={query}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="Search your clog..."
+          size="1"
+          hasError={false}
         />
       </Flex>
     </DataCard.Root>

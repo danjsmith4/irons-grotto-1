@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  Button,
   ChevronDownIcon,
   DropdownMenu,
   Flex,
@@ -19,6 +18,7 @@ import { DeleteSubmissionDataDialog } from './delete-submission-data-dialog';
 import { handleToastUpdates } from '../utils/handle-toast-updates';
 import { useCurrentPlayer } from '../contexts/current-player-context';
 import { useRouter } from 'next/navigation';
+import { IronsButton } from './irons-button';
 
 interface RankCalculatorNavigationActionsProps {
   isActionActive: boolean;
@@ -45,45 +45,49 @@ export function RankCalculatorNavigationActions({
 
   return (
     <Flex gap="1">
-      <Button asChild variant="soft" color="gray" type="button">
+      <IronsButton asChild size="2" variant="primary">
         <Link
           href="https://discord.com/channels/697877518455144468/1385071226837274808"
           target="_blank"
         >
           Help
         </Link>
-      </Button>
-      <Button
-        variant="soft"
-        color="gray"
-        type="button"
+      </IronsButton>
+      <IronsButton
+        variant="primary"
+        size="2"
         onClick={async () => {
           await fetch('/api/logout', { method: 'POST' });
           router.push('/');
         }}
       >
         Sign Out
-      </Button>
+      </IronsButton>
       <Flex>
-        <Button
-          role="button"
+        <IronsButton
           loading={isSubmitting || isActionActive}
           disabled={!isDirty || !isValid || isSubmitting || isActionActive}
-          variant="soft"
+          variant="primary"
           type="submit"
+          size="2"
           style={{ borderTopRightRadius: 0, borderBottomRightRadius: 0 }}
         >
           Save
-        </Button>
+        </IronsButton>
         <DropdownMenu.Root modal={false}>
           <DropdownMenu.Trigger disabled={isSubmitting || isActionActive}>
             <IconButton
               className="save-dropdown-button"
               variant="soft"
               type="button"
-              style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
+              style={{ 
+                borderTopLeftRadius: 0, 
+                borderBottomLeftRadius: 0,
+                transition: 'none !important',
+                transform: 'none !important'
+              }}
             >
-              <ChevronDownIcon />
+              <ChevronDownIcon style={{ transition: 'none', transform: 'none' }} />
             </IconButton>
           </DropdownMenu.Trigger>
           <DropdownMenu.Content color="gray" variant="soft">

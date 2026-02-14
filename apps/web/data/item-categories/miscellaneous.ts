@@ -46,7 +46,7 @@ export const miscellaneous: ItemCategory = {
     singleItem({
       name: "Bryophyta's essence",
       collectionLogCategory: 'bryophyta',
-      targetDropSources: ["Chest (Bryophyta's lair)#Members"]
+      targetDropSources: ["Chest (Bryophyta's lair)#Members"],
     }),
     singleItem({
       name: 'Dragon warhammer',
@@ -123,12 +123,12 @@ export const miscellaneous: ItemCategory = {
     singleItem({
       name: 'Earthbound tecpatl',
       targetDropSources: ['Earthen nagua'],
-      collectionLogCategory: 'miscellaneous'
+      collectionLogCategory: 'miscellaneous',
     }),
     singleItem({
       name: 'Sulphur blades',
       collectionLogCategory: 'miscellaneous',
       targetDropSources: ['Sulphur nagua'],
-    })
+    }),
   ],
 };

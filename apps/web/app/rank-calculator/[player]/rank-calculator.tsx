@@ -14,7 +14,6 @@ export function RankCalculator({
   submitRankCalculatorAction,
   navigation,
 }: RankCalculatorProps) {
-
   const [query, setQuery] = useState('');
 
   return (
@@ -44,7 +43,7 @@ export function RankCalculator({
       >
         {navigation}
         <Sidebar />
-        <RightSidebar query={query} onChange={setQuery}/>
+        <RightSidebar query={query} onChange={setQuery} />
         <ItemList query={query} />
       </Grid>
     </form>

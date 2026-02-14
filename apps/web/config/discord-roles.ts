@@ -1,7 +1,4 @@
-import {
-  CombatDiaryTier,
-  ClogDiaryTier,
-} from '@/app/schemas/custom-diaries';
+import { CombatDiaryTier, ClogDiaryTier } from '@/app/schemas/custom-diaries';
 import { StandardRank } from './ranks';
 
 export const rankDiscordRoles = {

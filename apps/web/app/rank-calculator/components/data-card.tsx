@@ -27,7 +27,22 @@ function DataCardRow({ center = null, left, right }: DataCardRowProps) {
 
 function DataCardRoot({ children }: PropsWithChildren) {
   return (
-    <Card>
+    <Card
+      style={{
+        background: 'rgba(45, 27, 78, 0.6)',
+        border: '1px solid rgba(233, 30, 99, 0.2)',
+        backdropFilter: 'blur(10px)',
+        transition: 'all 0.3s ease',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = 'rgba(233, 30, 99, 0.4)';
+        e.currentTarget.style.boxShadow = '0 4px 20px rgba(233, 30, 99, 0.3)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = 'rgba(233, 30, 99, 0.2)';
+        e.currentTarget.style.boxShadow = 'none';
+      }}
+    >
       <Flex direction="column" gap="3">
         {children}
       </Flex>

@@ -63,19 +63,19 @@ export function CombatCard() {
       <Separator size="4" />
       <DataCard.Row
         left={
-          <Text color="gray" weight="medium" size="2">
+          <Text style={{ color: '#b39ddb' }} weight="medium" size="2">
             Category
           </Text>
         }
         right={
-          <Text color="gray" weight="medium" size="2">
+          <Text style={{ color: '#b39ddb' }} weight="medium" size="2">
             Points
           </Text>
         }
       />
       <DataCard.Row
         left={
-          <Text color="gray" size="2">
+          <Text style={{ color: '#b39ddb' }} size="2">
             EHB
           </Text>
         }
@@ -93,7 +93,7 @@ export function CombatCard() {
         right={
           <Text
             aria-label="Efficient hours bossed points"
-            color="gray"
+            style={{ color: '#b39ddb' }}
             size="2"
           >
             {formatNumber(ehbPoints)}
@@ -102,7 +102,7 @@ export function CombatCard() {
       />
       <DataCard.Row
         left={
-          <Text color="gray" size="2">
+          <Text style={{ color: '#b39ddb' }} size="2">
             CA Tier
           </Text>
         }
@@ -117,7 +117,7 @@ export function CombatCard() {
         right={
           <Text
             aria-label="Combat achievement tier points"
-            color="gray"
+            style={{ color: '#b39ddb' }}
             size="2"
           >
             {formatNumber(combatAchievementTierPoints)}
@@ -126,7 +126,7 @@ export function CombatCard() {
       />
       <DataCard.Row
         left={
-          <Text color="gray" size="2">
+          <Text style={{ color: '#b39ddb' }} size="2">
             TzHaar cape
           </Text>
         }
@@ -139,7 +139,11 @@ export function CombatCard() {
           />
         }
         right={
-          <Text aria-label="TzHaar cape points" color="gray" size="2">
+          <Text
+            aria-label="TzHaar cape points"
+            style={{ color: '#b39ddb' }}
+            size="2"
+          >
             {formatNumber(tzhaarCapePoints)}
           </Text>
         }
@@ -148,7 +152,7 @@ export function CombatCard() {
         left={
           <ValidationTooltip
             error={errors.hasDizanasQuiver}
-            color="gray"
+            style={{ color: '#b39ddb' }}
             size="2"
           >
             <Text>Dizana&apos;s quiver</Text>
@@ -156,27 +160,43 @@ export function CombatCard() {
         }
         center={<Checkbox name="hasDizanasQuiver" checked={hasDizanasQuiver} />}
         right={
-          <Text aria-label="Dizana's quiver points" color="gray" size="2">
+          <Text
+            aria-label="Dizana's quiver points"
+            style={{ color: '#b39ddb' }}
+            size="2"
+          >
             {formatNumber(dizanasQuiverPoints)}
           </Text>
         }
       />
       <DataCard.Row
         left={
-          <ValidationTooltip error={errors.hasBloodTorva} color="gray" size="2">
+          <ValidationTooltip
+            error={errors.hasBloodTorva}
+            style={{ color: '#b39ddb' }}
+            size="2"
+          >
             <Text>Blood torva</Text>
           </ValidationTooltip>
         }
         center={<Checkbox name="hasBloodTorva" checked={hasBloodTorva} />}
         right={
-          <Text aria-label="Blood torva points" color="gray" size="2">
+          <Text
+            aria-label="Blood torva points"
+            style={{ color: '#b39ddb' }}
+            size="2"
+          >
             {formatNumber(bloodTorvaPoints)}
           </Text>
         }
       />
       <DataCard.Row
         left={
-          <ValidationTooltip error={errors.hasBloodTorva} color="gray" size="2">
+          <ValidationTooltip
+            error={errors.hasBloodTorva}
+            style={{ color: '#b39ddb' }}
+            size="2"
+          >
             <Text>Radiant oathplate</Text>
           </ValidationTooltip>
         }
@@ -184,14 +204,18 @@ export function CombatCard() {
           <Checkbox name="hasRadiantOathplate" checked={hasRadiantOathplate} />
         }
         right={
-          <Text aria-label="Radiant oathplate points" color="gray" size="2">
+          <Text
+            aria-label="Radiant oathplate points"
+            style={{ color: '#b39ddb' }}
+            size="2"
+          >
             {formatNumber(radiantOathplatePoints)}
           </Text>
         }
       />
       <DataCard.Row
         left={
-          <Text color="gray" size="2">
+          <Text style={{ color: '#b39ddb' }} size="2">
             Speedrun diary tier
           </Text>
         }
@@ -208,7 +232,7 @@ export function CombatCard() {
       />
       <DataCard.Row
         left={
-          <Text color="gray" size="2">
+          <Text style={{ color: '#b39ddb' }} size="2">
             Progress
           </Text>
         }
@@ -218,7 +242,11 @@ export function CombatCard() {
           </Text>
         }
         right={
-          <Text aria-label="Combat points remaining" color="gray" size="2">
+          <Text
+            aria-label="Combat points remaining"
+            style={{ color: '#b39ddb' }}
+            size="2"
+          >
             {getPointsRemainingLabel(pointsRemaining)}
           </Text>
         }

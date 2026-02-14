@@ -4,7 +4,6 @@ import { Player } from '@/app/schemas/player';
 import { useOptimisticAction } from 'next-safe-action/hooks';
 import {
   Box,
-  Button,
   Card,
   Flex,
   Heading,
@@ -18,6 +17,7 @@ import { toast } from 'react-toastify';
 import Link from 'next/link';
 import { deletePlayerAccountAction } from './actions/delete-player-account-action';
 import { DeleteSubmissionButton } from './components/delete-submission-button';
+import { IronsButton } from './components/irons-button';
 
 interface PlayerListProps {
   accounts: Record<string, Player>;
@@ -49,11 +49,30 @@ export function PlayerList({ accounts }: PlayerListProps) {
       gap="6"
       direction="column"
     >
-      <Heading size="5">Irons Grotto Rank Calculator</Heading>
+      <Heading size="5" style={{ color: '#ce93d8' }}>
+        Irons Grotto Rank Calculator
+      </Heading>
       <Flex direction="column" gap="4" width="330px">
         {Object.values(optimisticState).map(
           ({ rsn, joinDate, isNameInvalid }) => (
-            <Card key={rsn}>
+            <Card
+              key={rsn}
+              style={{
+                background: 'rgba(45, 27, 78, 0.6)',
+                border: '1px solid rgba(233, 30, 99, 0.2)',
+                backdropFilter: 'blur(10px)',
+                transition: 'all 0.3s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = 'rgba(233, 30, 99, 0.4)';
+                e.currentTarget.style.boxShadow =
+                  '0 4px 20px rgba(233, 30, 99, 0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'rgba(233, 30, 99, 0.2)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            >
               <Flex align="center" justify="between">
                 <Box>
                   <Text as="p" weight="bold">
@@ -99,12 +118,12 @@ export function PlayerList({ accounts }: PlayerListProps) {
           ),
         )}
         <Flex gap="3">
-          <Button asChild size="3" style={{ flex: 1 }}>
+          <IronsButton asChild variant="primary" size="3" style={{ flex: 1 }}>
             <Link href="/rank-calculator/players/add">Add new player</Link>
-          </Button>
-          <Button asChild size="3" variant="outline" style={{ flex: 1 }}>
+          </IronsButton>
+          <IronsButton asChild variant="secondary" size="3" style={{ flex: 1 }}>
             <Link href="/bingo">Bingo Board</Link>
-          </Button>
+          </IronsButton>
         </Flex>
       </Flex>
     </Flex>

@@ -47,8 +47,10 @@ export async function fetchTemplePlayerCollectionLog(player: string) {
     return TempleOSRSPlayerCollectionLog.parse(
       await collectionLogResponse.json(),
     ).data;
-  } catch {
+  } catch (error) {
     Sentry.captureMessage('TempleOSRS collection log not found', 'info');
+
+    console.log(`Encountered error when fetching temple clog ${String(error)}`);
 
     return null;
   }
