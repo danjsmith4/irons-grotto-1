@@ -8,6 +8,7 @@ import { useRankCalculator } from '../hooks/point-calculator/use-rank-calculator
 import { getRankName } from '../utils/get-rank-name';
 import { formatNumber } from '../utils/format-number';
 import { getRankImageUrl } from '../utils/get-rank-image-url';
+import { useCurrentPlayer } from '../contexts/current-player-context';
 
 interface NavigationProps {
   actions: ReactNode;
@@ -19,7 +20,8 @@ export function Navigation({
   shouldRenderBackButton,
 }: NavigationProps) {
   const { pointsAwarded } = useRankCalculator();
-  const { rank } = useRank(pointsAwarded);
+  const { playerName } = useCurrentPlayer();
+  const { rank } = useRank(pointsAwarded, playerName);
   const rankName = getRankName(rank);
 
   return (
