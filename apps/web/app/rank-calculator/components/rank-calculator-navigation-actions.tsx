@@ -80,9 +80,14 @@ export function RankCalculatorNavigationActions({
               className="save-dropdown-button"
               variant="soft"
               type="button"
-              style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
+              style={{ 
+                borderTopLeftRadius: 0, 
+                borderBottomLeftRadius: 0,
+                transition: 'none !important',
+                transform: 'none !important'
+              }}
             >
-              <ChevronDownIcon />
+              <ChevronDownIcon style={{ transition: 'none', transform: 'none' }} />
             </IconButton>
           </DropdownMenu.Trigger>
           <DropdownMenu.Content color="gray" variant="soft">

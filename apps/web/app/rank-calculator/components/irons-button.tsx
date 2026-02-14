@@ -77,7 +77,7 @@ export function IronsButton({
       {...props}
       variant={radixVariant}
       style={combinedStyle}
-      className={`irons-button ${props.className || ''}`}
+      className={`irons-button ${props.className ?? ''}`}
     >
       {props.children}
     </RadixButton>
