@@ -6,7 +6,8 @@ import { serverConstants } from '@/config/constants.server';
 import { ClanExport } from '@/app/schemas/inactivity-checker';
 
 export async function POST(request: NextRequest) {
-  const updateTempleMembers = request.nextUrl.searchParams.get('updateTempleMembers') === 'true';
+  const updateTempleMembers =
+    request.nextUrl.searchParams.get('updateTempleMembers') === 'true';
   const body = ClanExport.parse(await request.json());
 
   const { members, leaders } = body.clanMemberMaps.reduce(

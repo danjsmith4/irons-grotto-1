@@ -236,7 +236,9 @@ export const altRarityItems: Partial<
   },
 };
 
-export const itemPointOverrides: Partial<Record<CollectionLogItemName, number>> = {
+export const itemPointOverrides: Partial<
+  Record<CollectionLogItemName, number>
+> = {
   'Rite of vile transference': 5,
   'Earthbound tecpatl': 2,
   'Dragon chainbody': 4,

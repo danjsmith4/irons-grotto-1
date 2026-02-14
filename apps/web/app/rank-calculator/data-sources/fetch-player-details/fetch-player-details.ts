@@ -34,10 +34,15 @@ import { mergeTzhaarCapes } from './utils/merge-tzhaar-capes';
 import { isAchievementDiaryCapeAchieved } from '../../utils/is-achievement-diary-cape-achieved';
 import { fetchUserDiscordRoles } from '../fetch-user-discord-roles';
 import { calculateCombatDiaryTierBonusPoints } from '../../utils/calculators/calculate-custom-diary-tier-multipliers';
-import { syncPlayerToDatabase, bulkUpsertCollectionLogItems } from '@/lib/db/player-operations';
+import {
+  syncPlayerToDatabase,
+  bulkUpsertCollectionLogItems,
+} from '@/lib/db/player-operations';
 
-export interface PlayerDetailsResponse
-  extends Omit<RankCalculatorSchema, 'rank' | 'points'> {
+export interface PlayerDetailsResponse extends Omit<
+  RankCalculatorSchema,
+  'rank' | 'points'
+> {
   currentRank?: Rank;
   hasTemplePlayerStats: boolean;
   hasTempleCollectionLog: boolean;
@@ -142,8 +147,8 @@ export async function fetchPlayerDetails(
   try {
     const savedData = mergeSavedData
       ? await redis.json.get<RankCalculatorSchema>(
-        userDraftRankSubmissionKey(userId, player),
-      )
+          userDraftRankSubmissionKey(userId, player),
+        )
       : undefined;
     const { joinDate, rsn, rank: currentRank } = playerRecord;
     const [wikiSyncData, templePlayerStats, templeCollectionLog, discordRoles] =
@@ -154,10 +159,13 @@ export async function fetchPlayerDetails(
         fetchUserDiscordRoles(userId),
       ]);
 
-    bulkUpsertCollectionLogItems(playerRecord.rsn, templeCollectionLog ? templeCollectionLog.items : []).catch((error: any) => {
+    bulkUpsertCollectionLogItems(
+      playerRecord.rsn,
+      templeCollectionLog ? templeCollectionLog.items : [],
+    ).catch((error: Error) => {
       Sentry.captureException(error);
-      console.error(error)
-    })
+      console.error(error);
+    });
 
     const hasThirdPartyData = Boolean(
       wikiSyncData ?? templePlayerStats ?? templeCollectionLog,
@@ -214,7 +222,7 @@ export async function fetchPlayerDetails(
       musicTracks = null,
       combatAchievements = null,
     } = wikiSyncData
-        ? {
+      ? {
           achievementDiaries: parseAchievementDiaries(
             wikiSyncData.achievement_diaries,
           ),
@@ -222,7 +230,7 @@ export async function fetchPlayerDetails(
           musicTracks: wikiSyncData.music_tracks,
           combatAchievements: wikiSyncData.combat_achievements,
         }
-        : {};
+      : {};
 
     const collectionLogItems =
       templeCollectionLog?.items.reduce(
@@ -233,21 +241,21 @@ export async function fetchPlayerDetails(
     const acquiredItems =
       wikiSyncData || templeCollectionLog
         ? Object.values(itemList)
-          .flatMap(({ items }) => items)
-          .filter((item) =>
-            isItemAcquired(item, {
-              acquiredItems: collectionLogItems,
-              quests,
-              combatAchievements,
-            }),
-          )
-          .map(({ name }) => stripEntityName(name))
+            .flatMap(({ items }) => items)
+            .filter((item) =>
+              isItemAcquired(item, {
+                acquiredItems: collectionLogItems,
+                quests,
+                combatAchievements,
+              }),
+            )
+            .map(({ name }) => stripEntityName(name))
         : [];
 
     const previouslyAcquiredItems = savedData
       ? Object.keys(savedData.acquiredItems).filter(
-        (key) => savedData.acquiredItems[key],
-      )
+          (key) => savedData.acquiredItems[key],
+        )
       : [];
 
     const allCurrentNotableItemNames = new Set(
@@ -258,8 +266,8 @@ export async function fetchPlayerDetails(
 
     const hasMusicCape = musicTracks
       ? Object.entries(musicTracks)
-        .filter(([track]) => !isHolidayTrack(track))
-        .every(([, unlocked]) => unlocked)
+          .filter(([track]) => !isHolidayTrack(track))
+          .every(([, unlocked]) => unlocked)
       : false;
 
     const acquiredItemsMap = [
@@ -365,13 +373,12 @@ export async function fetchPlayerDetails(
       },
     };
 
-
     // Sync to shadow dataset if we have third-party data
     if (hasThirdPartyData) {
       await syncPlayerToDatabase(result.data);
     }
 
-    return result
+    return result;
   } catch (error) {
     Sentry.captureException(error);
 

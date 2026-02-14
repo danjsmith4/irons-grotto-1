@@ -1,14 +1,7 @@
 'use client';
 
 import { TrashIcon } from '@radix-ui/react-icons';
-import {
-  AlertDialog,
-  Button,
-  Flex,
-  IconButton,
-  Text,
-  Tooltip,
-} from '@radix-ui/themes';
+import { AlertDialog, Flex, IconButton, Text, Tooltip } from '@radix-ui/themes';
 import { IronsButton } from './irons-button';
 
 interface DeleteSubmissionButtonProps {

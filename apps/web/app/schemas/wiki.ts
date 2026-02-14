@@ -170,9 +170,7 @@ export const DroppedItemResponse = z
     ),
   })
   .transform(({ bucket }) =>
-    bucket.reduce<
-      Record<string, Record<string, number>>
-    >(
+    bucket.reduce<Record<string, Record<string, number>>>(
       (
         acc,
         { drop_json: { altRarity, itemName, dropSource, rarity, rolls } },

@@ -147,7 +147,7 @@ export const publishRankSubmissionAction = authActionClient
       <@${userId}>, thanks for the application!
 
       Someone from <@&${roleId}> will check shortly.
-    `
+    `,
           },
           discordMessageId,
         );
@@ -166,64 +166,64 @@ export const publishRankSubmissionAction = authActionClient
         achievementDiaries:
           hasWikiSyncData && savedData.achievementDiaries && achievementDiaries
             ? (
-              Object.entries(achievementDiaries) as [
-                DiaryLocation,
-                DiaryTier,
-              ][]
-            ).reduce<AchievementDiaryMap>(
-              (acc, [diaryLocation, diaryTier]) => {
-                if (
-                  DiaryTier._def.values.indexOf(
-                    achievementDiaries[diaryLocation] ?? 'None',
-                  ) <
-                  DiaryTier._def.values.indexOf(
-                    savedData.achievementDiaries[diaryLocation] ?? 'None',
-                  )
-                ) {
-                  return { ...acc, [diaryLocation]: diaryTier };
-                }
+                Object.entries(achievementDiaries) as [
+                  DiaryLocation,
+                  DiaryTier,
+                ][]
+              ).reduce<AchievementDiaryMap>(
+                (acc, [diaryLocation, diaryTier]) => {
+                  if (
+                    DiaryTier._def.values.indexOf(
+                      achievementDiaries[diaryLocation] ?? 'None',
+                    ) <
+                    DiaryTier._def.values.indexOf(
+                      savedData.achievementDiaries[diaryLocation] ?? 'None',
+                    )
+                  ) {
+                    return { ...acc, [diaryLocation]: diaryTier };
+                  }
 
-                return acc;
-              },
-              {},
-            )
+                  return acc;
+                },
+                {},
+              )
             : null,
         acquiredItems: [
           ...new Set<string>([
             ...(hasWikiSyncData
               ? z.array(z.string()).parse(
-                Object.values(
-                  pickBy(Object.keys(savedData.acquiredItems), (key) => {
-                    if (
-                      isQuestItem(itemMap[key]) ||
-                      isCombatAchievementItem(itemMap[key])
-                    ) {
-                      return !acquiredItems[key];
-                    }
+                  Object.values(
+                    pickBy(Object.keys(savedData.acquiredItems), (key) => {
+                      if (
+                        isQuestItem(itemMap[key]) ||
+                        isCombatAchievementItem(itemMap[key])
+                      ) {
+                        return !acquiredItems[key];
+                      }
 
-                    return false;
-                  }),
-                ),
-              )
+                      return false;
+                    }),
+                  ),
+                )
               : []),
             ...(hasTempleCollectionLog
               ? z.array(z.string()).parse(
-                Object.values(
-                  pickBy(Object.keys(savedData.acquiredItems), (key) => {
-                    if (isCollectionLogItem(itemMap[key])) {
-                      return !acquiredItems[key];
-                    }
+                  Object.values(
+                    pickBy(Object.keys(savedData.acquiredItems), (key) => {
+                      if (isCollectionLogItem(itemMap[key])) {
+                        return !acquiredItems[key];
+                      }
 
-                    return false;
-                  }),
-                ),
-              )
+                      return false;
+                    }),
+                  ),
+                )
               : []),
           ]),
         ],
         combatAchievementTier:
           hasWikiSyncData &&
-            CombatAchievementTier._def.values.indexOf(combatAchievementTier) <
+          CombatAchievementTier._def.values.indexOf(combatAchievementTier) <
             CombatAchievementTier._def.values.indexOf(
               savedData.combatAchievementTier,
             )
@@ -231,7 +231,7 @@ export const publishRankSubmissionAction = authActionClient
             : null,
         collectionLogCount:
           hasTemplePlayerStats &&
-            collectionLogCount < savedData.collectionLogCount
+          collectionLogCount < savedData.collectionLogCount
             ? collectionLogCount
             : null,
         totalLevel:
@@ -248,12 +248,12 @@ export const publishRankSubmissionAction = authActionClient
             : null,
         hasDizanasQuiver:
           hasTempleCollectionLog &&
-            hasDizanasQuiver !== savedData.hasDizanasQuiver
+          hasDizanasQuiver !== savedData.hasDizanasQuiver
             ? !!hasDizanasQuiver
             : null,
         hasAchievementDiaryCape:
           hasWikiSyncData &&
-            hasAchievementDiaryCape !== savedData.hasAchievementDiaryCape
+          hasAchievementDiaryCape !== savedData.hasAchievementDiaryCape
             ? !!hasAchievementDiaryCape
             : null,
       } satisfies RankSubmissionDiff;

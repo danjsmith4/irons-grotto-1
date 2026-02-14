@@ -15,7 +15,10 @@ export async function fetchUserDiscordRoles(userId: string) {
 
     return new Set(roles);
   } catch (error) {
-    console.error(`Error while fetching discord roles for user: ${userId}`, error);
+    console.error(
+      `Error while fetching discord roles for user: ${userId}`,
+      error,
+    );
     Sentry.captureException(error);
 
     return null;

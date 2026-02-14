@@ -13,21 +13,32 @@ export const theGauntlet: ItemCategory = {
     compoundItem({
       name: 'Crystal helm',
       requiredItems: [
-        { clogName: 'Crystal armour seed', targetDropSources: ['Reward Chest (The Gauntlet)#(Corrupted)'], },
+        {
+          clogName: 'Crystal armour seed',
+          targetDropSources: ['Reward Chest (The Gauntlet)#(Corrupted)'],
+        },
       ],
       collectionLogCategories: ['the_gauntlet'],
     }),
     compoundItem({
       name: 'Crystal body',
       requiredItems: [
-        { clogName: 'Crystal armour seed', amount: 3, targetDropSources: ['Reward Chest (The Gauntlet)#(Corrupted)'], },
+        {
+          clogName: 'Crystal armour seed',
+          amount: 3,
+          targetDropSources: ['Reward Chest (The Gauntlet)#(Corrupted)'],
+        },
       ],
       collectionLogCategories: ['the_gauntlet'],
     }),
     compoundItem({
       name: 'Crystal legs',
       requiredItems: [
-        { clogName: 'Crystal armour seed', amount: 2, targetDropSources: ['Reward Chest (The Gauntlet)#(Corrupted)'], },
+        {
+          clogName: 'Crystal armour seed',
+          amount: 2,
+          targetDropSources: ['Reward Chest (The Gauntlet)#(Corrupted)'],
+        },
       ],
 
       collectionLogCategories: ['the_gauntlet'],

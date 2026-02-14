@@ -4,7 +4,6 @@ import { Player } from '@/app/schemas/player';
 import { useOptimisticAction } from 'next-safe-action/hooks';
 import {
   Box,
-  Button,
   Card,
   Flex,
   Heading,
@@ -50,11 +49,13 @@ export function PlayerList({ accounts }: PlayerListProps) {
       gap="6"
       direction="column"
     >
-      <Heading size="5" style={{ color: '#ce93d8' }}>Irons Grotto Rank Calculator</Heading>
+      <Heading size="5" style={{ color: '#ce93d8' }}>
+        Irons Grotto Rank Calculator
+      </Heading>
       <Flex direction="column" gap="4" width="330px">
         {Object.values(optimisticState).map(
           ({ rsn, joinDate, isNameInvalid }) => (
-            <Card 
+            <Card
               key={rsn}
               style={{
                 background: 'rgba(45, 27, 78, 0.6)',
@@ -64,7 +65,8 @@ export function PlayerList({ accounts }: PlayerListProps) {
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.borderColor = 'rgba(233, 30, 99, 0.4)';
-                e.currentTarget.style.boxShadow = '0 4px 20px rgba(233, 30, 99, 0.3)';
+                e.currentTarget.style.boxShadow =
+                  '0 4px 20px rgba(233, 30, 99, 0.3)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.borderColor = 'rgba(233, 30, 99, 0.2)';

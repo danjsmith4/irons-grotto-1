@@ -28,7 +28,10 @@ export const Category = memo(
   }: CategoryProps) => {
     // Create a map of item names to their acquired status
     const itemNames = items.map(({ name }) => stripEntityName(name));
-    const fieldsArray = useWatch<RankCalculatorSchema, `acquiredItems.${string}`[]>({
+    const fieldsArray = useWatch<
+      RankCalculatorSchema,
+      `acquiredItems.${string}`[]
+    >({
       name: itemNames.map((name) => `acquiredItems.${name}` as const),
     });
     // Map item name to acquired value

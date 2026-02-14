@@ -35,7 +35,7 @@ export const clientConstants = ClientConfigSchema.parse({
   wiki: {
     baseUrl: 'https://oldschool.runescape.wiki',
     userAgent: 'Irons-Grotto-Rank-Calculator (Discord @avios)',
-    queryLimit: 5000
+    queryLimit: 5000,
   },
   wikiSync: {
     baseUrl: 'https://sync.runescape.wiki',

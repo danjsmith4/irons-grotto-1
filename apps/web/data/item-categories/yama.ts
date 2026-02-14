@@ -34,6 +34,6 @@ export const yama: ItemCategory = {
       name: 'Rite of vile transference',
       collectionLogCategory: 'yama',
       targetDropSources: ['Dossier'],
-    })
+    }),
   ],
 };

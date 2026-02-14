@@ -1791,7 +1791,7 @@ export const CollectionLogItemName = z.enum([
   'Avernic treads',
   'Dom',
   'Earthbound tecpatl',
-  'Soup'
+  'Soup',
 ]);
 
 export type CollectionLogItemName = z.infer<typeof CollectionLogItemName>;

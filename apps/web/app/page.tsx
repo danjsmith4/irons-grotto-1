@@ -42,7 +42,7 @@ export default async function HomePage() {
     <div className={`${css['page-container']} ${inter.className}`}>
       {/* Animated rays background */}
       <div className={css['rays-container']}>
-        {[...Array(12)].map((_, i) => (
+        {Array.from({ length: 12 }, (_, i) => (
           <div key={i} className={`${css.ray} ${css[`ray-${i + 1}`]}`} />
         ))}
       </div>
@@ -73,7 +73,10 @@ export default async function HomePage() {
         {/* Action buttons */}
         <div className={css['action-buttons']}>
           <form action={handleSubmit}>
-            <button type="submit" className={`${css.button} ${css['primary-button']}`}>
+            <button
+              type="submit"
+              className={`${css.button} ${css['primary-button']}`}
+            >
               Apply for Rank
             </button>
           </form>
@@ -84,7 +87,10 @@ export default async function HomePage() {
           >
             Join Discord
           </a>
-          <Link href="/bingo" className={`${css.button} ${css['secondary-button']}`}>
+          <Link
+            href="/bingo"
+            className={`${css.button} ${css['secondary-button']}`}
+          >
             Bingo Events
           </Link>
         </div>
@@ -93,11 +99,18 @@ export default async function HomePage() {
         <div className={css['info-cards']}>
           <div className={css.card}>
             <h3 className={cinzel.className}>Community Events</h3>
-            <p>Weekly boss challenges, seasonal bingo events, and group activities</p>
+            <p>
+              Weekly boss challenges, seasonal bingo events, and group
+              activities
+            </p>
           </div>
           <div className={css.card}>
             <h3 className={cinzel.className}>Active Leadership</h3>
-            <p>Owners: Avios & Tyluh<br />Deputies: Claytonaa, Aceriwyn, Dead Player, The Victory</p>
+            <p>
+              Owners: Avios & Tyluh
+              <br />
+              Deputies: Claytonaa, Aceriwyn, Dead Player, The Victory
+            </p>
           </div>
           <div className={css.card}>
             <h3 className={cinzel.className}>Temple OSRS</h3>

@@ -14,8 +14,7 @@ import { useDizanasQuiverPoints } from './use-dizanas-quiver-points';
 import { useRadiantOathplatePoints } from './use-radiant-oathplate-points';
 
 export interface CombatPointCalculatorData
-  extends CommonPointCalculatorData,
-  BonusPointCalculatorData {
+  extends CommonPointCalculatorData, BonusPointCalculatorData {
   combatAchievementTierPoints: number;
   ehbPoints: number;
   tzhaarCapePoints: number;

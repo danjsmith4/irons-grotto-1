@@ -126,10 +126,7 @@
         "player_acquired_items_player_name_item_name_unique": {
           "name": "player_acquired_items_player_name_item_name_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "player_name",
-            "item_name"
-          ]
+          "columns": ["player_name", "item_name"]
         }
       },
       "policies": {},

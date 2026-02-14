@@ -46,38 +46,42 @@ export function NotableItemsCard() {
       <Separator size="4" />
       <DataCard.Row
         left={
-          <Text style={{color: '#b39ddb'}} weight="medium" size="2">
+          <Text style={{ color: '#b39ddb' }} weight="medium" size="2">
             Category
           </Text>
         }
         right={
-          <Text style={{color: '#b39ddb'}} weight="medium" size="2">
+          <Text style={{ color: '#b39ddb' }} weight="medium" size="2">
             Points
           </Text>
         }
       />
       <DataCard.Row
         left={
-          <Text style={{color: '#b39ddb'}} size="2">
+          <Text style={{ color: '#b39ddb' }} size="2">
             Items collected
           </Text>
         }
         right={
-          <Text aria-label="Notable items collected" style={{color: '#b39ddb'}} size="2">
+          <Text
+            aria-label="Notable items collected"
+            style={{ color: '#b39ddb' }}
+            size="2"
+          >
             {formatNumber(itemsCollected)}
           </Text>
         }
       />
       <DataCard.Row
         left={
-          <Text style={{color: '#b39ddb'}} size="2">
+          <Text style={{ color: '#b39ddb' }} size="2">
             Total items available
           </Text>
         }
         right={
           <Text
             aria-label="Total notable items available"
-            style={{color: '#b39ddb'}}
+            style={{ color: '#b39ddb' }}
             size="2"
           >
             {formatNumber(totalItems)}
@@ -86,14 +90,14 @@ export function NotableItemsCard() {
       />
       <DataCard.Row
         left={
-          <Text style={{color: '#b39ddb'}} size="2">
+          <Text style={{ color: '#b39ddb' }} size="2">
             Items collected
           </Text>
         }
         right={
           <Text
             aria-label="Notable items collected percentage"
-            style={{color: '#b39ddb'}}
+            style={{ color: '#b39ddb' }}
             size="2"
           >
             {formatPercentage(percentageCollected)}
@@ -102,7 +106,7 @@ export function NotableItemsCard() {
       />
       <DataCard.Row
         left={
-          <Text style={{color: '#b39ddb'}} size="2">
+          <Text style={{ color: '#b39ddb' }} size="2">
             Progress
           </Text>
         }
@@ -114,7 +118,7 @@ export function NotableItemsCard() {
         right={
           <Text
             aria-label="Notable items points remaining"
-            style={{color: '#b39ddb'}}
+            style={{ color: '#b39ddb' }}
             size="2"
           >
             {getPointsRemainingLabel(pointsRemaining)}

@@ -89,7 +89,11 @@ export function RankProgressCard() {
             }
             right={
               <Flex direction="column" align="end">
-                <Text size="2" id="points-to-next-rank-label" style={{ color: '#b39ddb' }}>
+                <Text
+                  size="2"
+                  id="points-to-next-rank-label"
+                  style={{ color: '#b39ddb' }}
+                >
                   Points to next rank
                 </Text>
                 <Text
@@ -108,7 +112,11 @@ export function RankProgressCard() {
           />
           <Flex justify="between">
             <Flex gap="2" align="center">
-              <Text aria-label="Current rank" size="2" style={{ color: '#b39ddb' }}>
+              <Text
+                aria-label="Current rank"
+                size="2"
+                style={{ color: '#b39ddb' }}
+              >
                 {rankName}
               </Text>
               <Image
@@ -129,7 +137,11 @@ export function RankProgressCard() {
                   unoptimized
                 />
               )}
-              <Text aria-label="Next rank" size="2" style={{ color: '#b39ddb' }}>
+              <Text
+                aria-label="Next rank"
+                size="2"
+                style={{ color: '#b39ddb' }}
+              >
                 {nextRankName}
               </Text>
             </Flex>
@@ -137,7 +149,7 @@ export function RankProgressCard() {
           <Separator size="4" />
           <DataCard.Row
             left={
-              <Text style={{color: '#b39ddb'}} size="2">
+              <Text style={{ color: '#b39ddb' }} size="2">
                 Rank structure
               </Text>
             }
@@ -166,7 +178,10 @@ export function RankProgressCard() {
           </Dialog.Description>
           <Flex gap="3" mt="4" justify="end">
             <Dialog.Close>
-              <Button variant="soft" style={{backgroundColor: '#4a4a4a', color: '#e0e0e0'}}>
+              <Button
+                variant="soft"
+                style={{ backgroundColor: '#4a4a4a', color: '#e0e0e0' }}
+              >
                 Cancel
               </Button>
             </Dialog.Close>

@@ -52,6 +52,7 @@
     "next-safe-action": "^7.9.9",
     "pluralize": "^8.0.0",
     "postgres": "^3.4.4",
+    "prettier": "^3.8.1",
     "react": "19.0.0-rc-69d4b800-20241021",
     "react-datepicker": "^7.5.0",
     "react-dom": "19.0.0-rc-69d4b800-20241021",

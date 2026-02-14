@@ -14,7 +14,7 @@ import { serverConstants } from './config/constants.server';
 
 declare module 'next-auth' {
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  interface Profile extends DiscordProfile { }
+  interface Profile extends DiscordProfile {}
 
   interface User {
     permissions: string;
@@ -59,7 +59,8 @@ export const config = {
       const redirectTo = params.redirectTo as string | undefined;
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       const callbackUrl = params.callbackUrl as string | undefined;
-      const isAdminLogin = redirectTo?.includes('/bingo/admin') ??
+      const isAdminLogin =
+        redirectTo?.includes('/bingo/admin') ??
         callbackUrl?.includes('/bingo/admin') ??
         false;
 
@@ -87,7 +88,8 @@ export const config = {
       }
 
       return true;
-    }, async jwt({ profile, token, account }) {
+    },
+    async jwt({ profile, token, account }) {
       const { guildId } = serverConstants.discord;
 
       if (profile?.id) {

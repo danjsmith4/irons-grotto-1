@@ -11,8 +11,7 @@ import { calculateClueScrollPoints } from '@/app/rank-calculator/utils/calculato
 import { ClueScrollTier } from '@/app/schemas/osrs';
 
 export interface CollectionLogAndCluesPointCalculatorData
-  extends CommonPointCalculatorData,
-  BonusPointCalculatorData {
+  extends CommonPointCalculatorData, BonusPointCalculatorData {
   collectionLogSlotPoints: number;
   clueScrollTierPoints: Record<ClueScrollTier, number>;
   collectionLogBonusPoints: number;
@@ -39,15 +38,19 @@ export function useCollectionLogAndCluesPointCalculator() {
   const collectionLogSlotPoints = useCollectionLogSlotPoints();
   const { tierPoints: clueScrollTierPoints, totalPoints: clueScrollPoints } =
     calculateClueScrollPoints(clueScrollCounts, scaling);
-  const { pointsAwarded, pointsRemaining, pointsAwardedPercentage, bonusPointsAwarded } =
-    calculateCollectionLogAndCluesPoints(
-      collectionLogSlotPoints,
-      totalCollectionLogSlots,
-      clueScrollPoints,
-      collectionLogBonusPoints,
-      0.0,
-      scaling,
-    );
+  const {
+    pointsAwarded,
+    pointsRemaining,
+    pointsAwardedPercentage,
+    bonusPointsAwarded,
+  } = calculateCollectionLogAndCluesPoints(
+    collectionLogSlotPoints,
+    totalCollectionLogSlots,
+    clueScrollPoints,
+    collectionLogBonusPoints,
+    0.0,
+    scaling,
+  );
 
   return {
     pointsAwarded,

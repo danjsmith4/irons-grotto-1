@@ -27,7 +27,7 @@ function DataCardRow({ center = null, left, right }: DataCardRowProps) {
 
 function DataCardRoot({ children }: PropsWithChildren) {
   return (
-    <Card 
+    <Card
       style={{
         background: 'rgba(45, 27, 78, 0.6)',
         border: '1px solid rgba(233, 30, 99, 0.2)',

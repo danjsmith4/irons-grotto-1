@@ -1,10 +1,12 @@
 import { customDiaryDiscordRoles } from '@/config/discord-roles';
-import { clogDiaryTierBonusPoints, customDiaryTierBonusPoints } from '@/config/custom-diaries';
+import {
+  clogDiaryTierBonusPoints,
+  customDiaryTierBonusPoints,
+} from '@/config/custom-diaries';
 
 export function calculateCombatDiaryTierBonusPoints(
   discordRoles: Set<string> | null,
 ) {
-
   if (!discordRoles) {
     return {
       combatBonusPoints: 0,
