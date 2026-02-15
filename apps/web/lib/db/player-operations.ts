@@ -4,6 +4,7 @@ import {
   players,
   playerAcquiredItems,
   playerAchievementDiaries,
+  playerRankUps,
   type Player,
   type NewPlayer,
   type PlayerAcquiredItem,
@@ -13,6 +14,129 @@ import {
 import { getCategoryFromItemName } from './item-mapping-utils';
 import type { PlayerDetailsResponse } from '@/app/rank-calculator/data-sources/fetch-player-details/fetch-player-details';
 import { TempleOSRSCollectionLogItem } from '@/app/schemas/temple-api';
+
+/**
+ * Validates that the user performing the action matches the discord ID associated with the player
+ * @param playerName - The player's name
+ * @param userDiscordId - The discord ID of the user performing the action
+ * @returns True if validation passes, false if it fails
+ */
+export async function validateDiscordOwnership(
+  playerName: string,
+  userDiscordId?: string,
+): Promise<boolean> {
+  if (!userDiscordId) {
+    // If no user discord ID provided, allow the action (for anonymous operations)
+    return true;
+  }
+
+  const [player] = await db
+    .select({ discordUserId: players.discordUserId })
+    .from(players)
+    .where(eq(players.playerName, playerName))
+    .limit(1);
+
+  if (!player) {
+    // Player doesn't exist yet, allow creation
+    return true;
+  }
+
+  if (!player.discordUserId) {
+    // Player exists but has no discord ID assigned, allow the action
+    return true;
+  }
+
+  // Player has a discord ID, must match the user's discord ID
+  return player.discordUserId === userDiscordId;
+}
+
+/**
+ * Validates Discord ownership and throws an error if validation fails
+ * Use this for actions that should fail fast if user doesn't have permission
+ */
+export async function assertDiscordOwnership(
+  playerName: string,
+  userDiscordId?: string,
+): Promise<void> {
+  const hasOwnership = await validateDiscordOwnership(
+    playerName,
+    userDiscordId,
+  );
+  if (!hasOwnership) {
+    throw new Error(
+      `You are not authorized to modify player "${playerName}". This player is associated with a different Discord account.`,
+    );
+  }
+}
+
+/**
+ * Gets all players associated with a specific Discord user ID
+ * @param discordUserId - The Discord user ID to search for
+ * @returns Array of players associated with the Discord user
+ */
+export async function getPlayersByDiscordId(
+  discordUserId: string,
+): Promise<Player[]> {
+  return await db
+    .select()
+    .from(players)
+    .where(eq(players.discordUserId, discordUserId));
+}
+
+/**
+ * Gets a single player by name (optionally filtered by discord user ID)
+ * @param playerName - The player name to search for
+ * @param discordUserId - Optional Discord user ID to verify ownership
+ * @returns Player record if found, null otherwise
+ */
+export async function getPlayerByName(
+  playerName: string,
+  discordUserId?: string,
+): Promise<Player | null> {
+  const conditions = [eq(players.playerName, playerName)];
+
+  if (discordUserId) {
+    conditions.push(eq(players.discordUserId, discordUserId));
+  }
+
+  const [player] = await db
+    .select()
+    .from(players)
+    .where(and(...conditions))
+    .limit(1);
+
+  return player || null;
+}
+
+/**
+ * Deletes a player record (with ownership validation)
+ * @param playerName - The player name to delete
+ * @param discordUserId - The Discord user ID to verify ownership
+ */
+export async function deletePlayer(
+  playerName: string,
+  discordUserId: string,
+): Promise<void> {
+  // Validate ownership first
+  await assertDiscordOwnership(playerName, discordUserId);
+
+  // Delete the player and all related records
+  await db.transaction(async (tx) => {
+    // Delete related records first (foreign key constraints)
+    await tx
+      .delete(playerAcquiredItems)
+      .where(eq(playerAcquiredItems.playerName, playerName));
+    await tx
+      .delete(playerAchievementDiaries)
+      .where(eq(playerAchievementDiaries.playerName, playerName));
+    await tx
+      .delete(playerRankUps)
+      .where(eq(playerRankUps.playerName, playerName));
+
+    // Delete the player record
+    await tx.delete(players).where(eq(players.playerName, playerName));
+  });
+}
 
 // Player Operations
 export interface CreatePlayerData {
@@ -42,6 +166,7 @@ export interface CreatePlayerData {
   collectionLogBonusPoints?: number;
   notableItemsBonusPoints?: number;
   discordUserId?: string;
+  isMobileOnly?: boolean;
 }
 
 export interface UpdatePlayerData {
@@ -69,6 +194,9 @@ export interface UpdatePlayerData {
   collectionLogBonusPoints?: number;
   notableItemsBonusPoints?: number;
   discordUserId?: string;
+  isMobileOnly?: boolean;
+  points?: number;
+  updatedAt?: Date;
 }
 
 /**
@@ -89,12 +217,28 @@ export async function createNewPlayer(data: CreatePlayerData): Promise<Player> {
 }
 
 /**
- * Updates an existing player's data (excludes playerName and joinDate)
+ * Updates an existing player's data with only the provided fields
+ * Only updates fields that are explicitly provided in the data object
+ * Validates Discord ownership before allowing updates
  */
 export async function updatePlayer(
   playerName: string,
-  data: UpdatePlayerData,
+  data: Partial<UpdatePlayerData>,
+  discordUserId?: string,
 ): Promise<Player | null> {
+  // Validate Discord ownership before proceeding with any updates
+  await assertDiscordOwnership(playerName, discordUserId);
+
+  // Only update if we have data to update
+  if (Object.keys(data).length === 0) {
+    const [existingPlayer] = await db
+      .select()
+      .from(players)
+      .where(eq(players.playerName, playerName))
+      .limit(1);
+    return existingPlayer || null;
+  }
+
   const [updatedPlayer] = await db
     .update(players)
     .set({ ...data, updatedAt: new Date() })
@@ -105,28 +249,101 @@ export async function updatePlayer(
 }
 
 /**
- * Creates or updates a player record - ideal for database integration
- * This handles membership checking internally
+ * Creates a new player with all related data (acquired items and achievement diaries)
+ * Use this for creating brand new players from rank calculator data
  */
-export async function createOrUpdatePlayer(
-  data: CreatePlayerData,
+export async function createPlayerWithFullData(
+  playerData: PlayerDetailsResponse & {
+    rank?: string;
+    proofLink?: string | null;
+  },
+  discordUserId?: string,
 ): Promise<Player> {
-  // Check if player already exists
-  const [existingPlayer] = await db
-    .select()
-    .from(players)
-    .where(eq(players.playerName, data.playerName))
-    .limit(1);
+  const {
+    playerName,
+    joinDate,
+    rank,
+    ehb,
+    ehp,
+    combatAchievementTier,
+    proofLink,
+    collectionLogCount,
+    collectionLogTotal,
+    totalLevel,
+    tzhaarCape,
+    hasBloodTorva,
+    hasRadiantOathplate,
+    hasDizanasQuiver,
+    hasAchievementDiaryCape,
+    combatBonusPoints,
+    skillingBonusPoints,
+    collectionLogBonusPoints,
+    notableItemsBonusPoints,
+    clueScrollCounts,
+    achievementDiaries,
+    rawCollectionLogItems,
+  } = playerData;
 
-  if (existingPlayer) {
-    // Player exists - update with new data
-    const { playerName, joinDate, ...updateData } = data;
-    const updated = await updatePlayer(playerName, updateData);
-    return updated!;
-  } else {
-    // Player doesn't exist - create new record
-    return await createNewPlayer(data);
+  // Create new player with proper defaults
+  const createData: CreatePlayerData = {
+    playerName,
+    joinDate:
+      joinDate instanceof Date
+        ? joinDate.toISOString().split('T')[0]
+        : joinDate,
+    rank: rank ?? 'Unranked',
+    ehb: ehb ?? 0,
+    ehp: ehp ?? 0,
+    combatAchievementTier: combatAchievementTier ?? 'None',
+    proofLink: proofLink ?? undefined,
+    collectionLogCount: collectionLogCount ?? 0,
+    collectionLogTotal: collectionLogTotal ?? 0,
+    totalLevel: totalLevel ?? 32,
+    clueCountBeginner: clueScrollCounts?.Beginner ?? 0,
+    clueCountEasy: clueScrollCounts?.Easy ?? 0,
+    clueCountMedium: clueScrollCounts?.Medium ?? 0,
+    clueCountHard: clueScrollCounts?.Hard ?? 0,
+    clueCountElite: clueScrollCounts?.Elite ?? 0,
+    clueCountMaster: clueScrollCounts?.Master ?? 0,
+    tzhaarCape: tzhaarCape ?? 'None',
+    hasBloodTorva: hasBloodTorva ?? false,
+    hasRadiantOathplate: hasRadiantOathplate ?? false,
+    hasDizanasQuiver: hasDizanasQuiver ?? false,
+    hasAchievementDiaryCape: hasAchievementDiaryCape ?? false,
+    combatBonusPoints: combatBonusPoints ?? 0,
+    skillingBonusPoints: skillingBonusPoints ?? 0,
+    collectionLogBonusPoints: collectionLogBonusPoints ?? 0,
+    notableItemsBonusPoints: notableItemsBonusPoints ?? 0,
+    discordUserId,
+  };
+
+  const createdPlayer = await createNewPlayer(createData);
+
+  // Create achievement diaries if they exist
+  if (achievementDiaries && typeof achievementDiaries === 'object') {
+    for (const [location, tier] of Object.entries(achievementDiaries)) {
+      if (tier !== 'None') {
+        await addAchievementDiary({
+          playerName,
+          location,
+          tier: tier as string,
+          completed: true,
+        });
+      }
+    }
   }
+
+  // Create collection log items if they exist
+  if (
+    rawCollectionLogItems &&
+    Array.isArray(rawCollectionLogItems) &&
+    rawCollectionLogItems.length > 0
+  ) {
+    await bulkUpsertCollectionLogItems(playerName, rawCollectionLogItems);
+  }
+
+  console.log(`Successfully created player ${playerName} with full data`);
+  return createdPlayer;
 }
 
 // Acquired Items Operations
@@ -153,17 +370,9 @@ export interface BulkItemUpdate {
 export async function updatePlayerPoints(
   playerName: string,
   points: number,
+  discordUserId?: string,
 ): Promise<Player | null> {
-  const [updatedPlayer] = await db
-    .update(players)
-    .set({
-      points,
-      updatedAt: new Date(),
-    })
-    .where(eq(players.playerName, playerName))
-    .returning();
-
-  return updatedPlayer || null;
+  return await updatePlayer(playerName, { points }, discordUserId);
 }
 
 /**
@@ -383,9 +592,9 @@ export async function createOrUpdateAchievementDiary(
 // Utility function for getting player with relations
 export async function getPlayerWithRelations(playerName: string): Promise<
   | (Player & {
-      acquiredItems: PlayerAcquiredItem[];
-      achievementDiaries: PlayerAchievementDiary[];
-    })
+    acquiredItems: PlayerAcquiredItem[];
+    achievementDiaries: PlayerAchievementDiary[];
+  })
   | null
 > {
   const player = await db.query.players.findFirst({
@@ -400,95 +609,179 @@ export async function getPlayerWithRelations(playerName: string): Promise<
 }
 
 /**
- * Database integration function - processes rank calculator data into postgres database
- * This is the main function to call from rank calculator endpoints
+ * Updates an existing player with all related data (acquired items and achievement diaries)
+ * Use this for updating existing players from rank calculator data
+ * Only updates fields that have meaningful values - does not overwrite good data with defaults
  */
-export async function syncPlayerToDatabase(
+export async function updatePlayerWithFullData(
   playerData: PlayerDetailsResponse & {
     rank?: string;
     proofLink?: string | null;
   },
   discordUserId?: string,
-): Promise<void> {
-  try {
-    const {
-      playerName,
-      joinDate,
-      rank,
-      ehb,
-      ehp,
-      combatAchievementTier,
-      proofLink,
-      collectionLogCount,
-      collectionLogTotal,
-      totalLevel,
-      tzhaarCape,
-      hasBloodTorva,
-      hasRadiantOathplate,
-      hasDizanasQuiver,
-      hasAchievementDiaryCape,
-      combatBonusPoints,
-      skillingBonusPoints,
-      collectionLogBonusPoints,
-      notableItemsBonusPoints,
-      clueScrollCounts,
-      achievementDiaries,
-    } = playerData;
+): Promise<Player | null> {
+  const {
+    playerName,
+    ehb,
+    ehp,
+    combatAchievementTier,
+    proofLink,
+    collectionLogCount,
+    collectionLogTotal,
+    totalLevel,
+    tzhaarCape,
+    hasBloodTorva,
+    hasRadiantOathplate,
+    hasDizanasQuiver,
+    hasAchievementDiaryCape,
+    combatBonusPoints,
+    skillingBonusPoints,
+    collectionLogBonusPoints,
+    notableItemsBonusPoints,
+    clueScrollCounts,
+    achievementDiaries,
+    rawCollectionLogItems,
+    rank,
+  } = playerData;
 
-    // Create or update the main player record
-    const postgresPlayerData: CreatePlayerData = {
-      playerName,
-      joinDate:
-        joinDate instanceof Date
-          ? joinDate.toISOString().split('T')[0]
-          : joinDate,
-      rank: rank ?? playerData.currentRank, // Don't default to 'Unranked' - preserve existing rank
-      ehb: ehb ?? 0,
-      ehp: ehp ?? 0,
-      combatAchievementTier: combatAchievementTier ?? 'None',
-      proofLink: proofLink ?? undefined, // Optional field for proof submissions
-      collectionLogCount: collectionLogCount ?? 0,
-      collectionLogTotal: collectionLogTotal ?? 0,
-      totalLevel: totalLevel ?? 32,
-      clueCountBeginner: clueScrollCounts?.Beginner ?? 0,
-      clueCountEasy: clueScrollCounts?.Easy ?? 0,
-      clueCountMedium: clueScrollCounts?.Medium ?? 0,
-      clueCountHard: clueScrollCounts?.Hard ?? 0,
-      clueCountElite: clueScrollCounts?.Elite ?? 0,
-      clueCountMaster: clueScrollCounts?.Master ?? 0,
-      tzhaarCape: tzhaarCape ?? 'None',
-      hasBloodTorva: hasBloodTorva ?? false,
-      hasRadiantOathplate: hasRadiantOathplate ?? false,
-      hasDizanasQuiver: hasDizanasQuiver ?? false,
-      hasAchievementDiaryCape: hasAchievementDiaryCape ?? false,
-      combatBonusPoints: combatBonusPoints ?? 0,
-      skillingBonusPoints: skillingBonusPoints ?? 0,
-      collectionLogBonusPoints: collectionLogBonusPoints ?? 0,
-      notableItemsBonusPoints: notableItemsBonusPoints ?? 0,
-      discordUserId,
-    };
+  // Build update data with only fields that have meaningful values
+  const updateData: Partial<UpdatePlayerData> = {};
 
-    await createOrUpdatePlayer(postgresPlayerData);
+  // Only include rank if explicitly provided (don't default)
+  if (rank) updateData.rank = rank;
 
-    // Sync achievement diaries if they exist
-    if (achievementDiaries && typeof achievementDiaries === 'object') {
-      for (const [location, tier] of Object.entries(achievementDiaries)) {
-        if (tier !== 'None') {
-          await createOrUpdateAchievementDiary({
-            playerName,
-            location,
-            tier: tier as string,
-            completed: true,
-          });
-        }
+  // Include stats only if they're meaningful (> 0 or explicitly set)
+  if (ehb !== undefined && ehb !== null) updateData.ehb = ehb;
+  if (ehp !== undefined && ehp !== null) updateData.ehp = ehp;
+  if (combatAchievementTier && combatAchievementTier !== 'None')
+    updateData.combatAchievementTier = combatAchievementTier;
+  if (proofLink) updateData.proofLink = proofLink;
+  if (collectionLogCount !== undefined && collectionLogCount !== null)
+    updateData.collectionLogCount = collectionLogCount;
+  if (collectionLogTotal !== undefined && collectionLogTotal !== null)
+    updateData.collectionLogTotal = collectionLogTotal;
+  if (totalLevel !== undefined && totalLevel !== null && totalLevel > 32)
+    updateData.totalLevel = totalLevel;
+
+  // Include clue counts only if they exist
+  if (clueScrollCounts?.Beginner !== undefined)
+    updateData.clueCountBeginner = clueScrollCounts.Beginner;
+  if (clueScrollCounts?.Easy !== undefined)
+    updateData.clueCountEasy = clueScrollCounts.Easy;
+  if (clueScrollCounts?.Medium !== undefined)
+    updateData.clueCountMedium = clueScrollCounts.Medium;
+  if (clueScrollCounts?.Hard !== undefined)
+    updateData.clueCountHard = clueScrollCounts.Hard;
+  if (clueScrollCounts?.Elite !== undefined)
+    updateData.clueCountElite = clueScrollCounts.Elite;
+  if (clueScrollCounts?.Master !== undefined)
+    updateData.clueCountMaster = clueScrollCounts.Master;
+
+  // Include items only if explicitly provided
+  if (tzhaarCape && tzhaarCape !== 'None') updateData.tzhaarCape = tzhaarCape;
+  if (hasBloodTorva !== undefined) updateData.hasBloodTorva = hasBloodTorva;
+  if (hasRadiantOathplate !== undefined)
+    updateData.hasRadiantOathplate = hasRadiantOathplate;
+  if (hasDizanasQuiver !== undefined)
+    updateData.hasDizanasQuiver = hasDizanasQuiver;
+  if (hasAchievementDiaryCape !== undefined)
+    updateData.hasAchievementDiaryCape = hasAchievementDiaryCape;
+
+  // Include bonus points only if they're meaningful
+  if (combatBonusPoints !== undefined && combatBonusPoints !== null)
+    updateData.combatBonusPoints = combatBonusPoints;
+  if (skillingBonusPoints !== undefined && skillingBonusPoints !== null)
+    updateData.skillingBonusPoints = skillingBonusPoints;
+  if (
+    collectionLogBonusPoints !== undefined &&
+    collectionLogBonusPoints !== null
+  )
+    updateData.collectionLogBonusPoints = collectionLogBonusPoints;
+  if (notableItemsBonusPoints !== undefined && notableItemsBonusPoints !== null)
+    updateData.notableItemsBonusPoints = notableItemsBonusPoints;
+
+  // Only set discord ID if player doesn't already have one assigned
+  if (discordUserId) {
+    const [existingPlayer] = await db
+      .select({ discordUserId: players.discordUserId })
+      .from(players)
+      .where(eq(players.playerName, playerName))
+      .limit(1);
+
+    if (existingPlayer && !existingPlayer.discordUserId) {
+      updateData.discordUserId = discordUserId;
+    }
+  }
+
+  // Update player data using the centralized updatePlayer function
+  const updatedPlayer = await updatePlayer(playerName, updateData, discordUserId);
+  if (!updatedPlayer) {
+    console.error(`Player ${playerName} not found for update`);
+    return null;
+  }
+
+  // Update achievement diaries if they exist
+  if (achievementDiaries && typeof achievementDiaries === 'object') {
+    for (const [location, tier] of Object.entries(achievementDiaries)) {
+      if (tier !== 'None') {
+        await createOrUpdateAchievementDiary({
+          playerName,
+          location,
+          tier: tier as string,
+          completed: true,
+        });
       }
     }
+  }
 
-    console.log(
-      `Successfully synced player ${playerName} to postgres database`,
-    );
+  // Update collection log items if they exist
+  if (
+    rawCollectionLogItems &&
+    Array.isArray(rawCollectionLogItems) &&
+    rawCollectionLogItems.length > 0
+  ) {
+    await bulkUpsertCollectionLogItems(playerName, rawCollectionLogItems);
+  }
+
+  console.log(`Successfully updated player ${playerName} with full data`);
+  return updatedPlayer;
+}
+
+/**
+ * Main entry point for processing rank calculator data into the database
+ * Automatically determines whether to create new player or update existing one
+ * Discord ownership validation is handled by the underlying update functions
+ */
+export async function processPlayerData(
+  playerData: PlayerDetailsResponse & {
+    rank?: string;
+    proofLink?: string | null;
+  },
+  discordUserId?: string,
+): Promise<Player> {
+  const { playerName } = playerData;
+
+  // Check if player already exists
+  const [existingPlayer] = await db
+    .select()
+    .from(players)
+    .where(eq(players.playerName, playerName))
+    .limit(1);
+
+  try {
+    if (existingPlayer) {
+      // Player exists - update with new data (ownership validated in updatePlayerWithFullData)
+      const updatedPlayer = await updatePlayerWithFullData(
+        playerData,
+        discordUserId,
+      );
+      return updatedPlayer!;
+    } else {
+      // Player doesn't exist - create new record (no ownership validation needed for new players)
+      return await createPlayerWithFullData(playerData, discordUserId);
+    }
   } catch (error) {
-    console.error(`Failed to sync player to postgres database:`, error);
-    // Don't throw - we don't want to break the main rank calculator flow
+    console.error(`Failed to process player data for ${playerName}:`, error);
+    throw error; // Re-throw to let calling code handle the error appropriately
   }
 }

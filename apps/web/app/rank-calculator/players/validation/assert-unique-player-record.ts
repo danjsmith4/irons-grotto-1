@@ -1,7 +1,6 @@
 'use server';
 
-import { userOSRSAccountsKey } from '@/config/redis';
-import { redis } from '@/redis';
+import { getPlayerByName } from '@/lib/db/player-operations';
 import * as Sentry from '@sentry/nextjs';
 
 export async function assertUniquePlayerRecord(
@@ -13,15 +12,10 @@ export async function assertUniquePlayerRecord(
   }
 
   try {
-    const count = await redis.hexists(
-      userOSRSAccountsKey(userId),
-      playerName.toLowerCase(),
-    );
-
-    return count === 0;
+    const existingPlayer = await getPlayerByName(playerName, userId);
+    return !existingPlayer; // Return true if player doesn't exist (unique)
   } catch (error) {
     Sentry.captureException(error);
-
     return false;
   }
 }

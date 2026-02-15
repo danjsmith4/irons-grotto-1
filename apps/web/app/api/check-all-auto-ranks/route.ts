@@ -1,32 +1,40 @@
 import * as Sentry from '@sentry/nextjs';
 import { clientConstants } from '@/config/constants.client';
 import { serverConstants } from '@/config/constants.server';
-import { userOSRSAccountsKey } from '@/config/redis';
-import { redis } from '@/redis';
 import { NextResponse } from 'next/server';
+import { db } from '@/lib/db';
+import { players } from '@/lib/db/schema';
+import { isNotNull } from 'drizzle-orm';
 
 export async function GET() {
   try {
-    const [, allAccountKeys] = await redis.scan(0, {
-      count: 100000,
-      match: userOSRSAccountsKey('*'),
-      type: 'hash',
-    });
+    // Get all players from the database that have a discord user ID
+    const allPlayers = await db
+      .select({
+        discordUserId: players.discordUserId,
+        playerName: players.playerName,
+      })
+      .from(players)
+      .where(isNotNull(players.discordUserId));
 
-    const playerDetails = await Promise.all(
-      allAccountKeys.map(async (key) => {
-        const matches = new RegExp(userOSRSAccountsKey('([0-9]+)')).exec(key);
+    // Group players by discord ID
+    const playersByDiscordId = allPlayers.reduce(
+      (acc, player) => {
+        if (!player.discordUserId) return acc;
 
-        if (!matches) {
-          throw new Error(
-            'Invalid key provided. Unable to extract Discord ID!',
-          );
+        if (!acc[player.discordUserId]) {
+          acc[player.discordUserId] = [];
         }
+        acc[player.discordUserId].push(player.playerName);
+        return acc;
+      },
+      {} as Record<string, string[]>,
+    );
 
-        const [, discordId] = matches;
-        const players = await redis.hkeys(key);
-
-        return { discordId, players };
+    const playerDetails = Object.entries(playersByDiscordId).map(
+      ([discordId, playerNames]) => ({
+        discordId,
+        players: playerNames,
       }),
     );
 
