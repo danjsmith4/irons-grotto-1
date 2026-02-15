@@ -71,6 +71,13 @@
       "when": 1771120190394,
       "tag": "0009_brainy_ma_gnuci",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1771130511648,
+      "tag": "0010_aromatic_chamber",
+      "breakpoints": true
     }
   ]
 }

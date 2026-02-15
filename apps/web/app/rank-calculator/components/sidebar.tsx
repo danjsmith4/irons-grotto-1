@@ -16,8 +16,8 @@ export function Sidebar() {
           gap="4"
           direction="column"
           asChild
-          p="3"
-          pr={{ md: '0' }}
+          p="2"
+          pr={{ md: '1' }}
           pb={{ initial: '0', md: '3' }}
         >
           <aside>

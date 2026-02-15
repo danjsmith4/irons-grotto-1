@@ -41,6 +41,7 @@ export interface CreatePlayerData {
   skillingBonusPoints?: number;
   collectionLogBonusPoints?: number;
   notableItemsBonusPoints?: number;
+  discordUserId?: string;
 }
 
 export interface UpdatePlayerData {
@@ -67,6 +68,7 @@ export interface UpdatePlayerData {
   skillingBonusPoints?: number;
   collectionLogBonusPoints?: number;
   notableItemsBonusPoints?: number;
+  discordUserId?: string;
 }
 
 /**
@@ -406,6 +408,7 @@ export async function syncPlayerToDatabase(
     rank?: string;
     proofLink?: string | null;
   },
+  discordUserId?: string,
 ): Promise<void> {
   try {
     const {
@@ -462,6 +465,7 @@ export async function syncPlayerToDatabase(
       skillingBonusPoints: skillingBonusPoints ?? 0,
       collectionLogBonusPoints: collectionLogBonusPoints ?? 0,
       notableItemsBonusPoints: notableItemsBonusPoints ?? 0,
+      discordUserId,
     };
 
     await createOrUpdatePlayer(postgresPlayerData);

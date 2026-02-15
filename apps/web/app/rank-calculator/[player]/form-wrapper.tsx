@@ -11,15 +11,17 @@ import {
   RankCalculatorSchema,
   RankCalculatorValidator,
 } from './submit-rank-calculator-validation';
-import { RankCalculatorNavigationActions } from '../components/rank-calculator-navigation-actions';
-import { Navigation } from '../components/navigation';
 import { saveDraftRankSubmissionAction } from './actions/save-draft-rank-submission-action';
 import { handleToastUpdates } from '../utils/handle-toast-updates';
 import { CurrentPlayerProvider } from '../contexts/current-player-context';
+import { NavBar } from '@/app/components/nav-bar';
+import { Player } from '@/app/schemas/player';
 
 interface FormWrapperProps {
   formData: Omit<RankCalculatorSchema, 'rank' | 'points'>;
   currentRank?: Rank;
+  playerName: string;
+  userCalculators: Record<string, Player>;
   warnings: {
     templeCollectionLogNotFound: boolean;
     templeCollectionLogOutdated: boolean;
@@ -30,6 +32,8 @@ interface FormWrapperProps {
 export function FormWrapper({
   formData,
   currentRank,
+  playerName,
+  userCalculators,
   warnings,
 }: FormWrapperProps) {
   const {
@@ -94,19 +98,26 @@ export function FormWrapper({
   return (
     <CurrentPlayerProvider rank={currentRank} playerName={formData.playerName}>
       <FormProvider {...form}>
-        <RankCalculator
-          submitRankCalculatorAction={submitRankCalculator}
-          navigation={
-            <Navigation
-              actions={
-                <RankCalculatorNavigationActions
-                  isActionActive={isExecuting || isTransitioning}
-                />
-              }
-              shouldRenderBackButton
-            />
-          }
-        />
+        <div
+          style={{
+            minHeight: '100vh',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          <NavBar
+            currentPage="player"
+            playerName={playerName}
+            userCalculators={userCalculators}
+            showSaveActions={true}
+            onSave={() => saveDraftRankSubmission(form.getValues())}
+            isSaving={isExecuting || isTransitioning}
+            canSave={form.formState.isValid}
+          />
+          <div style={{ flex: 1 }}>
+            <RankCalculator submitRankCalculatorAction={submitRankCalculator} />
+          </div>
+        </div>
       </FormProvider>
     </CurrentPlayerProvider>
   );

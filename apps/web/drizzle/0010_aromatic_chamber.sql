@@ -1,0 +1,1 @@
+ALTER TABLE "players" ADD COLUMN "discord_user_id" varchar(20);

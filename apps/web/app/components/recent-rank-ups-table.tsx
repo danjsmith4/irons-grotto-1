@@ -76,7 +76,7 @@ export function RecentRankUpsTable({ rankUps }: RecentRankUpsProps) {
   }
 
   return (
-    <Flex m-4 maxWidth={'500px'}>
+    <Flex maxWidth={'500px'}>
       <Card size="3">
         <Box mb="3">
           <Heading size="4">Recent Rank Ups</Heading>
