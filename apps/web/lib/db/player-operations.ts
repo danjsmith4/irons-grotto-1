@@ -195,6 +195,7 @@ export interface UpdatePlayerData {
   notableItemsBonusPoints?: number;
   discordUserId?: string;
   isMobileOnly?: boolean;
+  points?: number;
   updatedAt?: Date;
 }
 
@@ -218,11 +219,16 @@ export async function createNewPlayer(data: CreatePlayerData): Promise<Player> {
 /**
  * Updates an existing player's data with only the provided fields
  * Only updates fields that are explicitly provided in the data object
+ * Validates Discord ownership before allowing updates
  */
 export async function updatePlayer(
   playerName: string,
   data: Partial<UpdatePlayerData>,
+  discordUserId?: string,
 ): Promise<Player | null> {
+  // Validate Discord ownership before proceeding with any updates
+  await assertDiscordOwnership(playerName, discordUserId);
+
   // Only update if we have data to update
   if (Object.keys(data).length === 0) {
     const [existingPlayer] = await db
@@ -364,17 +370,9 @@ export interface BulkItemUpdate {
 export async function updatePlayerPoints(
   playerName: string,
   points: number,
+  discordUserId?: string,
 ): Promise<Player | null> {
-  const [updatedPlayer] = await db
-    .update(players)
-    .set({
-      points,
-      updatedAt: new Date(),
-    })
-    .where(eq(players.playerName, playerName))
-    .returning();
-
-  return updatedPlayer || null;
+  return await updatePlayer(playerName, { points }, discordUserId);
 }
 
 /**
@@ -594,9 +592,9 @@ export async function createOrUpdateAchievementDiary(
 // Utility function for getting player with relations
 export async function getPlayerWithRelations(playerName: string): Promise<
   | (Player & {
-      acquiredItems: PlayerAcquiredItem[];
-      achievementDiaries: PlayerAchievementDiary[];
-    })
+    acquiredItems: PlayerAcquiredItem[];
+    achievementDiaries: PlayerAchievementDiary[];
+  })
   | null
 > {
   const player = await db.query.players.findFirst({
@@ -715,8 +713,8 @@ export async function updatePlayerWithFullData(
     }
   }
 
-  // Update player data
-  const updatedPlayer = await updatePlayer(playerName, updateData);
+  // Update player data using the centralized updatePlayer function
+  const updatedPlayer = await updatePlayer(playerName, updateData, discordUserId);
   if (!updatedPlayer) {
     console.error(`Player ${playerName} not found for update`);
     return null;
@@ -752,7 +750,7 @@ export async function updatePlayerWithFullData(
 /**
  * Main entry point for processing rank calculator data into the database
  * Automatically determines whether to create new player or update existing one
- * Validates Discord ownership before allowing modifications
+ * Discord ownership validation is handled by the underlying update functions
  */
 export async function processPlayerData(
   playerData: PlayerDetailsResponse & {
@@ -763,17 +761,6 @@ export async function processPlayerData(
 ): Promise<Player> {
   const { playerName } = playerData;
 
-  // Validate Discord ownership before proceeding
-  const hasOwnership = await validateDiscordOwnership(
-    playerName,
-    discordUserId,
-  );
-  if (!hasOwnership) {
-    throw new Error(
-      `Discord user ${discordUserId} is not authorized to modify player ${playerName}. This player is owned by a different Discord account.`,
-    );
-  }
-
   // Check if player already exists
   const [existingPlayer] = await db
     .select()
@@ -783,14 +770,14 @@ export async function processPlayerData(
 
   try {
     if (existingPlayer) {
-      // Player exists - update with new data
+      // Player exists - update with new data (ownership validated in updatePlayerWithFullData)
       const updatedPlayer = await updatePlayerWithFullData(
         playerData,
         discordUserId,
       );
       return updatedPlayer!;
     } else {
-      // Player doesn't exist - create new record
+      // Player doesn't exist - create new record (no ownership validation needed for new players)
       return await createPlayerWithFullData(playerData, discordUserId);
     }
   } catch (error) {
