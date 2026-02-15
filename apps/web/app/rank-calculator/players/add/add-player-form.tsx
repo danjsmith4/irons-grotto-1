@@ -24,7 +24,7 @@ interface AddPlayerFormProps {
 
 export function AddPlayerForm({ members }: AddPlayerFormProps) {
   const router = useRouter();
-  const { form, handleSubmitWithAction } = useHookFormAction(
+  const { form, handleSubmitWithAction, action } = useHookFormAction(
     addPlayerAction,
     zodResolver(AddPlayerSchema),
     {
@@ -73,6 +73,24 @@ export function AddPlayerForm({ members }: AddPlayerFormProps) {
           mx="auto"
         >
           <Heading size="5">Add new player</Heading>
+          {action.result?.serverError && (
+            <Flex
+              direction="column"
+              gap="2"
+              p="3"
+              style={{
+                backgroundColor: 'var(--red-2)',
+                borderColor: 'var(--red-6)',
+                borderWidth: '1px',
+                borderStyle: 'solid',
+                borderRadius: 'var(--radius-2)',
+              }}
+            >
+              <Text color="red" weight="medium">
+                {action.result.serverError}
+              </Text>
+            </Flex>
+          )}
           <Flex direction="column" gap="3" width="330px">
             <Flex direction="column" gap="2">
               <PlayerNameInput
