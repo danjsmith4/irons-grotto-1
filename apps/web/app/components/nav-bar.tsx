@@ -5,6 +5,17 @@ import { useRouter } from 'next/navigation';
 import { ChevronDownIcon } from '@radix-ui/react-icons';
 import { DropdownMenu, Flex, IconButton } from '@radix-ui/themes';
 import { IronsButton } from '@/app/rank-calculator/components/irons-button';
+import { useState, useTransition } from 'react';
+import { useFormContext, useFormState } from 'react-hook-form';
+import { useAction } from 'next-safe-action/hooks';
+import { toast } from 'react-toastify';
+import { RankCalculatorSchema } from '@/app/rank-calculator/[player]/submit-rank-calculator-validation';
+import { publishRankSubmissionAction } from '@/app/rank-calculator/[player]/actions/publish-rank-submission-action';
+import { useRankCalculator } from '@/app/rank-calculator/hooks/point-calculator/use-rank-calculator';
+import { deletePlayerAccountAction } from '@/app/rank-calculator/actions/delete-player-account-action';
+import { DeleteSubmissionDataDialog } from '@/app/rank-calculator/components/delete-submission-data-dialog';
+import { handleToastUpdates } from '@/app/rank-calculator/utils/handle-toast-updates';
+import { useCurrentPlayer } from '@/app/rank-calculator/contexts/current-player-context';
 
 interface NavBarProps {
   currentPage?: 'dashboard' | 'player';
@@ -13,6 +24,7 @@ interface NavBarProps {
   onSave?: () => void;
   isSaving?: boolean;
   canSave?: boolean;
+  isActionActive?: boolean;
   userCalculators?: Record<
     string,
     {
@@ -21,18 +33,61 @@ interface NavBarProps {
       joinDate: Date;
     }
   >;
+  submitForm?: () => Promise<void> | void;
 }
 
 export function NavBar({
   currentPage = 'dashboard',
   playerName,
   showSaveActions = false,
-  onSave,
-  isSaving = false,
-  canSave = false,
+  onSave: _onSave,
+  isSaving: _isSaving = false,
+  canSave: _canSave = false,
+  isActionActive = false,
   userCalculators = {},
+  submitForm,
 }: NavBarProps) {
   const router = useRouter();
+
+  // Form hooks - these will be null when not in form context
+  const formContext = showSaveActions
+    ? useFormContext<RankCalculatorSchema>()
+    : null;
+  const formState = showSaveActions
+    ? useFormState<RankCalculatorSchema>()
+    : null;
+  const rankCalculator = showSaveActions ? useRankCalculator() : null;
+  const currentPlayer = showSaveActions ? useCurrentPlayer() : null;
+
+  const [, startResetTransition] = useTransition();
+  const [, startDeleteDialogTransition] = useTransition();
+  const [
+    isDeleteSubmissionDataDialogOpen,
+    setIsDeleteSubmissionDataDialogOpen,
+  ] = useState(false);
+
+  // Extract values with safe defaults
+  const reset = formContext?.reset;
+  const isValid = formState?.isValid ?? false;
+  const isDirty = formState?.isDirty ?? false;
+  const isSubmitting = formState?.isSubmitting ?? false;
+  const totalPoints = rankCalculator?.pointsAwarded ?? 0;
+  const rank = rankCalculator?.rank ?? null;
+  const currentPlayerName = currentPlayer?.playerName ?? '';
+  const currentRank = currentPlayer?.rank ?? null;
+
+  // Action hooks - only bind when we have the required data
+  const { executeAsync: publishRankSubmission } = useAction(
+    publishRankSubmissionAction.bind(
+      null,
+      currentRank ?? undefined,
+      currentPlayerName ?? playerName ?? '',
+    ),
+  );
+
+  const { executeAsync: deletePlayerAccount } = useAction(
+    deletePlayerAccountAction,
+  );
 
   const handleSignOut = async () => {
     await fetch('/api/logout', { method: 'POST' });
@@ -151,26 +206,39 @@ export function NavBar({
 
             {/* Save Actions (only on player pages) - moved to the right */}
             {showSaveActions && (
-              <Flex gap="1">
+              <Flex>
                 <IronsButton
-                  loading={isSaving}
-                  disabled={!canSave || isSaving}
+                  loading={isSubmitting || isActionActive}
+                  disabled={
+                    !isDirty || !isValid || isSubmitting || isActionActive
+                  }
                   variant="primary"
-                  onClick={onSave}
                   size="2"
+                  style={{
+                    borderTopRightRadius: 0,
+                    borderBottomRightRadius: 0,
+                  }}
+                  onClick={() => {
+                    if (submitForm) {
+                      void submitForm();
+                    }
+                  }}
                 >
                   Save
                 </IronsButton>
                 <DropdownMenu.Root modal={false}>
-                  <DropdownMenu.Trigger disabled={isSaving}>
+                  <DropdownMenu.Trigger
+                    disabled={isSubmitting || isActionActive}
+                  >
                     <IconButton
+                      className="save-dropdown-button"
                       variant="soft"
                       type="button"
                       style={{
                         borderTopLeftRadius: 0,
                         borderBottomLeftRadius: 0,
-                        transition: 'none',
-                        transform: 'none',
+                        transition: 'none !important',
+                        transform: 'none !important',
                       }}
                     >
                       <ChevronDownIcon
@@ -179,8 +247,50 @@ export function NavBar({
                     </IconButton>
                   </DropdownMenu.Trigger>
                   <DropdownMenu.Content color="gray" variant="soft">
-                    <DropdownMenu.Item>Apply for promotion</DropdownMenu.Item>
-                    <DropdownMenu.Item>Reset form defaults</DropdownMenu.Item>
+                    <DropdownMenu.Item
+                      onClick={() => {
+                        console.log(
+                          '🔵 Apply for promotion nav dropdown clicked!',
+                          {
+                            isDirty,
+                            totalPoints,
+                            rank,
+                            currentRank,
+                            playerName: currentPlayerName,
+                          },
+                        );
+
+                        if (isDirty) {
+                          toast.error('Please save your data first!');
+                          return;
+                        }
+
+                        if (!rank) {
+                          toast.error('No rank calculated yet!');
+                          return;
+                        }
+
+                        void handleToastUpdates(
+                          publishRankSubmission({
+                            totalPoints,
+                            rank,
+                          }),
+                          { success: 'Rank application submitted!' },
+                        );
+                      }}
+                    >
+                      Apply for promotion
+                    </DropdownMenu.Item>
+                    <DropdownMenu.Item
+                      disabled={!isDirty}
+                      onClick={() => {
+                        startResetTransition(() => {
+                          reset?.();
+                        });
+                      }}
+                    >
+                      Reset form defaults
+                    </DropdownMenu.Item>
                     {playerName && (
                       <DropdownMenu.Item asChild>
                         <Link
@@ -191,11 +301,30 @@ export function NavBar({
                       </DropdownMenu.Item>
                     )}
                     <DropdownMenu.Separator />
-                    <DropdownMenu.Item color="red">
+                    <DropdownMenu.Item
+                      color="red"
+                      onSelect={() => {
+                        startDeleteDialogTransition(() => {
+                          setIsDeleteSubmissionDataDialogOpen(true);
+                        });
+                      }}
+                    >
                       Delete data
                     </DropdownMenu.Item>
                   </DropdownMenu.Content>
                 </DropdownMenu.Root>
+                <DeleteSubmissionDataDialog
+                  open={isDeleteSubmissionDataDialogOpen}
+                  onOpenChange={setIsDeleteSubmissionDataDialogOpen}
+                  customDeleteAction={() => {
+                    void handleToastUpdates(
+                      deletePlayerAccount(
+                        currentPlayerName ?? playerName ?? '',
+                      ),
+                      { success: 'Player account deleted!' },
+                    );
+                  }}
+                />
               </Flex>
             )}
           </Flex>

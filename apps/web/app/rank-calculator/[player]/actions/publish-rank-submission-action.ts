@@ -59,7 +59,16 @@ export const publishRankSubmissionAction = authActionClient
       bindArgsParsedInputs: [currentRank, playerName],
       parsedInput: { totalPoints, rank },
     }) => {
+      console.log('🚀 publishRankSubmissionAction started', {
+        userId,
+        currentRank,
+        playerName,
+        totalPoints,
+        rank,
+      });
+
       if (rank === currentRank) {
+        console.log('❌ Same rank error:', rank, currentRank);
         throw new ActionError('You already have this rank!');
       }
 
@@ -68,12 +77,15 @@ export const publishRankSubmissionAction = authActionClient
       );
 
       if (!savedData) {
+        console.log('❌ No saved data error');
         throw new ActionError('No saved data!');
       }
 
+      console.log('✅ Fetching player details...');
       const playerDetails = await fetchPlayerDetails(playerName, userId, false);
 
       if (!playerDetails.success) {
+        console.log('❌ Failed to fetch player details:', playerDetails);
         throw new Error(
           'Failed to retrieve player details. Please try again later.',
         );
@@ -318,6 +330,7 @@ export const publishRankSubmissionAction = authActionClient
         }
       }
 
+      console.log('✅ publishRankSubmissionAction completed successfully');
       return { success: true };
     },
   );
