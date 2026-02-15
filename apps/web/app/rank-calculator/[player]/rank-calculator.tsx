@@ -1,4 +1,4 @@
-import { BaseSyntheticEvent, ReactNode, useState } from 'react';
+import { BaseSyntheticEvent, useState } from 'react';
 import { Grid } from '@radix-ui/themes';
 import dedent from 'dedent';
 import { Sidebar } from '../components/sidebar';
@@ -7,12 +7,10 @@ import { ItemList } from '../components/item-list';
 
 interface RankCalculatorProps {
   submitRankCalculatorAction: ((e: BaseSyntheticEvent) => void) | undefined;
-  navigation: ReactNode;
 }
 
 export function RankCalculator({
   submitRankCalculatorAction,
-  navigation,
 }: RankCalculatorProps) {
   const [query, setQuery] = useState('');
 
@@ -38,10 +36,9 @@ export function RankCalculator({
             [right-sidebar] minmax(200px, 1fr)
         `,
         }}
-        rows="62px 1fr"
-        gapX="3"
+        rows="1fr"
+        gapX="1"
       >
-        {navigation}
         <Sidebar />
         <RightSidebar query={query} onChange={setQuery} />
         <ItemList query={query} />

@@ -92,7 +92,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Sync player data to postgres database for future relational queries
-    await syncPlayerToDatabase(playerDetails.data);
+    await syncPlayerToDatabase(playerDetails.data, undefined);
 
     const dropRates = await fetchItemDropRates([...generateRequiredItemList()]);
     const items = Object.entries(await buildNotableItemList(dropRates));

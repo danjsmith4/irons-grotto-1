@@ -34,7 +34,7 @@ export default async function RankCalculatorEditPlayerPage({
   const session = await auth();
 
   if (!session?.user?.id) {
-    redirect('/rank-calculator');
+    redirect('/dashboard');
   }
 
   const { player } = await params;
@@ -44,7 +44,7 @@ export default async function RankCalculatorEditPlayerPage({
   );
 
   if (!playerRecord) {
-    redirect('/rank-calculator');
+    redirect('/dashboard');
   }
 
   const memberList = await getLatestMemberList();

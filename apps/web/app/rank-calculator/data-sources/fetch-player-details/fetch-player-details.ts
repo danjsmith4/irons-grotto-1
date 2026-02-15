@@ -114,7 +114,7 @@ export async function fetchPlayerDetails(
   );
 
   if (!playerRecord) {
-    throw new Error('Unable to find player record');
+    redirect('/dashboard');
   }
 
   Sentry.setTag('has-player-record', true);
@@ -375,7 +375,7 @@ export async function fetchPlayerDetails(
 
     // Sync to shadow dataset if we have third-party data
     if (hasThirdPartyData) {
-      await syncPlayerToDatabase(result.data);
+      await syncPlayerToDatabase(result.data, userId);
     }
 
     return result;

@@ -15,5 +15,5 @@ export const deletePlayerAccountAction = authActionClient
       redis.hdel(userOSRSAccountsKey(userId), playerName.toLowerCase()),
     ]);
 
-    revalidatePath('/rank-calculator');
+    revalidatePath('/dashboard');
   });

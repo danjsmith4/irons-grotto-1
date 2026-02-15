@@ -21,7 +21,7 @@ export function ItemList({ query }: { query: string }) {
           );
 
           return (
-            <Box key={title} px={{ initial: '3', md: '0' }}>
+            <Box key={title} px={{ initial: '3', md: '2' }}>
               <Category
                 items={category.items}
                 title={title}

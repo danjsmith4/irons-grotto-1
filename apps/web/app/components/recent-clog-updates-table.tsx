@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import {
   Table,
   Text,
@@ -8,6 +9,7 @@ import {
   Card,
   Heading,
   ScrollArea,
+  Avatar,
 } from '@radix-ui/themes';
 import Image from 'next/image';
 import { formatWikiImageUrl } from '@/app/rank-calculator/utils/format-wiki-url';
@@ -25,6 +27,30 @@ interface ClogUpdateData {
 
 interface RecentClogUpdatesProps {
   clogUpdates: ClogUpdateData[];
+}
+
+function ItemImageWithFallback({ itemName }: { itemName: string }) {
+  const [hasError, setHasError] = useState(false);
+
+  if (hasError) {
+    return (
+      <Avatar size="1" fallback="?" style={{ width: '20px', height: '20px' }} />
+    );
+  }
+
+  return (
+    <Image
+      src={formatWikiImageUrl(itemName)}
+      alt={itemName}
+      width={20}
+      height={20}
+      style={{
+        borderRadius: '2px',
+        imageRendering: 'pixelated',
+      }}
+      onError={() => setHasError(true)}
+    />
+  );
 }
 
 export function RecentClogUpdatesTable({
@@ -87,22 +113,8 @@ export function RecentClogUpdatesTable({
 
                 <Table.Cell>
                   <Flex align="center" gap="2">
-                    <Image
-                      src={formatWikiImageUrl(update.itemName)}
-                      alt={update.itemName}
-                      width={20}
-                      height={20}
-                      style={{
-                        borderRadius: '2px',
-                        imageRendering: 'pixelated',
-                      }}
-                    />
+                    <ItemImageWithFallback itemName={update.itemName} />
                     <Text size="2">{update.itemName}</Text>
-                    {update.count > 1 && (
-                      <Text size="1" color="gray">
-                        (×{update.count})
-                      </Text>
-                    )}
                   </Flex>
                 </Table.Cell>
 

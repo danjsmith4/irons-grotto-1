@@ -6,6 +6,7 @@ import {
   QueryClient,
 } from '@tanstack/react-query';
 import { fetchPlayerDetails } from '../data-sources/fetch-player-details/fetch-player-details';
+import { fetchPlayerAccounts } from '../data-sources/fetch-player-accounts';
 import { FormWrapper } from './form-wrapper';
 import { saveDraftRankSubmissionAction } from './actions/save-draft-rank-submission-action';
 import {
@@ -36,9 +37,10 @@ export default async function RankCalculatorPage({
 
   const { id: userId } = session.user;
 
-  const [playerDetails, dropRates] = await Promise.all([
+  const [playerDetails, dropRates, userCalculators] = await Promise.all([
     fetchPlayerDetails(decodedPlayer, userId),
     fetchItemDropRates([...generateRequiredItemList()]),
+    fetchPlayerAccounts(),
   ]);
 
   const notableItemList = await buildNotableItemList(dropRates);
@@ -72,6 +74,8 @@ export default async function RankCalculatorPage({
       <FormWrapper
         formData={formData}
         currentRank={currentRank}
+        playerName={decodedPlayer}
+        userCalculators={userCalculators}
         warnings={{
           templeCollectionLogNotFound: !isMobileOnly && !hasTempleCollectionLog,
           templeCollectionLogOutdated:

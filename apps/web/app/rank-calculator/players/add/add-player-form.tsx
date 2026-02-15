@@ -30,7 +30,7 @@ export function AddPlayerForm({ members }: AddPlayerFormProps) {
     {
       actionProps: {
         onSuccess() {
-          router.push(`/rank-calculator`);
+          router.push(`/dashboard`);
         },
       },
       formProps: {
@@ -134,7 +134,7 @@ export function AddPlayerForm({ members }: AddPlayerFormProps) {
                     color="gray"
                     size="3"
                     onClick={() => {
-                      router.push('/rank-calculator');
+                      router.push('/dashboard');
                     }}
                     variant="soft"
                   >

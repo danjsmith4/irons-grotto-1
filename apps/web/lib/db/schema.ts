@@ -63,6 +63,9 @@ export const players = pgTable('players', {
   // Total calculated points
   points: real('points').notNull().default(0),
 
+  // Discord integration
+  discordUserId: varchar('discord_user_id', { length: 20 }), // Discord user IDs are numeric strings up to 20 characters
+
   // Metadata
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),

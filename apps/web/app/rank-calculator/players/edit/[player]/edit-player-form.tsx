@@ -53,7 +53,7 @@ export function EditPlayerForm({ members, playerRecord }: EditPlayerFormProps) {
         onSuccess() {
           toast.success(`Player edited successfully!`);
 
-          router.push(`/rank-calculator`);
+          router.push(`/dashboard`);
         },
       },
       formProps: {
@@ -176,7 +176,7 @@ export function EditPlayerForm({ members, playerRecord }: EditPlayerFormProps) {
                     color="gray"
                     size="3"
                     onClick={() => {
-                      router.push('/rank-calculator');
+                      router.push('/dashboard');
                     }}
                     variant="soft"
                   >

@@ -25,9 +25,9 @@ const inter = Inter({
 export default async function HomePage() {
   // Check auth on page load and redirect if authed
   const session = await auth();
-  const rankCalculatorUrl = '/rank-calculator';
+  const dashboardUrl = '/rank-calculator/dashboard';
   if (session) {
-    redirect(rankCalculatorUrl);
+    redirect(dashboardUrl);
   }
 
   // Fetch recent rank ups and clog updates for clan at a glance
@@ -45,13 +45,13 @@ export default async function HomePage() {
     'use server';
 
     const session = await auth();
-    const rankCalculatorUrl = '/rank-calculator';
+    const dashboardUrl = '/dashboard';
 
     if (!session) {
-      await signIn('discord', { redirectTo: rankCalculatorUrl });
+      await signIn('discord', { redirectTo: dashboardUrl });
     }
 
-    redirect(rankCalculatorUrl);
+    redirect(dashboardUrl);
   };
 
   return (

@@ -53,7 +53,7 @@ export function Navigation({
           <Flex gap="3" align="center">
             {shouldRenderBackButton && (
               <IconButton asChild color="gray" variant="soft">
-                <Link href="/rank-calculator">
+                <Link href="/dashboard">
                   <ChevronLeftIcon />
                 </Link>
               </IconButton>
