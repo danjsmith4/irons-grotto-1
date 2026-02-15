@@ -99,12 +99,6 @@ export function ReadonlyFormWrapper({
     >
       <FormProvider {...methods}>
         <RankCalculator
-          navigation={
-            <Navigation
-              actions={renderNavigationActions()}
-              shouldRenderBackButton={false}
-            />
-          }
           submitRankCalculatorAction={undefined}
         />
       </FormProvider>
