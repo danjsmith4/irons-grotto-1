@@ -270,12 +270,32 @@ export const publishRankSubmissionAction = authActionClient
             : null,
       } satisfies RankSubmissionDiff;
 
+      // NEVER auto-approve non-Standard rank structures
+      if (rankStructure !== 'Standard') {
+        console.log(
+          '🚫 Auto-approval blocked: Non-Standard rank structure:',
+          rankStructure,
+        );
+        console.log('✅ publishRankSubmissionAction completed successfully');
+        return { success: true };
+      }
+
       const isAutoApprovalAvailable =
         rankStructure === 'Standard' &&
         hasTempleCollectionLog &&
         hasWikiSyncData &&
         hasTemplePlayerStats &&
         isEmpty(pickBy(submissionDiff, (val) => !isEmpty(val)));
+
+      console.log('🔍 Auto-approval check:', {
+        rankStructure,
+        isStandardRank: rankStructure === 'Standard',
+        hasTempleCollectionLog,
+        hasWikiSyncData,
+        hasTemplePlayerStats,
+        hasNoDiff: isEmpty(pickBy(submissionDiff, (val) => !isEmpty(val))),
+        isAutoApprovalAvailable,
+      });
 
       const submissionTransaction = redis.multi();
 

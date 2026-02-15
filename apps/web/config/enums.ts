@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export const Rank = z.enum([
+  'Unranked',
   'Owner',
   'Deputy Owner',
   'Administrator',
