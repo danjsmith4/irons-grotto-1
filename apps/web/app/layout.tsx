@@ -17,6 +17,11 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'Irons Grotto - Old School RuneScape Clan',
+  icons: {
+    icon: '/L2.png',
+    shortcut: '/L2.png',
+    apple: '/L2.png',
+  },
 };
 
 export default function RootLayout({

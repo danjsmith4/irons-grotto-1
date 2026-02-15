@@ -32,6 +32,7 @@ export function ModerationCard() {
     isModerator,
     actionedByUsername,
     isTempleCollectionLogOutdated,
+    playerName,
   } = useModeration();
 
   if (!isModerator) {
@@ -86,7 +87,11 @@ export function ModerationCard() {
             <Text color={statusColors[status]}>{statusIcons[status]}</Text>
           }
         />
-      ))}
+      ))}{' '}
+      <DataCard.Row
+        left={<Text size="2">Player name</Text>}
+        right={<Text size="2">{playerName}</Text>}
+      />{' '}
       {actionedByUsername && (
         <DataCard.Row
           left={<Text size="2">Actioned by</Text>}

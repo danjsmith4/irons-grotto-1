@@ -8,7 +8,7 @@
     "typescript": "^5"
   },
   "scripts": {
-    "prettier": "prettier --write .",
+    "format": "yarn run prettier --write .",
     "dev": "turbo run dev",
     "lint": "turbo run lint"
   },

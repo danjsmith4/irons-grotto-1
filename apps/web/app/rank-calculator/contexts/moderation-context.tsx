@@ -10,6 +10,7 @@ interface ModerationProps extends Pick<
 > {
   isModerator: boolean;
   actionedByUsername: string | null;
+  playerName: string;
 }
 
 export const ModerationContext = createContext<ModerationProps>({
@@ -19,6 +20,7 @@ export const ModerationContext = createContext<ModerationProps>({
   hasWikiSyncData: false,
   isModerator: false,
   isTempleCollectionLogOutdated: false,
+  playerName: '',
 });
 
 export function ModerationProvider({
@@ -29,6 +31,7 @@ export function ModerationProvider({
   hasWikiSyncData,
   actionedByUsername,
   isTempleCollectionLogOutdated,
+  playerName,
 }: PropsWithChildren<ModerationProps>) {
   const value = useMemo<ModerationProps>(
     () => ({
@@ -38,6 +41,7 @@ export function ModerationProvider({
       hasWikiSyncData,
       actionedByUsername,
       isTempleCollectionLogOutdated,
+      playerName,
     }),
     [
       isModerator,
@@ -46,6 +50,7 @@ export function ModerationProvider({
       hasWikiSyncData,
       actionedByUsername,
       isTempleCollectionLogOutdated,
+      playerName,
     ],
   );
 
