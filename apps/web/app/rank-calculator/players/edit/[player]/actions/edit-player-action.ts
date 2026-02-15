@@ -1,16 +1,25 @@
 'use server';
 
 import { z } from 'zod';
-import { userOSRSAccountsKey, userRankSubmissionsKey } from '@/config/redis';
+import { userRankSubmissionsKey } from '@/config/redis';
 import { redis } from '@/redis';
 import { authActionClient } from '@/app/safe-action';
 import { returnValidationErrors } from 'next-safe-action';
-import { Player, PlayerName } from '@/app/schemas/player';
+import { PlayerName } from '@/app/schemas/player';
 import { Rank } from '@/config/enums';
 import { fetchPlayerMeta } from '../../../../data-sources/fetch-player-meta';
 import { fetchTemplePlayerStats } from '../../../../data-sources/fetch-temple-player-stats';
 import { assertUniquePlayerRecord } from '../../../validation/assert-unique-player-record';
 import { EditPlayerSchema } from './edit-player-schema';
+import { updatePlayer } from '@/lib/db/player-operations';
+import { db } from '@/lib/db';
+import {
+  players,
+  playerAcquiredItems,
+  playerAchievementDiaries,
+  playerRankUps,
+} from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 export const editPlayerAction = authActionClient
   .metadata({ actionName: 'edit-player' })
@@ -20,7 +29,7 @@ export const editPlayerAction = authActionClient
   >([PlayerName, Rank.optional()])
   .action(
     async ({
-      parsedInput: { joinDate, playerName, isMobileOnly },
+      parsedInput: { playerName, isMobileOnly },
       bindArgsParsedInputs: [previousPlayerName, currentRank],
       ctx: { userId },
     }) => {
@@ -48,42 +57,68 @@ export const editPlayerAction = authActionClient
         playerMeta?.rsn ?? playerStats?.info.Username ?? playerName;
 
       const hasPlayerNameChanged =
-        playerName.toLowerCase() !== previousPlayerName.toLowerCase();
+        maybeFormattedPlayerName.toLowerCase() !==
+        previousPlayerName.toLowerCase();
 
       const pipeline = redis.multi();
 
       if (hasPlayerNameChanged) {
-        // Delete the previous player record
-        pipeline.hdel(
-          userOSRSAccountsKey(userId),
-          previousPlayerName.toLowerCase(),
-        );
+        // Update player name in database transaction - all related tables
+        await db.transaction(async (tx) => {
+          // Update the main players table
+          await tx
+            .update(players)
+            .set({
+              playerName: maybeFormattedPlayerName,
+              rank: currentRank,
+              isMobileOnly,
+              updatedAt: new Date(),
+            })
+            .where(eq(players.playerName, previousPlayerName));
 
+          // Update all related tables with the new player name
+          await tx
+            .update(playerAcquiredItems)
+            .set({ playerName: maybeFormattedPlayerName })
+            .where(eq(playerAcquiredItems.playerName, previousPlayerName));
+
+          await tx
+            .update(playerAchievementDiaries)
+            .set({ playerName: maybeFormattedPlayerName })
+            .where(eq(playerAchievementDiaries.playerName, previousPlayerName));
+
+          await tx
+            .update(playerRankUps)
+            .set({ playerName: maybeFormattedPlayerName })
+            .where(eq(playerRankUps.playerName, previousPlayerName));
+        });
+
+        // Handle Redis rank submissions key rename
         const rankSubmissionsKeyExists = await redis.exists(
           userRankSubmissionsKey(userId, previousPlayerName.toLowerCase()),
         );
 
-        // If it exists, change the rank submissions key to match the new player name
         if (rankSubmissionsKeyExists) {
           pipeline.renamenx(
             userRankSubmissionsKey(userId, previousPlayerName.toLowerCase()),
-            userRankSubmissionsKey(userId, playerName.toLowerCase()),
+            userRankSubmissionsKey(
+              userId,
+              maybeFormattedPlayerName.toLowerCase(),
+            ),
           );
         }
-      }
-
-      // Set the new player record
-      pipeline.hset<Player>(userOSRSAccountsKey(userId), {
-        [maybeFormattedPlayerName.toLowerCase()]: {
-          joinDate,
-          rsn: maybeFormattedPlayerName,
+      } else {
+        // No name change, just update the player record
+        await updatePlayer(previousPlayerName, {
           rank: currentRank,
           isMobileOnly,
-        },
-      });
+          updatedAt: new Date(),
+        });
+      }
 
       await pipeline.exec();
 
-      return { playerName };
+      // Return the final player name (potentially updated)
+      return { playerName: maybeFormattedPlayerName };
     },
   );

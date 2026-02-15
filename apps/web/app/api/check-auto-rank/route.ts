@@ -40,7 +40,7 @@ import { calculateDizanasQuiverPoints } from '@/app/rank-calculator/utils/calcul
 import { calculateClueScrollPoints } from '@/app/rank-calculator/utils/calculators/calculate-clue-scroll-points';
 import { calculateRadiantOathplatePoints } from '@/app/rank-calculator/utils/calculators/calculate-radiant-oathplate-points';
 import {
-  syncPlayerToDatabase,
+  processPlayerData,
   updatePlayerPoints,
 } from '@/lib/db/player-operations';
 
@@ -90,9 +90,22 @@ export async function GET(request: NextRequest) {
     if (!hasThirdPartyData) {
       return NextResponse.json({ success: true });
     }
-
+    // Only perform auto-rank checks for players with Standard rank structure
+    // Moderators and other special roles should not be auto-ranked
+    if (rankStructure !== 'Standard') {
+      return NextResponse.json({
+        success: false,
+        message:
+          'Auto-rank checks are only available for Standard rank structure players',
+      });
+    }
     // Sync player data to postgres database for future relational queries
-    await syncPlayerToDatabase(playerDetails.data, undefined);
+    try {
+      await processPlayerData(playerDetails.data, undefined);
+    } catch (error) {
+      console.error('Failed to sync player data to database:', error);
+      // Continue with rank calculation even if database sync fails
+    }
 
     const dropRates = await fetchItemDropRates([...generateRequiredItemList()]);
     const items = Object.entries(await buildNotableItemList(dropRates));

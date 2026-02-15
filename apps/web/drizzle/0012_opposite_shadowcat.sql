@@ -1,0 +1,1 @@
+ALTER TABLE "players" ADD COLUMN "is_mobile_only" boolean DEFAULT false NOT NULL;

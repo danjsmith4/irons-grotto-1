@@ -1,16 +1,12 @@
 import 'core-js/actual/set/intersection';
 import 'core-js/actual/set/is-subset-of';
 import { itemList } from '@/data/item-list';
-import {
-  userDraftRankSubmissionKey,
-  userOSRSAccountsKey,
-} from '@/config/redis';
+import { userDraftRankSubmissionKey } from '@/config/redis';
 import { stripEntityName } from '@/app/rank-calculator/utils/strip-entity-name';
 import { ApiResponse } from '@/types/api';
 import * as Sentry from '@sentry/nextjs';
 import { Rank } from '@/config/enums';
 import { redis } from '@/redis';
-import { Player } from '@/app/schemas/player';
 import { clientConstants } from '@/config/constants.client';
 import { redirect } from 'next/navigation';
 import {
@@ -34,10 +30,8 @@ import { mergeTzhaarCapes } from './utils/merge-tzhaar-capes';
 import { isAchievementDiaryCapeAchieved } from '../../utils/is-achievement-diary-cape-achieved';
 import { fetchUserDiscordRoles } from '../fetch-user-discord-roles';
 import { calculateCombatDiaryTierBonusPoints } from '../../utils/calculators/calculate-custom-diary-tier-multipliers';
-import {
-  syncPlayerToDatabase,
-  bulkUpsertCollectionLogItems,
-} from '@/lib/db/player-operations';
+import { processPlayerData, getPlayerByName } from '@/lib/db/player-operations';
+import { TempleOSRSCollectionLogItem } from '@/app/schemas/temple-api';
 
 export interface PlayerDetailsResponse extends Omit<
   RankCalculatorSchema,
@@ -50,6 +44,7 @@ export interface PlayerDetailsResponse extends Omit<
   hasThirdPartyData: boolean;
   isTempleCollectionLogOutdated: boolean;
   isMobileOnly: boolean;
+  rawCollectionLogItems?: TempleOSRSCollectionLogItem[];
 }
 
 export const emptyResponse = {
@@ -108,10 +103,7 @@ export async function fetchPlayerDetails(
   userId: string,
   mergeSavedData = true,
 ): Promise<ApiResponse<PlayerDetailsResponse>> {
-  const playerRecord = await redis.hget<Player>(
-    userOSRSAccountsKey(userId),
-    player.toLowerCase(),
-  );
+  const playerRecord = await getPlayerByName(player, userId);
 
   if (!playerRecord) {
     redirect('/dashboard');
@@ -119,18 +111,10 @@ export async function fetchPlayerDetails(
 
   Sentry.setTag('has-player-record', true);
 
-  if (playerRecord.isNameInvalid) {
-    redirect(`/rank-calculator/players/edit/${player}`);
-  }
-
   const isPlayerNameValid = await validatePlayerExists(player);
 
   if (!isPlayerNameValid) {
-    // Flag the account as having an invalid name, and force the user to edit it
-    await redis.hset<Player>(userOSRSAccountsKey(userId), {
-      [player.toLowerCase()]: { ...playerRecord, isNameInvalid: true },
-    });
-
+    // For now, redirect to edit page - in the future we might delete the record or handle differently
     redirect(`/rank-calculator/players/edit/${player}`);
   }
 
@@ -150,7 +134,7 @@ export async function fetchPlayerDetails(
           userDraftRankSubmissionKey(userId, player),
         )
       : undefined;
-    const { joinDate, rsn, rank: currentRank } = playerRecord;
+    const { joinDate, playerName: rsn, rank: currentRank } = playerRecord;
     const [wikiSyncData, templePlayerStats, templeCollectionLog, discordRoles] =
       await Promise.all([
         getWikiSyncData(player),
@@ -159,13 +143,7 @@ export async function fetchPlayerDetails(
         fetchUserDiscordRoles(userId),
       ]);
 
-    bulkUpsertCollectionLogItems(
-      playerRecord.rsn,
-      templeCollectionLog ? templeCollectionLog.items : [],
-    ).catch((error: Error) => {
-      Sentry.captureException(error);
-      console.error(error);
-    });
+    // Collection log items will be handled downstream in create/update functions
 
     const hasThirdPartyData = Boolean(
       wikiSyncData ?? templePlayerStats ?? templeCollectionLog,
@@ -316,7 +294,7 @@ export async function fetchPlayerDetails(
       calculateCombatDiaryTierBonusPoints(discordRoles);
 
     const result = {
-      success: true,
+      success: true as const,
       error: null,
       data: {
         achievementDiaries:
@@ -339,11 +317,11 @@ export async function fetchPlayerDetails(
         ehp: Math.round(ehp ?? savedData?.ehp ?? 0),
         totalLevel: Math.max(totalLevel ?? 0, savedData?.totalLevel ?? 0),
         collectionLogTotal,
-        joinDate,
+        joinDate: new Date(joinDate),
         playerName: rsn,
         rankStructure: savedData?.rankStructure ?? 'Standard',
         proofLink,
-        currentRank,
+        currentRank: currentRank as Rank,
         tzhaarCape: mergeTzhaarCapes(tzhaarCape, savedData?.tzhaarCape),
         hasBloodTorva: (hasBloodTorva || savedData?.hasBloodTorva) ?? false,
         hasRadiantOathplate: savedData?.hasRadiantOathplate ?? false,
@@ -357,7 +335,7 @@ export async function fetchPlayerDetails(
         hasWikiSyncData: !!wikiSyncData,
         hasThirdPartyData,
         isTempleCollectionLogOutdated,
-        isMobileOnly: playerRecord.isMobileOnly,
+        isMobileOnly: playerRecord.isMobileOnly ?? false,
         collectionLogBonusPoints: collectionLogBonusPoints,
         combatBonusPoints,
         skillingBonusPoints: 0, // Leaving this in for future use, if we decide to add a skilling diary
@@ -370,12 +348,20 @@ export async function fetchPlayerDetails(
           Elite: eliteClueCount ?? 0,
           Master: masterClueCount ?? 0,
         },
+        rawCollectionLogItems: templeCollectionLog
+          ? templeCollectionLog.items
+          : [],
       },
     };
 
     // Sync to shadow dataset if we have third-party data
     if (hasThirdPartyData) {
-      await syncPlayerToDatabase(result.data, userId);
+      try {
+        await processPlayerData(result.data, userId);
+      } catch (error) {
+        console.error('Failed to sync player data to database:', error);
+        // Continue even if database sync fails
+      }
     }
 
     return result;

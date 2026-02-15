@@ -46,7 +46,7 @@ export default async function DashboardPage() {
 
   // Fetch user's recent collection log items
   const playerNames = Object.values(userCalculators).map(
-    (player) => player.rsn,
+    (player: { rsn: string }) => player.rsn,
   );
   const userRecentClogsResult = await fetchUserRecentClogs(playerNames, 20, 0);
   const userRecentClogs = userRecentClogsResult.success

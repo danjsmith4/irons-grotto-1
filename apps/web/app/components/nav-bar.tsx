@@ -224,14 +224,6 @@ export function NavBar({
                     borderBottomRightRadius: 0,
                   }}
                   onClick={() => {
-                    // Check if calculated rank differs from current rank
-                    if (rank && currentRank && rank !== currentRank) {
-                      toast.error(
-                        `Your calculated rank (${rank}) differs from your current rank (${currentRank}). You need to apply for promotion instead of saving.`,
-                      );
-                      return;
-                    }
-
                     if (submitForm) {
                       void submitForm();
                     }

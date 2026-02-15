@@ -1,5 +1,3 @@
-'use server';
-
 import { ActionError } from '@/app/action-error';
 import type { CombatAchievementTier } from '@/app/schemas/osrs';
 import type {
@@ -13,7 +11,6 @@ import {
   rankSubmissionDiffKey,
   rankSubmissionKey,
   rankSubmissionMetadataKey,
-  userOSRSAccountsKey,
 } from '@/config/redis';
 import { discordBotClient } from '@/discord';
 import { redis, redisRaw } from '@/redis';
@@ -23,11 +20,11 @@ import { assignAchievementDiscordRoles } from './assign-achievement-discord-role
 import { sendDiscordMessage } from '@/app/rank-calculator/utils/send-discord-message';
 import dedent from 'dedent';
 import { getRankName } from '@/app/rank-calculator/utils/get-rank-name';
-import type { Player } from '@/app/schemas/player';
 import type { Rank } from '@/config/enums';
 import * as Sentry from '@sentry/node';
 import { db } from '@/lib/db';
 import { playerRankUps, players } from '@/lib/db/schema';
+import { getPlayerByName } from '@/lib/db/player-operations';
 import { eq } from 'drizzle-orm';
 
 type ApproveSubmissionInput = {
@@ -192,10 +189,7 @@ export async function approveSubmission({
     );
   }
 
-  const playerRecord = (await redis.hget<Player>(
-    userOSRSAccountsKey(submitterId),
-    playerName.toLowerCase(),
-  ))!;
+  const playerRecord = await getPlayerByName(playerName, submitterId);
 
   if (!playerRecord) {
     throw new ActionError('Unable to find player record!');
@@ -219,12 +213,8 @@ export async function approveSubmission({
     automaticApproval: isAutomatic ? 'true' : 'false',
   });
 
-  transaction.hset<Omit<Player, 'joinDate' | 'rsn' | 'isMobileOnly'>>(
-    userOSRSAccountsKey(submitterId),
-    {
-      [playerName.toLowerCase()]: { ...playerRecord, rank },
-    },
-  );
+  // Note: We no longer update Redis with player data since we're moving to database-only
+  // The database transaction below will handle the rank update
 
   const result = await transaction.exec();
 
