@@ -26,6 +26,9 @@ import { getRankName } from '@/app/rank-calculator/utils/get-rank-name';
 import type { Player } from '@/app/schemas/player';
 import type { Rank } from '@/config/enums';
 import * as Sentry from '@sentry/node';
+import { db } from '@/lib/db';
+import { playerRankUps, players } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 type ApproveSubmissionInput = {
   submissionId: string;
@@ -222,6 +225,28 @@ export async function approveSubmission({
   );
 
   const result = await transaction.exec();
+
+  db.transaction(async (tx) => {
+    const user = await tx.query.players.findFirst({
+      where: eq(players.playerName, playerName),
+    });
+
+    await tx.insert(playerRankUps).values({
+      playerName: playerName,
+      newRank: rank,
+      oldRank: user ? user.rank : undefined, // old rank
+      createdAt: new Date(),
+    });
+
+    await tx
+      .update(players)
+      .set({
+        rank,
+      })
+      .where(eq(players.playerName, playerName));
+  }).catch((e) =>
+    console.log(`Error encountered during rank up db modifications ${e}`),
+  );
 
   if (!result) {
     throw new ActionError('Unable to persist approval to database');

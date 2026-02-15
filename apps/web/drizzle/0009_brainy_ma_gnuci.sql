@@ -1,0 +1,1 @@
+ALTER TABLE "player_rank_ups" ALTER COLUMN "old_rank" DROP NOT NULL;

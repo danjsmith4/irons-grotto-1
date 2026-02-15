@@ -117,6 +117,7 @@ export type NewPlayerAchievementDiary =
 export const playersRelations = relations(players, ({ many }) => ({
   acquiredItems: many(playerAcquiredItems),
   achievementDiaries: many(playerAchievementDiaries),
+  rankUps: many(playerRankUps),
 }));
 
 export const playerAcquiredItemsRelations = relations(
@@ -138,3 +139,20 @@ export const playerAchievementDiariesRelations = relations(
     }),
   }),
 );
+
+export const playerRankUps = pgTable('player_rank_ups', {
+  id: uuid('id')
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  playerName: varchar('player_name', { length: 12 }).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  oldRank: varchar('old_rank', { length: 50 }),
+  newRank: varchar('new_rank', { length: 50 }).notNull(),
+});
+
+export const playerRankUpsRelations = relations(playerRankUps, ({ one }) => ({
+  player: one(players, {
+    fields: [playerRankUps.playerName],
+    references: [players.playerName],
+  }),
+}));
