@@ -95,6 +95,14 @@ export function RankCalculatorNavigationActions({
           <DropdownMenu.Content color="gray" variant="soft">
             <DropdownMenu.Item
               onClick={() => {
+                console.log('🔵 Apply for promotion dropdown clicked!', {
+                  isDirty,
+                  totalPoints,
+                  rank,
+                  currentRank,
+                  playerName,
+                });
+
                 if (isDirty) {
                   toast.error('Please save your data first!');
 

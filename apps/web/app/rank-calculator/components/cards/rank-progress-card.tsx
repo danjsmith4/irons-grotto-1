@@ -187,6 +187,12 @@ export function RankProgressCard() {
             </Dialog.Close>
             <Dialog.Close
               onClick={() => {
+                console.log('🔵 Apply for promotion button clicked!', {
+                  totalPoints: pointsAwarded,
+                  rank,
+                  currentRank,
+                  playerName,
+                });
                 void handleToastUpdates(
                   publishRankSubmission({
                     totalPoints: pointsAwarded,

@@ -113,6 +113,8 @@ export function FormWrapper({
             onSave={() => saveDraftRankSubmission(form.getValues())}
             isSaving={isExecuting || isTransitioning}
             canSave={form.formState.isValid}
+            isActionActive={isExecuting || isTransitioning}
+            submitForm={submitRankCalculator}
           />
           <div style={{ flex: 1 }}>
             <RankCalculator submitRankCalculatorAction={submitRankCalculator} />

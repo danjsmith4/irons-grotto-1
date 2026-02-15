@@ -8,11 +8,14 @@ import { handleToastUpdates } from '../utils/handle-toast-updates';
 type DeleteSubmissionDataDialogProps = Pick<
   AlertDialog.RootProps,
   'onOpenChange' | 'open'
->;
+> & {
+  customDeleteAction?: () => void;
+};
 
 export function DeleteSubmissionDataDialog({
   open,
   onOpenChange,
+  customDeleteAction,
 }: DeleteSubmissionDataDialogProps) {
   const { getValues, reset } = useFormContext<RankCalculatorSchema>();
   const {
@@ -42,24 +45,28 @@ export function DeleteSubmissionDataDialog({
             variant="solid"
             color="red"
             onClick={() => {
-              void handleToastUpdates(
-                deleteSubmissionData({
-                  playerName: getValues('playerName'),
-                }),
-                {
-                  success: {
-                    render({ data }) {
-                      if (data.success) {
-                        const { data: freshPlayerDetails } = data;
+              if (customDeleteAction) {
+                customDeleteAction();
+              } else {
+                void handleToastUpdates(
+                  deleteSubmissionData({
+                    playerName: getValues('playerName'),
+                  }),
+                  {
+                    success: {
+                      render({ data }) {
+                        if (data.success) {
+                          const { data: freshPlayerDetails } = data;
 
-                        reset(freshPlayerDetails);
-                      }
+                          reset(freshPlayerDetails);
+                        }
 
-                      return 'Submission data deleted!';
+                        return 'Submission data deleted!';
+                      },
                     },
                   },
-                },
-              );
+                );
+              }
 
               onOpenChange?.(false);
             }}
