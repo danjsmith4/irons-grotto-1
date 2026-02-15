@@ -7,8 +7,10 @@ import { auth, signIn } from '@/auth';
 import { redirect } from 'next/navigation';
 import { fetchRecentRankUps } from './data-sources/fetch-recent-rank-ups';
 import { fetchRecentClogUpdates } from './data-sources/fetch-recent-clog-updates';
+import { fetchLeaderboard } from './data-sources/fetch-leaderboard';
 import { RecentRankUpsTable } from './components/recent-rank-ups-table';
 import { RecentClogUpdatesTable } from './components/recent-clog-updates-table';
+import { Leaderboard } from './components/leaderboard';
 import { FadeInOnScroll } from './components/fade-in-on-scroll';
 
 const cinzel = Cinzel({
@@ -40,6 +42,10 @@ export default async function HomePage() {
   const recentClogUpdates = recentClogUpdatesResult.success
     ? recentClogUpdatesResult.data
     : [];
+
+  // Fetch leaderboard data (fetch more to account for unranked players being filtered)
+  const leaderboardResult = await fetchLeaderboard(20, 0);
+  const leaderboard = leaderboardResult.success ? leaderboardResult.data : [];
 
   const handleSubmit = async () => {
     'use server';
@@ -145,46 +151,81 @@ export default async function HomePage() {
                 marginBottom: '0.5rem',
               }}
             >
-              What's happening in Grotto
+              What's happening in Grotto...
             </h2>
-            <p
-              style={{
-                color: 'rgba(255, 255, 255, 0.7)',
-                fontSize: '14px',
-                margin: 0,
-              }}
-            >
-              Scroll to see what the Grotto is up to...
-            </p>
           </div>
 
           <FadeInOnScroll>
             <div
               style={{
                 display: 'flex',
-                gap: '2rem',
-                flexDirection: 'row',
-                justifyContent: 'center',
-                flexWrap: 'wrap',
+                flexDirection: 'column',
+                gap: '3rem',
+                alignItems: 'center',
               }}
             >
+              {/* Leaderboard */}
               <div
                 style={{
-                  flex: '1 1 400px',
-                  minWidth: '400px',
-                  maxWidth: '500px',
+                  width: '100%',
+                  maxWidth: '900px',
                 }}
               >
-                <RecentRankUpsTable rankUps={recentRankUps ?? []} />
+                <div style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
+                  <h3
+                    className={`${cinzel.className}`}
+                    style={{
+                      color: '#ce93d8',
+                      fontSize: '1.5rem',
+                      marginBottom: '0.5rem',
+                    }}
+                  >
+                    Top Players
+                  </h3>
+                  <p
+                    style={{
+                      color: 'rgba(255, 255, 255, 0.7)',
+                      fontSize: '14px',
+                      margin: 0,
+                    }}
+                  >
+                    Our highest achieving clan members
+                  </p>
+                </div>
+                <Leaderboard initialPlayers={leaderboard} />
               </div>
+
+              {/* Recent activity tables */}
               <div
                 style={{
-                  flex: '1 1 400px',
-                  minWidth: '400px',
-                  maxWidth: '500px',
+                  display: 'flex',
+                  gap: '2rem',
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                  flexWrap: 'wrap',
+                  width: '100%',
                 }}
               >
-                <RecentClogUpdatesTable clogUpdates={recentClogUpdates ?? []} />
+                <div
+                  style={{
+                    flex: '1 1 400px',
+                    minWidth: '400px',
+                    maxWidth: '500px',
+                  }}
+                >
+                  <RecentRankUpsTable rankUps={recentRankUps ?? []} />
+                </div>
+                <div
+                  style={{
+                    flex: '1 1 400px',
+                    minWidth: '400px',
+                    maxWidth: '500px',
+                  }}
+                >
+                  <RecentClogUpdatesTable
+                    clogUpdates={recentClogUpdates ?? []}
+                  />
+                </div>
               </div>
             </div>
           </FadeInOnScroll>

@@ -55,18 +55,25 @@ export function FormWrapper({
     },
   );
 
-  const submitRankCalculator = form.handleSubmit(async (data) =>
-    handleToastUpdates(saveDraftRankSubmission(data), {
-      pending: 'Saving draft...',
-      success: {
-        render() {
-          form.reset(data, { keepIsSubmitSuccessful: true });
+  // Custom save function with rank validation
+  const submitRankCalculator = form.handleSubmit(async (data) => {
+    try {
+      const result = await handleToastUpdates(saveDraftRankSubmission(data), {
+        pending: 'Saving draft...',
+        success: {
+          render() {
+            form.reset(data, { keepIsSubmitSuccessful: true });
 
-          return 'Draft saved!';
+            return 'Draft saved!';
+          },
         },
-      },
-    }),
-  );
+      });
+      return result;
+    } catch (error) {
+      console.error('Save failed:', error);
+      throw error;
+    }
+  });
 
   useEffect(() => {
     if (warnings.templeCollectionLogOutdated) {
@@ -111,9 +118,13 @@ export function FormWrapper({
             userCalculators={userCalculators}
             showSaveActions={true}
             onSave={() => saveDraftRankSubmission(form.getValues())}
-            isSaving={isExecuting || isTransitioning}
+            isSaving={
+              isExecuting || isTransitioning || form.formState.isSubmitting
+            }
             canSave={form.formState.isValid}
-            isActionActive={isExecuting || isTransitioning}
+            isActionActive={
+              isExecuting || isTransitioning || form.formState.isSubmitting
+            }
             submitForm={submitRankCalculator}
           />
           <div style={{ flex: 1 }}>

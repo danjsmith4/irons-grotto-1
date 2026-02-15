@@ -442,7 +442,7 @@ export async function syncPlayerToDatabase(
         joinDate instanceof Date
           ? joinDate.toISOString().split('T')[0]
           : joinDate,
-      rank: rank ?? playerData.currentRank ?? 'Unranked', // Default rank when not provided (e.g., during player fetch)
+      rank: rank ?? playerData.currentRank, // Don't default to 'Unranked' - preserve existing rank
       ehb: ehb ?? 0,
       ehp: ehp ?? 0,
       combatAchievementTier: combatAchievementTier ?? 'None',
