@@ -56,7 +56,7 @@ export function ApproveSubmissionButton({
         <AlertDialog.Description size="2">
           {Object.keys(errors).length > 0 && (
             <>
-              <Text as="p" color="red" weight="bold">
+              <Text as="div" color="red" weight="bold">
                 WARNING: Differences found between the submission and API
                 responses!
               </Text>
@@ -64,13 +64,13 @@ export function ApproveSubmissionButton({
             </>
           )}
           {isStandardRankStructure && (
-            <Text as="p">
+            <Text as="div">
               This application will be approved and {playerName} will
               automatically be assigned the {getRankName(rank)} rank on Discord.
             </Text>
           )}
           {!isStandardRankStructure && (
-            <Text as="p">
+            <Text as="div">
               This application will be approved. Discord ranks must be manually
               assigned for non-standard rank structures.
             </Text>

@@ -12,6 +12,7 @@
     "test:coverage": "jest --coverage",
     "test:db": "jest lib/db/",
     "test:integration": "jest lib/db/*.integration.test.ts",
+    "format": "yarn run prettier --write .",
     "check-types": "tsc --noEmit --project tsconfig.app.json && tsc --noEmit --project tsconfig.spec.json",
     "e2e": "NODE_ENV=test start-test dev http://localhost:3000/api/heartbeat \"cypress open --e2e\"",
     "e2e:headless": "NODE_ENV=test start-test dev http://localhost:3000/api/heartbeat \"cypress run --e2e\"",

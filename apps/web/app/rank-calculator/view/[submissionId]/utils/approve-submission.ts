@@ -192,7 +192,7 @@ export async function approveSubmission({
     );
   }
 
-  const playerRecord = (await redis.hget(
+  const playerRecord = (await redis.hget<Player>(
     userOSRSAccountsKey(submitterId),
     playerName.toLowerCase(),
   ))!;
@@ -204,6 +204,8 @@ export async function approveSubmission({
   const transaction = redis.multi();
 
   const actionedBy = isAutomatic ? 'System' : approverId;
+
+  const oldRank = playerRecord.rank;
 
   if (!actionedBy) {
     Sentry.captureException('Unable to determine actionedBy for approval');
@@ -231,10 +233,15 @@ export async function approveSubmission({
       where: eq(players.playerName, playerName),
     });
 
+    if ((user && user.rank == rank) || oldRank === rank) {
+      tx.rollback();
+      return { success: true };
+    }
+
     await tx.insert(playerRankUps).values({
       playerName: playerName,
       newRank: rank,
-      oldRank: user ? user.rank : undefined, // old rank
+      oldRank: oldRank ?? (user ? user.rank : undefined), // old rank
       createdAt: new Date(),
     });
 

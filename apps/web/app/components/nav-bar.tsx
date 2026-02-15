@@ -18,7 +18,7 @@ import { handleToastUpdates } from '@/app/rank-calculator/utils/handle-toast-upd
 import { useCurrentPlayer } from '@/app/rank-calculator/contexts/current-player-context';
 
 interface NavBarProps {
-  currentPage?: 'dashboard' | 'player';
+  currentPage?: 'dashboard' | 'player' | 'submission';
   playerName?: string;
   showSaveActions?: boolean;
   onSave?: () => void;
@@ -34,6 +34,7 @@ interface NavBarProps {
     }
   >;
   submitForm?: () => Promise<void> | void;
+  additionalButtons?: React.ReactNode;
 }
 
 export function NavBar({
@@ -46,6 +47,7 @@ export function NavBar({
   isActionActive = false,
   userCalculators = {},
   submitForm,
+  additionalButtons,
 }: NavBarProps) {
   const router = useRouter();
 
@@ -203,6 +205,9 @@ export function NavBar({
             <IronsButton variant="secondary" size="2" onClick={handleSignOut}>
               Sign Out
             </IronsButton>
+
+            {/* Additional Buttons */}
+            {additionalButtons}
 
             {/* Save Actions (only on player pages) - moved to the right */}
             {showSaveActions && (

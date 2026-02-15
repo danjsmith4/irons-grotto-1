@@ -1,13 +1,13 @@
 'use client';
 
 import { FieldErrors, FormProvider, useForm } from 'react-hook-form';
-import {
-  RankSubmissionMetadata,
-} from '@/app/schemas/rank-calculator';
+import { RankSubmissionMetadata } from '@/app/schemas/rank-calculator';
 import { RankCalculator } from '../../[player]/rank-calculator';
 import { RankCalculatorSchema } from '../../[player]/submit-rank-calculator-validation';
 import { userCanModerateSubmission } from './utils/user-can-moderate-submission';
 import { ModerationProvider } from '../../contexts/moderation-context';
+import { NavBar } from '@/app/components/nav-bar';
+import { SubmissionNavbarActions } from './components/submission-navbar-actions';
 
 interface FormWrapperProps {
   formData: Omit<RankCalculatorSchema, 'rank' | 'points'>;
@@ -42,9 +42,31 @@ export function ReadonlyFormWrapper({
       isTempleCollectionLogOutdated={
         submissionMetadata.isTempleCollectionLogOutdated
       }
+      playerName={formData.playerName}
     >
       <FormProvider {...methods}>
-        <RankCalculator submitRankCalculatorAction={undefined} />
+        <div
+          style={{
+            minHeight: '100vh',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          <NavBar
+            currentPage="submission"
+            playerName={formData.playerName}
+            additionalButtons={
+              <SubmissionNavbarActions
+                playerName={formData.playerName}
+                initialStatus={submissionMetadata.status}
+                userCanModerate={isModerator}
+              />
+            }
+          />
+          <div style={{ flex: 1 }}>
+            <RankCalculator submitRankCalculatorAction={undefined} />
+          </div>
+        </div>
       </FormProvider>
     </ModerationProvider>
   );

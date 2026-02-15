@@ -1,13 +1,13 @@
 import { db } from '@/lib/db';
 import { playerRankUps } from '@/lib/db/schema';
-import { desc, isNotNull } from 'drizzle-orm';
+import { desc, eq, not } from 'drizzle-orm';
 
 export async function fetchRecentRankUps() {
   try {
     const recentRankUps = await db
       .select()
       .from(playerRankUps)
-      .where(isNotNull(playerRankUps.oldRank)) // These are new recruits
+      .where(not(eq(playerRankUps.oldRank, 'Unranked'))) // These are new recruits
       .orderBy(desc(playerRankUps.createdAt))
       .limit(10);
 
