@@ -168,24 +168,10 @@ export async function approveSubmission({
       messageId,
     );
   } else {
-    if (requiresAchievementRoles) {
-      await assignAchievementDiscordRoles(
-        submitterId,
-        applicableAchievementDiscordRoles,
-      );
-    }
-
-    await sendDiscordMessage(
-      {
-        content: dedent`
-          <@${submitterId}>
-
-          Your application has been approved by <@${approverId}>.
-
-          Please reach out to a mod or key to update your ranks!
-        `,
-      },
-      messageId,
+    // Non-Standard rank structures require manual handling
+    // Do not send approval messages or assign roles automatically
+    throw new ActionError(
+      'Non-Standard rank structures must be handled manually by staff',
     );
   }
 

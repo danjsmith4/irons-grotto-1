@@ -54,29 +54,36 @@ export const addPlayerAction = authActionClient
         await createNewPlayer({
           playerName: maybeFormattedPlayerName,
           joinDate: joinDate.toISOString(),
-          rank: 'Aspiring', // Default rank for new players
+          rank: 'Unranked', // Default rank for new players
           isMobileOnly,
           discordUserId: userId,
         });
       } catch (error) {
         Sentry.captureException(error);
-        
+
         // Check if it's a unique constraint violation (player already exists)
         if (error && typeof error === 'object' && 'code' in error) {
           // PostgreSQL unique constraint violation code
           if (error.code === '23505') {
-            throw new ActionError('A player with this name already exists. Please choose a different player name.');
+            throw new ActionError(
+              'A player with this name already exists. Please choose a different player name.',
+            );
           }
         }
-        
+
         // Check for common database error patterns in the message
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        if (errorMessage.toLowerCase().includes('unique') || 
-            errorMessage.toLowerCase().includes('duplicate') ||
-            errorMessage.toLowerCase().includes('already exists')) {
-          throw new ActionError('A player with this name already exists. Please choose a different player name.');
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        if (
+          errorMessage.toLowerCase().includes('unique') ||
+          errorMessage.toLowerCase().includes('duplicate') ||
+          errorMessage.toLowerCase().includes('already exists')
+        ) {
+          throw new ActionError(
+            'A player with this name already exists. Please choose a different player name.',
+          );
         }
-        
+
         // Generic error for other cases
         throw new ActionError('Error creating player account record');
       }

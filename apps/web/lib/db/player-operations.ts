@@ -592,9 +592,9 @@ export async function createOrUpdateAchievementDiary(
 // Utility function for getting player with relations
 export async function getPlayerWithRelations(playerName: string): Promise<
   | (Player & {
-    acquiredItems: PlayerAcquiredItem[];
-    achievementDiaries: PlayerAchievementDiary[];
-  })
+      acquiredItems: PlayerAcquiredItem[];
+      achievementDiaries: PlayerAchievementDiary[];
+    })
   | null
 > {
   const player = await db.query.players.findFirst({
@@ -714,7 +714,11 @@ export async function updatePlayerWithFullData(
   }
 
   // Update player data using the centralized updatePlayer function
-  const updatedPlayer = await updatePlayer(playerName, updateData, discordUserId);
+  const updatedPlayer = await updatePlayer(
+    playerName,
+    updateData,
+    discordUserId,
+  );
   if (!updatedPlayer) {
     console.error(`Player ${playerName} not found for update`);
     return null;
