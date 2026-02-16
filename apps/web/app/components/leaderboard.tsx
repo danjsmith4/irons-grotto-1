@@ -422,8 +422,8 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
 
               <Table.Cell style={{ textAlign: 'center' }}>
                 <Image
-                  width={20}
-                  height={20}
+                  width={30}
+                  height={30}
                   src={formatWikiImageUrl(
                     caTierToIcon[
                       player.caTier &&
