@@ -10,6 +10,7 @@ import { Rank } from '@/config/enums';
 import { fetchPlayerMeta } from '../../../../data-sources/fetch-player-meta';
 import { fetchTemplePlayerStats } from '../../../../data-sources/fetch-temple-player-stats';
 import { assertUniquePlayerRecord } from '../../../validation/assert-unique-player-record';
+import { validateIronmanStatus } from '../../../../utils/validate-ironman-status';
 import { EditPlayerSchema } from './edit-player-schema';
 import { updatePlayer } from '@/lib/db/player-operations';
 import { db } from '@/lib/db';
@@ -56,9 +57,26 @@ export const editPlayerAction = authActionClient
       const maybeFormattedPlayerName =
         playerMeta?.rsn ?? playerStats?.info.Username ?? playerName;
 
+      // If the player name has changed, validate that the new player is an ironman
       const hasPlayerNameChanged =
         maybeFormattedPlayerName.toLowerCase() !==
         previousPlayerName.toLowerCase();
+
+      if (hasPlayerNameChanged) {
+        const validation = await validateIronmanStatus(
+          maybeFormattedPlayerName,
+        );
+
+        if (!validation.isValid) {
+          returnValidationErrors(EditPlayerSchema, {
+            playerName: {
+              _errors: [
+                'Only ironman accounts can be registered in this clan. Main accounts are not eligible for standard clan ranks.',
+              ],
+            },
+          });
+        }
+      }
 
       const pipeline = redis.multi();
 

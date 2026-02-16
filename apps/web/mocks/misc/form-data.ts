@@ -48,6 +48,7 @@ export const earlyGamePlayer = {
     Elite: 0,
     Master: 0,
   },
+  totalXp: 13034431,
 } satisfies Omit<RankCalculatorSchema, 'rank' | 'points'>;
 
 export const midGamePlayer = {
@@ -192,6 +193,7 @@ export const midGamePlayer = {
     Elite: 0,
     Master: 0,
   },
+  totalXp: 157889789,
 } satisfies Omit<RankCalculatorSchema, 'rank' | 'points'>;
 
 export const endGamePlayer = {
@@ -451,4 +453,5 @@ export const endGamePlayer = {
     Elite: 0,
     Master: 0,
   },
+  totalXp: 299791160,
 } satisfies Omit<RankCalculatorSchema, 'rank' | 'points'>;

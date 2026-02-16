@@ -150,6 +150,7 @@ export interface CreatePlayerData {
   collectionLogCount?: number;
   collectionLogTotal?: number;
   totalLevel?: number;
+  totalXp?: number;
   clueCountBeginner?: number;
   clueCountEasy?: number;
   clueCountMedium?: number;
@@ -270,6 +271,7 @@ export async function createPlayerWithFullData(
     collectionLogCount,
     collectionLogTotal,
     totalLevel,
+    totalXp,
     tzhaarCape,
     hasBloodTorva,
     hasRadiantOathplate,
@@ -299,6 +301,7 @@ export async function createPlayerWithFullData(
     collectionLogCount: collectionLogCount ?? 0,
     collectionLogTotal: collectionLogTotal ?? 0,
     totalLevel: totalLevel ?? 32,
+    totalXp: totalXp ?? 1154,
     clueCountBeginner: clueScrollCounts?.Beginner ?? 0,
     clueCountEasy: clueScrollCounts?.Easy ?? 0,
     clueCountMedium: clueScrollCounts?.Medium ?? 0,

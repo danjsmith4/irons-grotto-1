@@ -12,7 +12,8 @@ const MemberInfo = z.object({
 type MemberInfo = z.infer<typeof MemberInfo>;
 
 interface PlayerInfo {
-  'Game mode': 0 | 1 | 2 | 3;
+  'Game mode': number;
+  GIM: number;
   'Datapoint Cooldown': '-' | number;
 }
 
@@ -53,21 +54,35 @@ export interface GroupUpdateRequest {
 }
 
 export const GameMode = {
-  GroupIronman: 0,
+  Main: 0,
   Ironman: 1,
   UltimateIronman: 2,
   HardcoreIronman: 3,
 } as const;
 
+/**
+ * Determines if a player is an ironman based on Temple API data
+ * @param gameMode - The 'Game mode' field from Temple API
+ * @param gim - The 'GIM' field from Temple API
+ * @returns boolean - true if player is any ironman variant, false if main
+ */
+export function isPlayerIronman(gameMode: number, gim: number): boolean {
+  // Main account: game_mode === 0 AND GIM === 0
+  // Any ironman variant: NOT (game_mode === 0 AND GIM === 0)
+  return !(gameMode === 0 && gim === 0);
+}
+
 export const TempleOSRSPlayerStats = z.object({
   data: z.object({
     info: z.object({
       Username: z.string(),
-      'Game mode': z.nativeEnum(GameMode),
+      'Game mode': z.number(),
+      GIM: z.number(),
       Primary_ehb: z.enum(['Ehb', 'Im_ehb', 'Uim_ehb']),
       Primary_ehp: z.enum(['Ehp', 'Im_ehp', 'Uim_ehp']),
     }),
     Overall_level: z.number().nonnegative(),
+    Overall: z.number().nonnegative(),
     Ehb: z.number().nonnegative(),
     Ehp: z.number().nonnegative(),
     Im_ehb: z.number().nonnegative(),

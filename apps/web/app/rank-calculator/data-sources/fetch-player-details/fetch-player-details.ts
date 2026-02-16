@@ -70,6 +70,7 @@ export const emptyResponse = {
   ehb: 0,
   ehp: 0,
   totalLevel: 0,
+  totalXp: 0,
   playerName: '',
   rankStructure: 'Standard',
   proofLink: undefined,
@@ -106,7 +107,10 @@ export async function fetchPlayerDetails(
   const playerRecord = await getPlayerByName(player, userId);
 
   if (!playerRecord) {
-    redirect('/dashboard');
+    return {
+      success: false,
+      error: `Player '${player}' not found in database`,
+    };
   }
 
   Sentry.setTag('has-player-record', true);
@@ -175,6 +179,7 @@ export async function fetchPlayerDetails(
 
     const {
       Overall_level: totalLevel = null,
+      Overall: totalXp = null,
       Collections: hiscoresCollectionLogCount = null,
       'TzKal-Zuk': zukKillCount = null,
       Clue_beginner: beginnerClueCount = null,
@@ -316,6 +321,7 @@ export async function fetchPlayerDetails(
         ehb: Math.round(ehb ?? savedData?.ehb ?? 0),
         ehp: Math.round(ehp ?? savedData?.ehp ?? 0),
         totalLevel: Math.max(totalLevel ?? 0, savedData?.totalLevel ?? 0),
+        totalXp: Math.max(totalXp ?? 0, savedData?.totalXp ?? 0),
         collectionLogTotal,
         joinDate: new Date(joinDate),
         playerName: rsn,

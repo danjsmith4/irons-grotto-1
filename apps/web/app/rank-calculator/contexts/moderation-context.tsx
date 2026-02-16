@@ -11,6 +11,12 @@ interface ModerationProps extends Pick<
   isModerator: boolean;
   actionedByUsername: string | null;
   playerName: string;
+  // Track whether moderation data has changed since submission creation
+  dataFreshnessInfo?: {
+    isUsingFreshData: boolean;
+    hasTempleCollectionLogStatusChanged: boolean;
+    hasOtherDataChanged: boolean;
+  };
 }
 
 export const ModerationContext = createContext<ModerationProps>({
@@ -21,6 +27,7 @@ export const ModerationContext = createContext<ModerationProps>({
   isModerator: false,
   isTempleCollectionLogOutdated: false,
   playerName: '',
+  dataFreshnessInfo: undefined,
 });
 
 export function ModerationProvider({
@@ -32,6 +39,7 @@ export function ModerationProvider({
   actionedByUsername,
   isTempleCollectionLogOutdated,
   playerName,
+  dataFreshnessInfo,
 }: PropsWithChildren<ModerationProps>) {
   const value = useMemo<ModerationProps>(
     () => ({
@@ -42,6 +50,7 @@ export function ModerationProvider({
       actionedByUsername,
       isTempleCollectionLogOutdated,
       playerName,
+      dataFreshnessInfo,
     }),
     [
       isModerator,
@@ -51,6 +60,7 @@ export function ModerationProvider({
       actionedByUsername,
       isTempleCollectionLogOutdated,
       playerName,
+      dataFreshnessInfo,
     ],
   );
 
