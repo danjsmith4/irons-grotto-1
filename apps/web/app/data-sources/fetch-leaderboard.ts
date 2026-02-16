@@ -1,6 +1,7 @@
 import { db } from '@/lib/db';
 import { playerAcquiredItems, players } from '@/lib/db/schema';
 import { desc, sql } from 'drizzle-orm';
+import { AllPetItemIds } from '../schemas/osrs';
 
 export interface LeaderboardPlayer {
   playerName: string;
@@ -15,6 +16,7 @@ export interface LeaderboardPlayer {
   ehb: number;
   ehp: number;
   totalXp: number;
+  totalPets: number;
   isMaxed: boolean;
   caTier: string;
 }
@@ -43,6 +45,12 @@ export async function fetchLeaderboard(
         totalLevel: players.totalLevel,
         totalXp: players.totalXp,
         caTier: players.combatAchievementTier,
+        totalPets: sql<number>`(
+          SELECT COUNT(*)
+          FROM player_acquired_items pai
+          WHERE pai.player_name = players.player_name
+          AND pai.item_id IN (${sql.raw(AllPetItemIds.join(','))})
+        )`,
       })
       .from(players)
       .leftJoin(
@@ -66,6 +74,7 @@ export async function fetchLeaderboard(
       ehb: player.ehb,
       ehp: player.ehp,
       totalXp: player.totalXp,
+      totalPets: player.totalPets ?? 0,
       isMaxed: player.totalLevel === 2376,
       caTier: player.caTier,
     }));

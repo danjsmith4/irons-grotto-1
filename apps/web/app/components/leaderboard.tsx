@@ -23,6 +23,7 @@ export interface LeaderboardPlayer {
   ehb: number;
   ehp: number;
   totalXp: number;
+  totalPets: number;
   isMaxed: boolean;
   caTier: string;
 }
@@ -39,27 +40,6 @@ const caTierToIcon = {
 
 interface LeaderboardProps {
   initialPlayers: LeaderboardPlayer[];
-}
-
-function StatusIcon({
-  hasStatus,
-  trueIcon,
-  falseIcon,
-}: {
-  hasStatus: boolean;
-  trueIcon: string;
-  falseIcon: string;
-}) {
-  return (
-    <span
-      style={{
-        fontSize: '1.2em',
-        color: hasStatus ? '#22c55e' : '#ef4444',
-      }}
-    >
-      {hasStatus ? trueIcon : falseIcon}
-    </span>
-  );
 }
 
 export function Leaderboard({ initialPlayers }: LeaderboardProps) {
@@ -150,8 +130,8 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
             <Table.ColumnHeaderCell>Rank</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>
               <Image
-                width={20}
-                height={20}
+                width={35}
+                height={35}
                 src={formatWikiImageUrl('Purifying_sigil')}
                 alt="Radiant"
                 title="Radiant Oathplate"
@@ -159,8 +139,8 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
             </Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>
               <Image
-                width={20}
-                height={20}
+                width={35}
+                height={35}
                 src={formatWikiImageUrl('Ancient_blood_ornament_kit')}
                 alt="Blorva"
                 title="Blood Torva"
@@ -168,8 +148,8 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
             </Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>
               <Image
-                width={20}
-                height={20}
+                width={35}
+                height={35}
                 src={formatWikiImageUrl('Infernal_cape')}
                 alt="Infernal"
                 title="Infernal Cape"
@@ -177,8 +157,8 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
             </Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>
               <Image
-                width={20}
-                height={20}
+                width={35}
+                height={35}
                 src={formatWikiImageUrl("Blessed_dizana's_quiver")}
                 alt="Quiver"
                 title="Blessed Dizana's Quiver"
@@ -186,17 +166,18 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
             </Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>
               <Image
-                width={20}
-                height={20}
+                width={35}
+                height={35}
                 src={formatWikiImageUrl('Cursed_phalanx')}
                 alt="Fang Kit"
                 title="Cursed Phalanx (Fang Kit)"
               />
             </Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Clogs</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Pets</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>EHB</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>EHP</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Total XP (Millions)</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Total XP</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>
               <Image
                 width={20}
@@ -229,9 +210,10 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
                 <a
                   href={`${clientConstants.temple.baseUrl}/player/overview.php?player=${player.playerName.toLowerCase()}`}
                   style={{
-                    color: 'white',
+                    color: '#ce93d8',
                     textDecoration: 'none',
                     fontWeight: 500,
+                    fontSize: 16,
                   }}
                 >
                   {player.playerName}
@@ -240,7 +222,7 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
 
               <Table.Cell
                 style={{
-                  color: '#e91e63',
+                  color: '#white',
                   fontWeight: 'bold',
                   textAlign: 'center',
                 }}
@@ -281,47 +263,126 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
               </Table.Cell>
 
               <Table.Cell style={{ textAlign: 'center' }}>
-                <StatusIcon
-                  hasStatus={player.hasRadiant}
-                  trueIcon="✅"
-                  falseIcon="❌"
-                />
+                {player.hasRadiant ? (
+                  <Image
+                    width={35}
+                    height={35}
+                    src={formatWikiImageUrl('Purifying_sigil')}
+                    alt="Radiant"
+                    title="Radiant Oathplate"
+                  />
+                ) : (
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      height: '35px',
+                    }}
+                  >
+                    ❌
+                  </div>
+                )}
               </Table.Cell>
 
               <Table.Cell style={{ textAlign: 'center' }}>
-                <StatusIcon
-                  hasStatus={player.hasBlorva}
-                  trueIcon="✅"
-                  falseIcon="❌"
-                />
+                {player.hasBlorva ? (
+                  <Image
+                    width={35}
+                    height={35}
+                    src={formatWikiImageUrl('Ancient_blood_ornament_kit')}
+                    alt="Blorva"
+                    title="Blood Torva"
+                  />
+                ) : (
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      height: '35px',
+                    }}
+                  >
+                    ❌
+                  </div>
+                )}
               </Table.Cell>
 
               <Table.Cell style={{ textAlign: 'center' }}>
-                <StatusIcon
-                  hasStatus={player.hasInfernal}
-                  trueIcon="✅"
-                  falseIcon="❌"
-                />
+                {player.hasInfernal ? (
+                  <Image
+                    width={35}
+                    height={35}
+                    src={formatWikiImageUrl('Infernal_cape')}
+                    alt="Infernal"
+                    title="Infernal Cape"
+                  />
+                ) : (
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      height: '35px',
+                    }}
+                  >
+                    ❌
+                  </div>
+                )}
               </Table.Cell>
 
               <Table.Cell style={{ textAlign: 'center' }}>
-                <StatusIcon
-                  hasStatus={player.hasQuiver}
-                  trueIcon="✅"
-                  falseIcon="❌"
-                />
+                {player.hasQuiver ? (
+                  <Image
+                    width={35}
+                    height={35}
+                    src={formatWikiImageUrl("Blessed_dizana's_quiver")}
+                    alt="Quiver"
+                    title="Blessed Dizana's Quiver"
+                  />
+                ) : (
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      height: '35px',
+                    }}
+                  >
+                    ❌
+                  </div>
+                )}
               </Table.Cell>
 
               <Table.Cell style={{ textAlign: 'center' }}>
-                <StatusIcon
-                  hasStatus={player.hasFangKit}
-                  trueIcon="✅"
-                  falseIcon="❌"
-                />
+                {player.hasFangKit ? (
+                  <Image
+                    width={35}
+                    height={35}
+                    src={formatWikiImageUrl('Cursed_phalanx')}
+                    alt="Fang Kit"
+                    title="Cursed Phalanx (Fang Kit)"
+                  />
+                ) : (
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      height: '35px',
+                    }}
+                  >
+                    ❌
+                  </div>
+                )}
               </Table.Cell>
 
-              <Table.Cell style={{ color: 'white', textAlign: 'center' }}>
+              <Table.Cell style={{ color: '#ce93d8', textAlign: 'center' }}>
                 {player.clogSlots.toLocaleString()}
+              </Table.Cell>
+
+              <Table.Cell style={{ color: '#ce93d8', textAlign: 'center' }}>
+                {player.totalPets.toLocaleString()}
               </Table.Cell>
 
               <Table.Cell style={{ color: '#ce93d8', textAlign: 'center' }}>
@@ -337,11 +398,26 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
               </Table.Cell>
 
               <Table.Cell style={{ textAlign: 'center' }}>
-                <StatusIcon
-                  hasStatus={player.isMaxed}
-                  trueIcon="✅"
-                  falseIcon="❌"
-                />
+                {player.isMaxed ? (
+                  <Image
+                    width={20}
+                    height={20}
+                    src={formatWikiImageUrl('Max_cape', 'item')}
+                    alt="Maxed"
+                    title="Max Cape"
+                  />
+                ) : (
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      height: '20px',
+                    }}
+                  >
+                    ❌
+                  </div>
+                )}
               </Table.Cell>
 
               <Table.Cell style={{ textAlign: 'center' }}>
