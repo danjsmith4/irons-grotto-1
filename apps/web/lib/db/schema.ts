@@ -175,3 +175,20 @@ export const playerRankUpsRelations = relations(playerRankUps, ({ one }) => ({
     references: [players.playerName],
   }),
 }));
+
+export const ironmanStatus = pgTable(
+  'ironman_status',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
+    playerName: varchar('player_name', { length: 12 }).notNull(),
+    lastChecked: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => ({
+    // Unique constraint to ensure one record per player per item
+    playerNameLowerUnique: uniqueIndex('players_player_name_lower_unique').on(
+      sql`lower(${table.playerName})`,
+    ),
+  }),
+);

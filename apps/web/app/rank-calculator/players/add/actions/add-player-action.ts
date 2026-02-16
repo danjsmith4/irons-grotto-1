@@ -54,6 +54,8 @@ export const addPlayerAction = authActionClient
       // Validate that the player account type is compatible with clan membership
       const validation = await validateIronmanStatus(maybeFormattedPlayerName);
 
+      console.debug(`${playerName}'s gamemode: ${validation.isValid}`);
+
       if (!validation.isValid) {
         returnValidationErrors(AddPlayerSchema, {
           playerName: {
