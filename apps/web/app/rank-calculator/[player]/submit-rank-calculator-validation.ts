@@ -26,6 +26,7 @@ export const RankCalculatorSchema = z.object({
   ehb: z.coerce.number().nonnegative(),
   ehp: z.coerce.number().nonnegative(),
   totalLevel: z.coerce.number().min(minimumTotalLevel).max(maximumTotalLevel),
+  totalXp: z.coerce.number().nonnegative().default(1154),
   playerName: PlayerName,
   rankStructure: RankStructure,
   rank: Rank,

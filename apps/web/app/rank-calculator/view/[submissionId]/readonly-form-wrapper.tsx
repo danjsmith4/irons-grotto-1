@@ -14,6 +14,12 @@ interface FormWrapperProps {
   userPermissions: string | undefined;
   diffErrors: FieldErrors;
   submissionMetadata: RankSubmissionMetadata;
+  freshModerationData: {
+    hasTemplePlayerStats: boolean;
+    hasTempleCollectionLog: boolean;
+    hasWikiSyncData: boolean;
+    isTempleCollectionLogOutdated: boolean;
+  } | null;
   actionedByUsername: string | null;
 }
 
@@ -22,9 +28,40 @@ export function ReadonlyFormWrapper({
   userPermissions,
   diffErrors,
   submissionMetadata,
+  freshModerationData,
   actionedByUsername,
 }: FormWrapperProps) {
   const isModerator = userCanModerateSubmission(userPermissions);
+
+  // Use fresh moderation data if available, otherwise fall back to stored metadata
+  const moderationData = freshModerationData ?? {
+    hasTemplePlayerStats: submissionMetadata.hasTemplePlayerStats,
+    hasTempleCollectionLog: submissionMetadata.hasTempleCollectionLog,
+    hasWikiSyncData: submissionMetadata.hasWikiSyncData,
+    isTempleCollectionLogOutdated:
+      submissionMetadata.isTempleCollectionLogOutdated,
+  };
+
+  // Calculate data freshness info to show when status has changed
+  const dataFreshnessInfo = freshModerationData
+    ? {
+        isUsingFreshData: true,
+        hasTempleCollectionLogStatusChanged:
+          freshModerationData.isTempleCollectionLogOutdated !==
+          submissionMetadata.isTempleCollectionLogOutdated,
+        hasOtherDataChanged:
+          freshModerationData.hasTemplePlayerStats !==
+            submissionMetadata.hasTemplePlayerStats ||
+          freshModerationData.hasTempleCollectionLog !==
+            submissionMetadata.hasTempleCollectionLog ||
+          freshModerationData.hasWikiSyncData !==
+            submissionMetadata.hasWikiSyncData,
+      }
+    : {
+        isUsingFreshData: false,
+        hasTempleCollectionLogStatusChanged: false,
+        hasOtherDataChanged: false,
+      };
 
   const methods = useForm<Omit<RankCalculatorSchema, 'rank' | 'points'>>({
     disabled: true,
@@ -35,14 +72,15 @@ export function ReadonlyFormWrapper({
   return (
     <ModerationProvider
       isModerator={isModerator}
-      hasTemplePlayerStats={submissionMetadata.hasTemplePlayerStats}
-      hasTempleCollectionLog={submissionMetadata.hasTempleCollectionLog}
-      hasWikiSyncData={submissionMetadata.hasWikiSyncData}
+      hasTemplePlayerStats={moderationData.hasTemplePlayerStats}
+      hasTempleCollectionLog={moderationData.hasTempleCollectionLog}
+      hasWikiSyncData={moderationData.hasWikiSyncData}
       actionedByUsername={actionedByUsername}
       isTempleCollectionLogOutdated={
-        submissionMetadata.isTempleCollectionLogOutdated
+        moderationData.isTempleCollectionLogOutdated
       }
       playerName={formData.playerName}
+      dataFreshnessInfo={dataFreshnessInfo}
     >
       <FormProvider {...methods}>
         <div

@@ -17,6 +17,7 @@ import {
 } from '@tanstack/react-query';
 import { ReadonlyFormWrapper } from './readonly-form-wrapper';
 import { RankCalculatorSchema } from '../../[player]/submit-rank-calculator-validation';
+import { fetchPlayerDetails } from '../../data-sources/fetch-player-details/fetch-player-details';
 import { calculateDiffErrors } from './utils/calculate-diff-errors';
 import { getDiscordUsername } from './get-discord-username';
 import {
@@ -65,6 +66,30 @@ export default async function ViewSubmissionPage({
     submissionMetadata.actionedBy,
   );
 
+  // Fetch fresh player details to compare with stored metadata
+  // This ensures the UI shows current moderation status, not stale data
+  let freshModerationData = null;
+  if (user?.user?.id) {
+    try {
+      const freshDetails = await fetchPlayerDetails(
+        submission.playerName,
+        user.user.id,
+        false,
+      );
+      if (freshDetails.success) {
+        freshModerationData = {
+          hasTemplePlayerStats: freshDetails.data.hasTemplePlayerStats,
+          hasTempleCollectionLog: freshDetails.data.hasTempleCollectionLog,
+          hasWikiSyncData: freshDetails.data.hasWikiSyncData,
+          isTempleCollectionLogOutdated:
+            freshDetails.data.isTempleCollectionLogOutdated,
+        };
+      }
+    } catch (error) {
+      console.warn('Failed to fetch fresh moderation data:', error);
+    }
+  }
+
   const queryClient = new QueryClient();
 
   const dropRates = await fetchItemDropRates([...generateRequiredItemList()]);
@@ -80,6 +105,7 @@ export default async function ViewSubmissionPage({
         userPermissions={user?.user?.permissions}
         diffErrors={diffErrors}
         submissionMetadata={submissionMetadata}
+        freshModerationData={freshModerationData}
         actionedByUsername={actionedByUsername}
       />
     </HydrationBoundary>

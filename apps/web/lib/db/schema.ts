@@ -33,6 +33,7 @@ export const players = pgTable(
     collectionLogCount: integer('collection_log_count').notNull().default(0),
     collectionLogTotal: integer('collection_log_total').notNull().default(0),
     totalLevel: integer('total_level').notNull().default(32), // Minimum total level (level 1 in all skills)
+    totalXp: integer('total_xp').notNull().default(1154), // Minimum total XP (200 XP in each skill, + 1154 in hitpoints)
 
     // Clue scroll counts - individual columns as requested
     clueCountBeginner: integer('clue_count_beginner').notNull().default(0),

@@ -33,6 +33,7 @@ export function ModerationCard() {
     actionedByUsername,
     isTempleCollectionLogOutdated,
     playerName,
+    dataFreshnessInfo,
   } = useModeration();
 
   if (!isModerator) {
@@ -70,11 +71,36 @@ export function ModerationCard() {
             <Text role="heading" weight="medium" size="2">
               Moderator info
             </Text>
+            {dataFreshnessInfo?.isUsingFreshData && (
+              <Text size="1" color="blue" style={{ fontStyle: 'italic' }}>
+                (current data)
+              </Text>
+            )}
           </Flex>
         }
         right={null}
       />
       <Separator size="4" />
+      {dataFreshnessInfo?.hasTempleCollectionLogStatusChanged && (
+        <DataCard.Row
+          left={
+            <Text size="2" color="orange">
+              ⚠️ Collection log status changed since submission
+            </Text>
+          }
+          right={null}
+        />
+      )}
+      {dataFreshnessInfo?.hasOtherDataChanged && (
+        <DataCard.Row
+          left={
+            <Text size="2" color="blue">
+              ℹ️ Other data sources changed since submission
+            </Text>
+          }
+          right={null}
+        />
+      )}
       {moderationData.map(([label, status]) => (
         <DataCard.Row
           key={label}

@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { clientConstants } from '@/config/constants.client';
-import { PlayerInfoResponse } from '@/app/schemas/temple-api';
+import { PlayerInfoResponse, isPlayerIronman } from '@/app/schemas/temple-api';
 import * as Sentry from '@sentry/nextjs';
 import { redis } from '@/redis';
-import { playerGameModesKey } from '@/config/redis';
+import { playerGameModesKey, playerIronmanStatusKey } from '@/config/redis';
 import { CheckMethod } from '@/app/schemas/inactivity-checker';
 
 export const dynamic = 'force-dynamic';
@@ -48,10 +48,21 @@ export async function GET(request: NextRequest) {
       // If the game mode required an update, attempt to get the latest version and save it
       if (checkMethod === 'get-game-mode') {
         const updatedPlayerInfo = await getPlayerInfo(player);
+        const playerKey = decodeURIComponent(player).toLowerCase();
 
+        // Store both game mode and ironman status
         await redis.hset(playerGameModesKey, {
-          [decodeURIComponent(player).toLowerCase()]:
-            updatedPlayerInfo.data['Game mode'],
+          [playerKey]: updatedPlayerInfo.data['Game mode'],
+        });
+
+        // Calculate and store ironman status
+        const ironmanStatus = isPlayerIronman(
+          updatedPlayerInfo.data['Game mode'],
+          updatedPlayerInfo.data.GIM,
+        );
+
+        await redis.hset(playerIronmanStatusKey, {
+          [playerKey]: ironmanStatus.toString(),
         });
       }
     }

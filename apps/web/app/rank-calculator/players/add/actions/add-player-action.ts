@@ -7,6 +7,7 @@ import { ActionError } from '@/app/action-error';
 import { fetchPlayerMeta } from '../../../data-sources/fetch-player-meta';
 import { fetchTemplePlayerStats } from '../../../data-sources/fetch-temple-player-stats';
 import { AddPlayerSchema } from './add-player-schema';
+import { validateIronmanStatus } from '../../../utils/validate-ironman-status';
 import { createNewPlayer, getPlayerByName } from '@/lib/db/player-operations';
 
 async function assertUniquePlayerRecord(userId: string, playerName: string) {
@@ -49,6 +50,19 @@ export const addPlayerAction = authActionClient
 
       const maybeFormattedPlayerName =
         playerMeta?.rsn ?? playerStats?.info.Username ?? playerName;
+
+      // Validate that the player account type is compatible with clan membership
+      const validation = await validateIronmanStatus(maybeFormattedPlayerName);
+
+      if (!validation.isValid) {
+        returnValidationErrors(AddPlayerSchema, {
+          playerName: {
+            _errors: [
+              'Only ironman accounts can be registered in this clan. Main accounts are not eligible for standard clan ranks.',
+            ],
+          },
+        });
+      }
 
       try {
         await createNewPlayer({

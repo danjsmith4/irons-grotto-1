@@ -17,6 +17,10 @@ export const rankDiscordRoles = {
   Beast: '1135475800989245472',
 } satisfies Record<StandardRank, string>;
 
+export const mainAccountDiscordRoles = {
+  Looter: '1390351909059297360',
+} as const;
+
 export const discordGuestRole = '1402713524861669498';
 
 export const customDiaryDiscordRoles = {

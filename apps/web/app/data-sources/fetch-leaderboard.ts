@@ -1,6 +1,6 @@
 import { db } from '@/lib/db';
-import { players } from '@/lib/db/schema';
-import { desc } from 'drizzle-orm';
+import { playerAcquiredItems, players } from '@/lib/db/schema';
+import { desc, sql } from 'drizzle-orm';
 
 export interface LeaderboardPlayer {
   playerName: string;
@@ -10,9 +10,11 @@ export interface LeaderboardPlayer {
   hasBlorva: boolean;
   hasInfernal: boolean;
   hasQuiver: boolean;
+  hasFangKit: boolean;
   clogSlots: number;
   ehb: number;
   ehp: number;
+  totalXp: number;
   isMaxed: boolean;
   caTier: string;
 }
@@ -34,13 +36,19 @@ export async function fetchLeaderboard(
         hasBlorva: players.hasBloodTorva,
         tzhaarCape: players.tzhaarCape,
         hasQuiver: players.hasDizanasQuiver,
+        hasFangKit: sql<boolean>`CASE WHEN ${playerAcquiredItems.playerName} IS NOT NULL THEN true ELSE false END`,
         clogSlots: players.collectionLogCount,
         ehb: players.ehb,
         ehp: players.ehp,
         totalLevel: players.totalLevel,
+        totalXp: players.totalXp,
         caTier: players.combatAchievementTier,
       })
       .from(players)
+      .leftJoin(
+        playerAcquiredItems,
+        sql`${players.playerName} = ${playerAcquiredItems.playerName} AND ${playerAcquiredItems.itemName} = 'Cursed phalanx'`,
+      )
       .orderBy(desc(players.points))
       .limit(limit)
       .offset(offset);
@@ -53,9 +61,11 @@ export async function fetchLeaderboard(
       hasBlorva: player.hasBlorva,
       hasInfernal: player.tzhaarCape == 'Infernal cape',
       hasQuiver: player.hasQuiver,
+      hasFangKit: player.hasFangKit,
       clogSlots: player.clogSlots,
       ehb: player.ehb,
       ehp: player.ehp,
+      totalXp: player.totalXp,
       isMaxed: player.totalLevel === 2376,
       caTier: player.caTier,
     }));

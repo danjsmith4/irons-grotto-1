@@ -2,6 +2,7 @@ import css from './homepage.module.css';
 import { Cinzel, Inter } from 'next/font/google';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Button, Flex } from '@radix-ui/themes';
 
 import { auth, signIn } from '@/auth';
 import { redirect } from 'next/navigation';
@@ -62,6 +63,15 @@ export default async function HomePage() {
 
   return (
     <div className={`${css['page-container']} ${inter.className}`}>
+      {/* Sign-in button in top-right */}
+      <Flex position="absolute" top="0" right="0" p="4" style={{ zIndex: 100 }}>
+        <form action={handleSubmit}>
+          <Button type="submit" variant="solid" size="3">
+            Sign In
+          </Button>
+        </form>
+      </Flex>
+
       {/* Animated rays background */}
       <div className={css['rays-container']}>
         {Array.from({ length: 12 }, (_, i) => (

@@ -47,6 +47,9 @@ export const rankThresholds: Record<
     Skulled: 19000,
     Beast: 24000,
   },
+  Main: {
+    Looter: 0,
+  },
   'Deputy Owner': {
     'Deputy Owner': 0,
   },

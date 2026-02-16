@@ -1,13 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { Avatar } from '@radix-ui/themes';
+import { Avatar, Table, ScrollArea } from '@radix-ui/themes';
 import Image from 'next/image';
 import { getRankImageUrl } from '@/app/rank-calculator/utils/get-rank-image-url';
 import { getRankName } from '@/app/rank-calculator/utils/get-rank-name';
 import { Rank } from '@/config/enums';
 import { formatWikiImageUrl } from '../rank-calculator/utils/format-wiki-url';
 import { clientConstants } from '@/config/constants.client';
+import { formatXpInMillions } from '@/app/utils/format-number';
 
 export interface LeaderboardPlayer {
   playerName: string;
@@ -17,9 +18,11 @@ export interface LeaderboardPlayer {
   hasBlorva: boolean;
   hasInfernal: boolean;
   hasQuiver: boolean;
+  hasFangKit: boolean;
   clogSlots: number;
   ehb: number;
   ehp: number;
+  totalXp: number;
   isMaxed: boolean;
   caTier: string;
 }
@@ -129,282 +132,270 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
   }
 
   return (
-    <div
+    <ScrollArea
       style={{
+        width: '100%',
+        height: '500px',
         background: 'rgba(206, 147, 216, 0.1)',
         borderRadius: '12px',
         border: '1px solid rgba(206, 147, 216, 0.2)',
-        overflow: 'hidden',
       }}
     >
-      {/* Header */}
-      <div
-        style={{
-          background: 'rgba(26, 13, 46, 0.8)',
-          padding: '1rem',
-          borderBottom: '1px solid rgba(206, 147, 216, 0.2)',
-          display: 'grid',
-          gridTemplateColumns:
-            '40px 100px 80px 80px 60px 60px 60px 60px 80px 80px 80px 80px 80px',
-          gap: '1rem',
-          alignItems: 'center',
-          fontSize: '0.875rem',
-          fontWeight: 600,
-          color: '#ce93d8',
-        }}
-      >
-        <div>#</div>
-        <div>Player</div>
-        <div>Points</div>
-        <div>Rank</div>
-        <div>
-          <Image
-            width={30}
-            height={30}
-            src={formatWikiImageUrl('Purifying_sigil')}
-            alt="Radiant Oathplate Helmet"
-          />
-        </div>{' '}
-        {/* Radiant */}
-        <div>
-          <Image
-            width={30}
-            height={30}
-            src={formatWikiImageUrl('Ancient_blood_ornament_kit')}
-            alt="Ancient Blood Ornament Kit"
-          />
-        </div>{' '}
-        {/* Blorva */}
-        <div>
-          <Image
-            width={30}
-            height={30}
-            src={formatWikiImageUrl('Infernal_cape')}
-            alt="Infernal Cape"
-          />
-        </div>{' '}
-        {/* Infernal */}
-        <div>
-          <Image
-            width={30}
-            height={30}
-            src={formatWikiImageUrl("Blessed_dizana's_quiver")}
-            alt="Blessed Dizana's Quiver"
-          />
-        </div>{' '}
-        {/* Quiver */}
-        <div>Clogs</div>
-        <div>EHB</div>
-        <div>EHP</div>
-        <div>
-          <Image
-            width={20}
-            height={20}
-            src={formatWikiImageUrl('Max_cape', 'item')}
-            alt="Max Cape"
-          />
-        </div>
-        <div>CA Tier</div>
-      </div>
-
-      {/* Scrollable content */}
-      <div
-        style={{
-          maxHeight: '400px',
-          overflowY: 'auto',
-          scrollbarWidth: 'thin',
-          scrollbarColor: 'rgba(206, 147, 216, 0.5) transparent',
-        }}
-      >
-        {players.map((player, index) => (
-          <div
-            key={`${player.playerName}-${index}`}
-            style={{
-              display: 'grid',
-              gridTemplateColumns:
-                '40px 100px 80px 80px 60px 60px 60px 60px 80px 80px 80px 80px 80px',
-              gap: '1rem',
-              alignItems: 'center',
-              padding: '1rem',
-              borderBottom:
-                index < players.length - 1
-                  ? '1px solid rgba(206, 147, 216, 0.1)'
-                  : 'none',
-              transition: 'background-color 0.2s',
-              backgroundColor:
-                index % 2 === 0 ? 'rgba(26, 13, 46, 0.3)' : 'transparent',
-            }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.backgroundColor = 'rgba(26, 13, 46, 0.6)')
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.backgroundColor =
-                index % 2 === 0 ? 'rgba(26, 13, 46, 0.3)' : 'transparent')
-            }
-          >
-            <div style={{ color: '#e91e63', fontWeight: 'bold' }}>
-              {index + 1}
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                color: 'white',
-                fontWeight: 500,
-              }}
-            >
-              <a
-                href={`${clientConstants.temple.baseUrl}/player/overview.php?player=${player.playerName.toLowerCase()}`}
-              >
-                {player.playerName}
-              </a>
-            </div>
-            <div
-              style={{
-                color: '#e91e63',
-                fontWeight: 'bold',
-                textAlign: 'center',
-              }}
-            >
-              {player.points.toLocaleString()}
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.25rem',
-                fontSize: '0.875rem',
-              }}
-            >
-              {player.rank ? (
-                <Image
-                  src={getRankImageUrl(player.rank as Rank)}
-                  alt={`${getRankName(player.rank as Rank)} rank`}
-                  width={16}
-                  height={16}
-                  style={{ borderRadius: '50%' }}
-                />
-              ) : (
-                <Avatar
-                  size="1"
-                  fallback="?"
-                  style={{ width: '16px', height: '16px' }}
-                />
-              )}
-              <span style={{ color: '#ce93d8' }}>
-                {player.rank ? getRankName(player.rank as Rank) : 'Unranked'}
-              </span>
-            </div>
-            <StatusIcon
-              hasStatus={player.hasRadiant}
-              trueIcon="✅"
-              falseIcon="❌"
-            />
-            <StatusIcon
-              hasStatus={player.hasBlorva}
-              trueIcon="✅"
-              falseIcon="❌"
-            />
-            <StatusIcon
-              hasStatus={player.hasInfernal}
-              trueIcon="✅"
-              falseIcon="❌"
-            />
-            <StatusIcon
-              hasStatus={player.hasQuiver}
-              trueIcon="✅"
-              falseIcon="❌"
-            />
-            <div style={{ color: 'white', textAlign: 'center' }}>
-              {player.clogSlots.toLocaleString()}
-            </div>
-            <div style={{ color: '#ce93d8', textAlign: 'center' }}>
-              {Math.round(player.ehb).toLocaleString()}
-            </div>
-            <div style={{ color: '#ce93d8', textAlign: 'center' }}>
-              {Math.round(player.ehp).toLocaleString()}
-            </div>
-            <StatusIcon
-              hasStatus={player.isMaxed}
-              trueIcon="✅"
-              falseIcon="❌"
-            />
-            <div
-              style={{
-                color: '#e91e63',
-                textAlign: 'center',
-                fontSize: '0.875rem',
-                fontWeight: 500,
-              }}
-            >
+      <Table.Root>
+        <Table.Header style={{ position: 'sticky', top: 0, zIndex: 1 }}>
+          <Table.Row style={{ background: 'rgba(26, 13, 46, 0.95)' }}>
+            <Table.ColumnHeaderCell>#</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Player</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Points</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Rank</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>
               <Image
                 width={20}
                 height={20}
-                src={formatWikiImageUrl(
-                  caTierToIcon[
-                    player.caTier &&
-                    caTierToIcon[player.caTier as keyof typeof caTierToIcon]
-                      ? (player.caTier as keyof typeof caTierToIcon)
-                      : 'Gnome'
-                  ] || caTierToIcon.Gnome,
-                )}
-                alt="CaTier"
+                src={formatWikiImageUrl('Purifying_sigil')}
+                alt="Radiant"
+                title="Radiant Oathplate"
               />
-            </div>
-          </div>
-        ))}
+            </Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>
+              <Image
+                width={20}
+                height={20}
+                src={formatWikiImageUrl('Ancient_blood_ornament_kit')}
+                alt="Blorva"
+                title="Blood Torva"
+              />
+            </Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>
+              <Image
+                width={20}
+                height={20}
+                src={formatWikiImageUrl('Infernal_cape')}
+                alt="Infernal"
+                title="Infernal Cape"
+              />
+            </Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>
+              <Image
+                width={20}
+                height={20}
+                src={formatWikiImageUrl("Blessed_dizana's_quiver")}
+                alt="Quiver"
+                title="Blessed Dizana's Quiver"
+              />
+            </Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>
+              <Image
+                width={20}
+                height={20}
+                src={formatWikiImageUrl('Cursed_phalanx')}
+                alt="Fang Kit"
+                title="Cursed Phalanx (Fang Kit)"
+              />
+            </Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Clogs</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>EHB</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>EHP</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Total XP (Millions)</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>
+              <Image
+                width={20}
+                height={20}
+                src={formatWikiImageUrl('Max_cape', 'item')}
+                alt="Maxed"
+                title="Max Cape"
+              />
+            </Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>CA Tier</Table.ColumnHeaderCell>
+          </Table.Row>
+        </Table.Header>
 
-        {/* Load More Button */}
-        {hasMore && (
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              padding: '1rem',
-            }}
-          >
-            <button
-              onClick={loadMore}
-              disabled={loading}
+        <Table.Body>
+          {players.map((player, index) => (
+            <Table.Row
+              key={`${player.playerName}-${index}`}
               style={{
-                background: loading
-                  ? 'rgba(206, 147, 216, 0.3)'
-                  : 'linear-gradient(135deg, #e91e63, #9c27b0)',
-                color: 'white',
-                border: 'none',
-                padding: '0.75rem 1.5rem',
-                borderRadius: '6px',
-                fontSize: '0.875rem',
-                fontWeight: 500,
-                cursor: loading ? 'not-allowed' : 'pointer',
-                transition: 'all 0.2s',
+                backgroundColor:
+                  index % 2 === 0 ? 'rgba(26, 13, 46, 0.2)' : 'transparent',
               }}
             >
-              {loading ? 'Loading...' : 'Load More'}
-            </button>
-          </div>
-        )}
-      </div>
+              <Table.RowHeaderCell
+                style={{ color: '#e91e63', fontWeight: 'bold' }}
+              >
+                {index + 1}
+              </Table.RowHeaderCell>
 
-      <style jsx>{`
-        div::-webkit-scrollbar {
-          width: 6px;
-        }
+              <Table.Cell>
+                <a
+                  href={`${clientConstants.temple.baseUrl}/player/overview.php?player=${player.playerName.toLowerCase()}`}
+                  style={{
+                    color: 'white',
+                    textDecoration: 'none',
+                    fontWeight: 500,
+                  }}
+                >
+                  {player.playerName}
+                </a>
+              </Table.Cell>
 
-        div::-webkit-scrollbar-track {
-          background: transparent;
-        }
+              <Table.Cell
+                style={{
+                  color: '#e91e63',
+                  fontWeight: 'bold',
+                  textAlign: 'center',
+                }}
+              >
+                {player.points.toLocaleString()}
+              </Table.Cell>
 
-        div::-webkit-scrollbar-thumb {
-          background: rgba(206, 147, 216, 0.5);
-          border-radius: 3px;
-        }
+              <Table.Cell>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.25rem',
+                    fontSize: '0.875rem',
+                  }}
+                >
+                  {player.rank ? (
+                    <Image
+                      src={getRankImageUrl(player.rank as Rank)}
+                      alt={`${getRankName(player.rank as Rank)} rank`}
+                      width={16}
+                      height={16}
+                      style={{ borderRadius: '50%' }}
+                    />
+                  ) : (
+                    <Avatar
+                      size="1"
+                      fallback="?"
+                      style={{ width: '16px', height: '16px' }}
+                    />
+                  )}
+                  <span style={{ color: '#ce93d8' }}>
+                    {player.rank
+                      ? getRankName(player.rank as Rank)
+                      : 'Unranked'}
+                  </span>
+                </div>
+              </Table.Cell>
 
-        div::-webkit-scrollbar-thumb:hover {
-          background: rgba(206, 147, 216, 0.7);
-        }
-      `}</style>
-    </div>
+              <Table.Cell style={{ textAlign: 'center' }}>
+                <StatusIcon
+                  hasStatus={player.hasRadiant}
+                  trueIcon="✅"
+                  falseIcon="❌"
+                />
+              </Table.Cell>
+
+              <Table.Cell style={{ textAlign: 'center' }}>
+                <StatusIcon
+                  hasStatus={player.hasBlorva}
+                  trueIcon="✅"
+                  falseIcon="❌"
+                />
+              </Table.Cell>
+
+              <Table.Cell style={{ textAlign: 'center' }}>
+                <StatusIcon
+                  hasStatus={player.hasInfernal}
+                  trueIcon="✅"
+                  falseIcon="❌"
+                />
+              </Table.Cell>
+
+              <Table.Cell style={{ textAlign: 'center' }}>
+                <StatusIcon
+                  hasStatus={player.hasQuiver}
+                  trueIcon="✅"
+                  falseIcon="❌"
+                />
+              </Table.Cell>
+
+              <Table.Cell style={{ textAlign: 'center' }}>
+                <StatusIcon
+                  hasStatus={player.hasFangKit}
+                  trueIcon="✅"
+                  falseIcon="❌"
+                />
+              </Table.Cell>
+
+              <Table.Cell style={{ color: 'white', textAlign: 'center' }}>
+                {player.clogSlots.toLocaleString()}
+              </Table.Cell>
+
+              <Table.Cell style={{ color: '#ce93d8', textAlign: 'center' }}>
+                {Math.round(player.ehb).toLocaleString()}
+              </Table.Cell>
+
+              <Table.Cell style={{ color: '#ce93d8', textAlign: 'center' }}>
+                {Math.round(player.ehp).toLocaleString()}
+              </Table.Cell>
+
+              <Table.Cell style={{ color: '#ce93d8', textAlign: 'center' }}>
+                {formatXpInMillions(player.totalXp)}
+              </Table.Cell>
+
+              <Table.Cell style={{ textAlign: 'center' }}>
+                <StatusIcon
+                  hasStatus={player.isMaxed}
+                  trueIcon="✅"
+                  falseIcon="❌"
+                />
+              </Table.Cell>
+
+              <Table.Cell style={{ textAlign: 'center' }}>
+                <Image
+                  width={20}
+                  height={20}
+                  src={formatWikiImageUrl(
+                    caTierToIcon[
+                      player.caTier &&
+                      caTierToIcon[player.caTier as keyof typeof caTierToIcon]
+                        ? (player.caTier as keyof typeof caTierToIcon)
+                        : 'Gnome'
+                    ] || caTierToIcon.Gnome,
+                  )}
+                  alt={player.caTier || 'Gnome'}
+                  title={`${player.caTier || 'Gnome'} Combat Achievement Tier`}
+                />
+              </Table.Cell>
+            </Table.Row>
+          ))}
+        </Table.Body>
+      </Table.Root>
+
+      {/* Load More Button */}
+      {hasMore && (
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            padding: '1rem',
+            background: 'rgba(206, 147, 216, 0.1)',
+          }}
+        >
+          <button
+            onClick={loadMore}
+            disabled={loading}
+            style={{
+              background: loading
+                ? 'rgba(206, 147, 216, 0.3)'
+                : 'linear-gradient(135deg, #e91e63, #9c27b0)',
+              color: 'white',
+              border: 'none',
+              padding: '0.75rem 1.5rem',
+              borderRadius: '6px',
+              fontSize: '0.875rem',
+              fontWeight: 500,
+              cursor: loading ? 'not-allowed' : 'pointer',
+              transition: 'all 0.2s',
+            }}
+          >
+            {loading ? 'Loading...' : 'Load More'}
+          </button>
+        </div>
+      )}
+    </ScrollArea>
   );
 }
