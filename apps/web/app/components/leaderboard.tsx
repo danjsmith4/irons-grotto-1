@@ -130,8 +130,8 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
             <Table.ColumnHeaderCell>Rank</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>
               <Image
-                width={35}
-                height={35}
+                width={30}
+                height={30}
                 src={formatWikiImageUrl('Purifying_sigil')}
                 alt="Radiant"
                 title="Radiant Oathplate"
@@ -139,8 +139,8 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
             </Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>
               <Image
-                width={35}
-                height={35}
+                width={30}
+                height={30}
                 src={formatWikiImageUrl('Ancient_blood_ornament_kit')}
                 alt="Blorva"
                 title="Blood Torva"
@@ -148,8 +148,8 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
             </Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>
               <Image
-                width={35}
-                height={35}
+                width={30}
+                height={30}
                 src={formatWikiImageUrl('Infernal_cape')}
                 alt="Infernal"
                 title="Infernal Cape"
@@ -157,8 +157,8 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
             </Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>
               <Image
-                width={35}
-                height={35}
+                width={30}
+                height={30}
                 src={formatWikiImageUrl("Blessed_dizana's_quiver")}
                 alt="Quiver"
                 title="Blessed Dizana's Quiver"
@@ -166,8 +166,8 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
             </Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>
               <Image
-                width={35}
-                height={35}
+                width={30}
+                height={30}
                 src={formatWikiImageUrl('Cursed_phalanx')}
                 alt="Fang Kit"
                 title="Cursed Phalanx (Fang Kit)"
@@ -265,8 +265,8 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
               <Table.Cell style={{ textAlign: 'center' }}>
                 {player.hasRadiant ? (
                   <Image
-                    width={35}
-                    height={35}
+                    width={30}
+                    height={30}
                     src={formatWikiImageUrl('Purifying_sigil')}
                     alt="Radiant"
                     title="Radiant Oathplate"
@@ -288,8 +288,8 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
               <Table.Cell style={{ textAlign: 'center' }}>
                 {player.hasBlorva ? (
                   <Image
-                    width={35}
-                    height={35}
+                    width={30}
+                    height={30}
                     src={formatWikiImageUrl('Ancient_blood_ornament_kit')}
                     alt="Blorva"
                     title="Blood Torva"
@@ -311,8 +311,8 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
               <Table.Cell style={{ textAlign: 'center' }}>
                 {player.hasInfernal ? (
                   <Image
-                    width={35}
-                    height={35}
+                    width={30}
+                    height={30}
                     src={formatWikiImageUrl('Infernal_cape')}
                     alt="Infernal"
                     title="Infernal Cape"
@@ -334,8 +334,8 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
               <Table.Cell style={{ textAlign: 'center' }}>
                 {player.hasQuiver ? (
                   <Image
-                    width={35}
-                    height={35}
+                    width={30}
+                    height={30}
                     src={formatWikiImageUrl("Blessed_dizana's_quiver")}
                     alt="Quiver"
                     title="Blessed Dizana's Quiver"
@@ -357,8 +357,8 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
               <Table.Cell style={{ textAlign: 'center' }}>
                 {player.hasFangKit ? (
                   <Image
-                    width={35}
-                    height={35}
+                    width={30}
+                    height={30}
                     src={formatWikiImageUrl('Cursed_phalanx')}
                     alt="Fang Kit"
                     title="Cursed Phalanx (Fang Kit)"
