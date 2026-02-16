@@ -28,7 +28,7 @@ const inter = Inter({
 export default async function HomePage() {
   // Check auth on page load and redirect if authed
   const session = await auth();
-  const dashboardUrl = '/rank-calculator/dashboard';
+  const dashboardUrl = '/dashboard';
   if (session) {
     redirect(dashboardUrl);
   }

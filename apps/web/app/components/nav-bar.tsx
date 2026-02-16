@@ -115,7 +115,7 @@ export function NavBar({
           {/* Left side - Logo and Navigation */}
           <Flex align="center" gap="4">
             {/* Logo */}
-            <Link href="/rank-calculator/dashboard">
+            <Link href="/dashboard">
               <Image
                 src="/L2.png"
                 alt="Irons Grotto Logo"
@@ -134,7 +134,7 @@ export function NavBar({
               variant={currentPage === 'dashboard' ? 'primary' : 'ghost'}
               size="2"
             >
-              <Link href="/rank-calculator/dashboard">Dashboard</Link>
+              <Link href="/dashboard">Dashboard</Link>
             </IronsButton>
 
             {/* Rank Calculator Dropdown */}
