@@ -178,7 +178,7 @@ export default async function HomePage() {
               <div
                 style={{
                   width: '100%',
-                  maxWidth: '900px',
+                  maxWidth: '1250px',
                 }}
               >
                 <div style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
