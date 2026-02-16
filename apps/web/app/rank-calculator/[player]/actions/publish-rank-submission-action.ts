@@ -42,7 +42,6 @@ import {
 import * as Sentry from '@sentry/nextjs';
 import { getRankName } from '../../utils/get-rank-name';
 import { getRankImageUrl } from '../../utils/get-rank-image-url';
-import { validateIronmanStatus } from '../../utils/validate-ironman-status';
 import { fetchPlayerDetails } from '../../data-sources/fetch-player-details/fetch-player-details';
 import { RankCalculatorSchema } from '../submit-rank-calculator-validation';
 import { stripEntityName } from '../../utils/strip-entity-name';
@@ -80,33 +79,6 @@ export const publishRankSubmissionAction = authActionClient
       if (!savedData) {
         console.log('❌ No saved data error');
         throw new ActionError('No saved data!');
-      }
-
-      console.log('✅ Validating account type for rank...');
-      const validation = await validateIronmanStatus(playerName, rank);
-
-      if (!validation.isValid) {
-        console.log(
-          '❌ Account type validation failed:',
-          playerName,
-          'rank:',
-          rank,
-          'isIronman:',
-          validation.isIronman,
-        );
-        if (validation.isIronman && rank === 'Looter') {
-          throw new ActionError(
-            'Looter rank is only available for main accounts. Ironman accounts cannot apply for this rank.',
-          );
-        } else if (!validation.isIronman && rank !== 'Looter') {
-          throw new ActionError(
-            'Only ironman accounts are eligible for ironman clan ranks. Main accounts can only apply for Looter rank.',
-          );
-        } else {
-          throw new ActionError(
-            'Account type validation failed. Please contact an administrator.',
-          );
-        }
       }
 
       console.log('✅ Fetching player details...');

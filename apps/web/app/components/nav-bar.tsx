@@ -328,6 +328,9 @@ export function NavBar({
                       ),
                       { success: 'Player account deleted!' },
                     );
+
+                    // Redirect to dashboard regardless of result
+                    router.push('/dashboard');
                   }}
                 />
               </Flex>

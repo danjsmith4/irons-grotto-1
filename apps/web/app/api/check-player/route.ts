@@ -19,15 +19,39 @@ async function getPlayerInfo(player: string) {
 
 export async function GET(request: NextRequest) {
   const player = request.nextUrl.searchParams.get('player');
-  const checkMethod = CheckMethod.parse(
-    request.nextUrl.searchParams.get('check_method'),
-  );
+  const checkMethodParam = request.nextUrl.searchParams.get('check_method');
 
-  if (!player) {
-    throw new Error('No player provided');
+  console.log('Check player request:', { player, checkMethodParam });
+
+  let checkMethod;
+  try {
+    checkMethod = CheckMethod.parse(checkMethodParam);
+  } catch (parseError) {
+    console.error('CheckMethod parse error:', parseError);
+    return NextResponse.json(
+      { success: false, error: 'Invalid check method' },
+      { status: 400 },
+    );
   }
 
-  const playerInfo = await getPlayerInfo(player);
+  if (!player) {
+    return NextResponse.json(
+      { success: false, error: 'No player provided' },
+      { status: 400 },
+    );
+  }
+
+  let playerInfo;
+  try {
+    playerInfo = await getPlayerInfo(player);
+  } catch (playerInfoError) {
+    console.error('Player info error:', playerInfoError);
+    return NextResponse.json(
+      { success: false, error: 'Failed to get player info' },
+      { status: 500 },
+    );
+  }
+
   const shouldCheckPlayer = playerInfo.data['Datapoint Cooldown'] === '-';
 
   try {
@@ -54,6 +78,8 @@ export async function GET(request: NextRequest) {
         await redis.hset(playerGameModesKey, {
           [playerKey]: updatedPlayerInfo.data['Game mode'],
         });
+
+        console.log(updatedPlayerInfo);
 
         // Calculate and store ironman status
         const ironmanStatus = isPlayerIronman(
