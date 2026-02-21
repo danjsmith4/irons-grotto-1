@@ -29,7 +29,7 @@ export const addPlayerAction = authActionClient
   .schema(AddPlayerSchema)
   .action(
     async ({
-      parsedInput: { joinDate, playerName, isMobileOnly },
+      parsedInput: { joinDate, playerName, isMobileOnly, unrankedGIMOverride },
       ctx: { userId },
     }) => {
       const isUsernameUnique = await assertUniquePlayerRecord(
@@ -51,19 +51,34 @@ export const addPlayerAction = authActionClient
       const maybeFormattedPlayerName =
         playerMeta?.rsn ?? playerStats?.info.Username ?? playerName;
 
-      // Validate that the player account type is compatible with clan membership
+      // Always validate the player's account type to get their current status
       const validation = await validateIronmanStatus(maybeFormattedPlayerName);
 
       console.debug(`${playerName}'s gamemode: ${validation.isValid}`);
 
-      if (!validation.isValid) {
-        returnValidationErrors(AddPlayerSchema, {
-          playerName: {
-            _errors: [
-              'Only ironman accounts can be registered in this clan. Main accounts are not eligible for standard clan ranks.',
-            ],
-          },
-        });
+      if (unrankedGIMOverride) {
+        // If user claims this is an unranked GIM, but the account shows as ironman, that's incorrect
+        if (validation.isValid) {
+          returnValidationErrors(AddPlayerSchema, {
+            unrankedGIMOverride: {
+              _errors: [
+                'This account appears to be an ironman account, not a main account. Uncheck the "Unranked GIM" override or verify the correct player name.',
+              ],
+            },
+          });
+        }
+        console.debug(`${playerName} validation skipped due to unranked GIM override - confirmed as main account`);
+      } else {
+        // Normal validation - account must be ironman
+        if (!validation.isValid) {
+          returnValidationErrors(AddPlayerSchema, {
+            playerName: {
+              _errors: [
+                'Only ironman accounts can be registered in this clan. Main accounts are not eligible for standard clan ranks.',
+              ],
+            },
+          });
+        }
       }
 
       try {

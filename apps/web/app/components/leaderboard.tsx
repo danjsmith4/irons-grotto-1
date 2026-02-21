@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Avatar, Table, ScrollArea } from '@radix-ui/themes';
+import { HamburgerMenuIcon } from '@radix-ui/react-icons';
 import Image from 'next/image';
 import { getRankImageUrl } from '@/app/rank-calculator/utils/get-rank-image-url';
 import { getRankName } from '@/app/rank-calculator/utils/get-rank-name';
@@ -38,6 +39,14 @@ const caTierToIcon = {
   Gnome: 'Gnome_child',
 };
 
+type SortField = 'points' | 'clogSlots' | 'totalPets' | 'ehb' | 'ehp' | 'totalXp';
+type SortDirection = 'asc' | 'desc';
+
+interface SortState {
+  field: SortField;
+  direction: SortDirection;
+}
+
 interface LeaderboardProps {
   initialPlayers: LeaderboardPlayer[];
 }
@@ -52,6 +61,38 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(initialPlayers.length === 50);
   const [offset, setOffset] = useState(50);
+  const [sortState, setSortState] = useState<SortState>({
+    field: 'points',
+    direction: 'desc'
+  });
+
+  const sortPlayers = (field: SortField) => {
+    const newDirection = sortState.field === field && sortState.direction === 'desc' ? 'asc' : 'desc';
+    
+    const sorted = [...players].sort((a, b) => {
+      const aValue = a[field];
+      const bValue = b[field];
+      
+      if (newDirection === 'desc') {
+        return bValue - aValue;
+      } else {
+        return aValue - bValue;
+      }
+    });
+    
+    setPlayers(sorted);
+    setSortState({ field, direction: newDirection });
+  };
+
+  const getSortIcon = (field: SortField) => {
+    return <HamburgerMenuIcon style={{ width: 14, height: 14, display: 'inline-block', marginLeft: 4, opacity: 0.7 }} />;
+  };
+
+  // Create a mapping of players to their point-based rank
+  const getPointRank = (playerName: string) => {
+    const sortedByPoints = [...filteredInitialPlayers].sort((a, b) => b.points - a.points);
+    return sortedByPoints.findIndex(p => p.playerName === playerName) + 1;
+  };
 
   const loadMore = async () => {
     if (loading) return;
@@ -77,7 +118,21 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
             (player: LeaderboardPlayer) =>
               player.rank && player.rank !== 'Unranked',
           );
-          setPlayers((prev) => [...prev, ...filteredNewPlayers]);
+          const newPlayers = [...players, ...filteredNewPlayers];
+          
+          // Re-apply current sort to new combined data
+          const sorted = newPlayers.sort((a, b) => {
+            const aValue = a[sortState.field];
+            const bValue = b[sortState.field];
+            
+            if (sortState.direction === 'desc') {
+              return bValue - aValue;
+            } else {
+              return aValue - bValue;
+            }
+          });
+          
+          setPlayers(sorted);
           setOffset((prev) => prev + data.data.length);
           setHasMore(data.data.length === 50);
         } else {
@@ -126,7 +181,12 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
           <Table.Row style={{ background: 'rgba(26, 13, 46, 0.95)' }}>
             <Table.ColumnHeaderCell>#</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Player</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Points</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell 
+              style={{ cursor: 'pointer', userSelect: 'none' }}
+              onClick={() => sortPlayers('points')}
+            >
+              Points{getSortIcon('points')}
+            </Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Rank</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>
               <Image
@@ -173,11 +233,36 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
                 title="Cursed Phalanx (Fang Kit)"
               />
             </Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Clogs</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Pets</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>EHB</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>EHP</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Total XP</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell
+              style={{ cursor: 'pointer', userSelect: 'none' }}
+              onClick={() => sortPlayers('clogSlots')}
+            >
+              Clogs{getSortIcon('clogSlots')}
+            </Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell
+              style={{ cursor: 'pointer', userSelect: 'none' }}
+              onClick={() => sortPlayers('totalPets')}
+            >
+              Pets{getSortIcon('totalPets')}
+            </Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell
+              style={{ cursor: 'pointer', userSelect: 'none' }}
+              onClick={() => sortPlayers('ehb')}
+            >
+              EHB{getSortIcon('ehb')}
+            </Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell
+              style={{ cursor: 'pointer', userSelect: 'none' }}
+              onClick={() => sortPlayers('ehp')}
+            >
+              EHP{getSortIcon('ehp')}
+            </Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell
+              style={{ cursor: 'pointer', userSelect: 'none' }}
+              onClick={() => sortPlayers('totalXp')}
+            >
+              Total XP{getSortIcon('totalXp')}
+            </Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>
               <Image
                 width={20}
@@ -192,19 +277,31 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
         </Table.Header>
 
         <Table.Body>
-          {players.map((player, index) => (
-            <Table.Row
-              key={`${player.playerName}-${index}`}
-              style={{
-                backgroundColor:
-                  index % 2 === 0 ? 'rgba(26, 13, 46, 0.2)' : 'transparent',
-              }}
-            >
-              <Table.RowHeaderCell
-                style={{ color: '#e91e63', fontWeight: 'bold' }}
+          {players.map((player, index) => {
+            const pointRank = getPointRank(player.playerName);
+            return (
+              <Table.Row
+                key={`${player.playerName}-${index}`}
+                style={{
+                  backgroundColor:
+                    index % 2 === 0 ? 'rgba(26, 13, 46, 0.2)' : 'transparent',
+                }}
               >
-                {index + 1}
-              </Table.RowHeaderCell>
+                <Table.RowHeaderCell
+                  style={{
+                    color:
+                      pointRank === 1
+                        ? '#FFD700'
+                        : pointRank === 2
+                          ? '#C0C0C0'
+                          : pointRank === 3
+                            ? '#CD7F32'
+                            : '#e91e63',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  {pointRank}
+                </Table.RowHeaderCell>
 
               <Table.Cell>
                 <a
@@ -437,7 +534,8 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
                 />
               </Table.Cell>
             </Table.Row>
-          ))}
+          );
+        })}
         </Table.Body>
       </Table.Root>
 

@@ -144,6 +144,15 @@ export function AddPlayerForm({ members }: AddPlayerFormProps) {
                 <Text as="span">Mobile only player</Text>
               </Label>
             </Flex>
+            <Flex direction="row" gap="2" align="center" asChild>
+              <Label weight="bold">
+                <Checkbox
+                  checked={form.watch('unrankedGIMOverride')}
+                  name="unrankedGIMOverride"
+                />
+                <Text as="span">Unranked GIM (override ironman check)</Text>
+              </Label>
+            </Flex>
             <Flex gap="2" mt="2">
               <Flex flexGrow="1">
                 <Box asChild width="100%">

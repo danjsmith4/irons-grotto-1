@@ -143,6 +143,7 @@ export interface CreatePlayerData {
   playerName: string;
   joinDate: string; // ISO date string
   rank: string;
+  discordUserId: string;
   ehb?: number;
   ehp?: number;
   combatAchievementTier?: string;
@@ -166,7 +167,6 @@ export interface CreatePlayerData {
   skillingBonusPoints?: number;
   collectionLogBonusPoints?: number;
   notableItemsBonusPoints?: number;
-  discordUserId?: string;
   isMobileOnly?: boolean;
 }
 
@@ -179,6 +179,7 @@ export interface UpdatePlayerData {
   collectionLogCount?: number;
   collectionLogTotal?: number;
   totalLevel?: number;
+  totalXp?: number;
   clueCountBeginner?: number;
   clueCountEasy?: number;
   clueCountMedium?: number;
@@ -258,7 +259,7 @@ export async function createPlayerWithFullData(
     rank?: string;
     proofLink?: string | null;
   },
-  discordUserId?: string,
+  discordUserId: string,
 ): Promise<Player> {
   const {
     playerName,
@@ -595,9 +596,9 @@ export async function createOrUpdateAchievementDiary(
 // Utility function for getting player with relations
 export async function getPlayerWithRelations(playerName: string): Promise<
   | (Player & {
-      acquiredItems: PlayerAcquiredItem[];
-      achievementDiaries: PlayerAchievementDiary[];
-    })
+    acquiredItems: PlayerAcquiredItem[];
+    achievementDiaries: PlayerAchievementDiary[];
+  })
   | null
 > {
   const player = await db.query.players.findFirst({
@@ -632,6 +633,7 @@ export async function updatePlayerWithFullData(
     collectionLogCount,
     collectionLogTotal,
     totalLevel,
+    totalXp,
     tzhaarCape,
     hasBloodTorva,
     hasRadiantOathplate,
@@ -665,6 +667,8 @@ export async function updatePlayerWithFullData(
     updateData.collectionLogTotal = collectionLogTotal;
   if (totalLevel !== undefined && totalLevel !== null && totalLevel > 32)
     updateData.totalLevel = totalLevel;
+  if (totalXp !== undefined && totalXp !== null && totalXp > 1154)
+    updateData.totalXp = totalXp;
 
   // Include clue counts only if they exist
   if (clueScrollCounts?.Beginner !== undefined)
@@ -764,7 +768,7 @@ export async function processPlayerData(
     rank?: string;
     proofLink?: string | null;
   },
-  discordUserId?: string,
+  discordUserId: string,
 ): Promise<Player> {
   const { playerName } = playerData;
 
