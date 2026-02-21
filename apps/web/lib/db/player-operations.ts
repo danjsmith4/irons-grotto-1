@@ -596,9 +596,9 @@ export async function createOrUpdateAchievementDiary(
 // Utility function for getting player with relations
 export async function getPlayerWithRelations(playerName: string): Promise<
   | (Player & {
-    acquiredItems: PlayerAcquiredItem[];
-    achievementDiaries: PlayerAchievementDiary[];
-  })
+      acquiredItems: PlayerAcquiredItem[];
+      achievementDiaries: PlayerAchievementDiary[];
+    })
   | null
 > {
   const player = await db.query.players.findFirst({

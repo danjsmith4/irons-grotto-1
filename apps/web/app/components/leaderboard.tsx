@@ -39,7 +39,13 @@ const caTierToIcon = {
   Gnome: 'Gnome_child',
 };
 
-type SortField = 'points' | 'clogSlots' | 'totalPets' | 'ehb' | 'ehp' | 'totalXp';
+type SortField =
+  | 'points'
+  | 'clogSlots'
+  | 'totalPets'
+  | 'ehb'
+  | 'ehp'
+  | 'totalXp';
 type SortDirection = 'asc' | 'desc';
 
 interface SortState {
@@ -63,35 +69,50 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
   const [offset, setOffset] = useState(50);
   const [sortState, setSortState] = useState<SortState>({
     field: 'points',
-    direction: 'desc'
+    direction: 'desc',
   });
 
   const sortPlayers = (field: SortField) => {
-    const newDirection = sortState.field === field && sortState.direction === 'desc' ? 'asc' : 'desc';
-    
+    const newDirection =
+      sortState.field === field && sortState.direction === 'desc'
+        ? 'asc'
+        : 'desc';
+
     const sorted = [...players].sort((a, b) => {
       const aValue = a[field];
       const bValue = b[field];
-      
+
       if (newDirection === 'desc') {
         return bValue - aValue;
       } else {
         return aValue - bValue;
       }
     });
-    
+
     setPlayers(sorted);
     setSortState({ field, direction: newDirection });
   };
 
-  const getSortIcon = (field: SortField) => {
-    return <HamburgerMenuIcon style={{ width: 14, height: 14, display: 'inline-block', marginLeft: 4, opacity: 0.7 }} />;
+  const getSortIcon = (_: SortField) => {
+    return (
+      <HamburgerMenuIcon
+        style={{
+          width: 14,
+          height: 14,
+          display: 'inline-block',
+          marginLeft: 4,
+          opacity: 0.7,
+        }}
+      />
+    );
   };
 
   // Create a mapping of players to their point-based rank
   const getPointRank = (playerName: string) => {
-    const sortedByPoints = [...filteredInitialPlayers].sort((a, b) => b.points - a.points);
-    return sortedByPoints.findIndex(p => p.playerName === playerName) + 1;
+    const sortedByPoints = [...filteredInitialPlayers].sort(
+      (a, b) => b.points - a.points,
+    );
+    return sortedByPoints.findIndex((p) => p.playerName === playerName) + 1;
   };
 
   const loadMore = async () => {
@@ -119,19 +140,19 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
               player.rank && player.rank !== 'Unranked',
           );
           const newPlayers = [...players, ...filteredNewPlayers];
-          
+
           // Re-apply current sort to new combined data
           const sorted = newPlayers.sort((a, b) => {
             const aValue = a[sortState.field];
             const bValue = b[sortState.field];
-            
+
             if (sortState.direction === 'desc') {
               return bValue - aValue;
             } else {
               return aValue - bValue;
             }
           });
-          
+
           setPlayers(sorted);
           setOffset((prev) => prev + data.data.length);
           setHasMore(data.data.length === 50);
@@ -181,7 +202,7 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
           <Table.Row style={{ background: 'rgba(26, 13, 46, 0.95)' }}>
             <Table.ColumnHeaderCell>#</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Player</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell 
+            <Table.ColumnHeaderCell
               style={{ cursor: 'pointer', userSelect: 'none' }}
               onClick={() => sortPlayers('points')}
             >
@@ -297,245 +318,245 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
                           : pointRank === 3
                             ? '#CD7F32'
                             : '#e91e63',
-                    fontWeight: 'bold'
+                    fontWeight: 'bold',
                   }}
                 >
                   {pointRank}
                 </Table.RowHeaderCell>
 
-              <Table.Cell>
-                <a
-                  href={`${clientConstants.temple.baseUrl}/player/overview.php?player=${player.playerName.toLowerCase()}`}
+                <Table.Cell>
+                  <a
+                    href={`${clientConstants.temple.baseUrl}/player/overview.php?player=${player.playerName.toLowerCase()}`}
+                    style={{
+                      color: '#ce93d8',
+                      textDecoration: 'none',
+                      fontWeight: 500,
+                      fontSize: 16,
+                    }}
+                  >
+                    {player.playerName}
+                  </a>
+                </Table.Cell>
+
+                <Table.Cell
                   style={{
-                    color: '#ce93d8',
-                    textDecoration: 'none',
-                    fontWeight: 500,
-                    fontSize: 16,
+                    color: '#white',
+                    fontWeight: 'bold',
+                    textAlign: 'center',
                   }}
                 >
-                  {player.playerName}
-                </a>
-              </Table.Cell>
+                  {player.points.toLocaleString()}
+                </Table.Cell>
 
-              <Table.Cell
-                style={{
-                  color: '#white',
-                  fontWeight: 'bold',
-                  textAlign: 'center',
-                }}
-              >
-                {player.points.toLocaleString()}
-              </Table.Cell>
+                <Table.Cell>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.25rem',
+                      fontSize: '0.875rem',
+                    }}
+                  >
+                    {player.rank ? (
+                      <Image
+                        src={getRankImageUrl(player.rank as Rank)}
+                        alt={`${getRankName(player.rank as Rank)} rank`}
+                        width={16}
+                        height={16}
+                        style={{ borderRadius: '50%' }}
+                      />
+                    ) : (
+                      <Avatar
+                        size="1"
+                        fallback="?"
+                        style={{ width: '16px', height: '16px' }}
+                      />
+                    )}
+                    <span style={{ color: '#ce93d8' }}>
+                      {player.rank
+                        ? getRankName(player.rank as Rank)
+                        : 'Unranked'}
+                    </span>
+                  </div>
+                </Table.Cell>
 
-              <Table.Cell>
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.25rem',
-                    fontSize: '0.875rem',
-                  }}
-                >
-                  {player.rank ? (
+                <Table.Cell style={{ textAlign: 'center' }}>
+                  {player.hasRadiant ? (
                     <Image
-                      src={getRankImageUrl(player.rank as Rank)}
-                      alt={`${getRankName(player.rank as Rank)} rank`}
-                      width={16}
-                      height={16}
-                      style={{ borderRadius: '50%' }}
+                      width={30}
+                      height={30}
+                      src={formatWikiImageUrl('Purifying_sigil')}
+                      alt="Radiant"
+                      title="Radiant Oathplate"
                     />
                   ) : (
-                    <Avatar
-                      size="1"
-                      fallback="?"
-                      style={{ width: '16px', height: '16px' }}
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: '35px',
+                      }}
+                    >
+                      ❌
+                    </div>
+                  )}
+                </Table.Cell>
+
+                <Table.Cell style={{ textAlign: 'center' }}>
+                  {player.hasBlorva ? (
+                    <Image
+                      width={30}
+                      height={30}
+                      src={formatWikiImageUrl('Ancient_blood_ornament_kit')}
+                      alt="Blorva"
+                      title="Blood Torva"
                     />
+                  ) : (
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: '35px',
+                      }}
+                    >
+                      ❌
+                    </div>
                   )}
-                  <span style={{ color: '#ce93d8' }}>
-                    {player.rank
-                      ? getRankName(player.rank as Rank)
-                      : 'Unranked'}
-                  </span>
-                </div>
-              </Table.Cell>
+                </Table.Cell>
 
-              <Table.Cell style={{ textAlign: 'center' }}>
-                {player.hasRadiant ? (
-                  <Image
-                    width={30}
-                    height={30}
-                    src={formatWikiImageUrl('Purifying_sigil')}
-                    alt="Radiant"
-                    title="Radiant Oathplate"
-                  />
-                ) : (
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      height: '35px',
-                    }}
-                  >
-                    ❌
-                  </div>
-                )}
-              </Table.Cell>
-
-              <Table.Cell style={{ textAlign: 'center' }}>
-                {player.hasBlorva ? (
-                  <Image
-                    width={30}
-                    height={30}
-                    src={formatWikiImageUrl('Ancient_blood_ornament_kit')}
-                    alt="Blorva"
-                    title="Blood Torva"
-                  />
-                ) : (
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      height: '35px',
-                    }}
-                  >
-                    ❌
-                  </div>
-                )}
-              </Table.Cell>
-
-              <Table.Cell style={{ textAlign: 'center' }}>
-                {player.hasInfernal ? (
-                  <Image
-                    width={30}
-                    height={30}
-                    src={formatWikiImageUrl('Infernal_cape')}
-                    alt="Infernal"
-                    title="Infernal Cape"
-                  />
-                ) : (
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      height: '35px',
-                    }}
-                  >
-                    ❌
-                  </div>
-                )}
-              </Table.Cell>
-
-              <Table.Cell style={{ textAlign: 'center' }}>
-                {player.hasQuiver ? (
-                  <Image
-                    width={30}
-                    height={30}
-                    src={formatWikiImageUrl("Blessed_dizana's_quiver")}
-                    alt="Quiver"
-                    title="Blessed Dizana's Quiver"
-                  />
-                ) : (
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      height: '35px',
-                    }}
-                  >
-                    ❌
-                  </div>
-                )}
-              </Table.Cell>
-
-              <Table.Cell style={{ textAlign: 'center' }}>
-                {player.hasFangKit ? (
-                  <Image
-                    width={30}
-                    height={30}
-                    src={formatWikiImageUrl('Cursed_phalanx')}
-                    alt="Fang Kit"
-                    title="Cursed Phalanx (Fang Kit)"
-                  />
-                ) : (
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      height: '35px',
-                    }}
-                  >
-                    ❌
-                  </div>
-                )}
-              </Table.Cell>
-
-              <Table.Cell style={{ color: '#ce93d8', textAlign: 'center' }}>
-                {player.clogSlots.toLocaleString()}
-              </Table.Cell>
-
-              <Table.Cell style={{ color: '#ce93d8', textAlign: 'center' }}>
-                {player.totalPets.toLocaleString()}
-              </Table.Cell>
-
-              <Table.Cell style={{ color: '#ce93d8', textAlign: 'center' }}>
-                {Math.round(player.ehb).toLocaleString()}
-              </Table.Cell>
-
-              <Table.Cell style={{ color: '#ce93d8', textAlign: 'center' }}>
-                {Math.round(player.ehp).toLocaleString()}
-              </Table.Cell>
-
-              <Table.Cell style={{ color: '#ce93d8', textAlign: 'center' }}>
-                {formatXpInMillions(player.totalXp)}
-              </Table.Cell>
-
-              <Table.Cell style={{ textAlign: 'center' }}>
-                {player.isMaxed ? (
-                  <Image
-                    width={20}
-                    height={20}
-                    src={formatWikiImageUrl('Max_cape', 'item')}
-                    alt="Maxed"
-                    title="Max Cape"
-                  />
-                ) : (
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      height: '20px',
-                    }}
-                  >
-                    ❌
-                  </div>
-                )}
-              </Table.Cell>
-
-              <Table.Cell style={{ textAlign: 'center' }}>
-                <Image
-                  width={30}
-                  height={30}
-                  src={formatWikiImageUrl(
-                    caTierToIcon[
-                      player.caTier &&
-                      caTierToIcon[player.caTier as keyof typeof caTierToIcon]
-                        ? (player.caTier as keyof typeof caTierToIcon)
-                        : 'Gnome'
-                    ] || caTierToIcon.Gnome,
+                <Table.Cell style={{ textAlign: 'center' }}>
+                  {player.hasInfernal ? (
+                    <Image
+                      width={30}
+                      height={30}
+                      src={formatWikiImageUrl('Infernal_cape')}
+                      alt="Infernal"
+                      title="Infernal Cape"
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: '35px',
+                      }}
+                    >
+                      ❌
+                    </div>
                   )}
-                  alt={player.caTier || 'Gnome'}
-                  title={`${player.caTier || 'Gnome'} Combat Achievement Tier`}
-                />
-              </Table.Cell>
-            </Table.Row>
-          );
-        })}
+                </Table.Cell>
+
+                <Table.Cell style={{ textAlign: 'center' }}>
+                  {player.hasQuiver ? (
+                    <Image
+                      width={30}
+                      height={30}
+                      src={formatWikiImageUrl("Blessed_dizana's_quiver")}
+                      alt="Quiver"
+                      title="Blessed Dizana's Quiver"
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: '35px',
+                      }}
+                    >
+                      ❌
+                    </div>
+                  )}
+                </Table.Cell>
+
+                <Table.Cell style={{ textAlign: 'center' }}>
+                  {player.hasFangKit ? (
+                    <Image
+                      width={30}
+                      height={30}
+                      src={formatWikiImageUrl('Cursed_phalanx')}
+                      alt="Fang Kit"
+                      title="Cursed Phalanx (Fang Kit)"
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: '35px',
+                      }}
+                    >
+                      ❌
+                    </div>
+                  )}
+                </Table.Cell>
+
+                <Table.Cell style={{ color: '#ce93d8', textAlign: 'center' }}>
+                  {player.clogSlots.toLocaleString()}
+                </Table.Cell>
+
+                <Table.Cell style={{ color: '#ce93d8', textAlign: 'center' }}>
+                  {player.totalPets.toLocaleString()}
+                </Table.Cell>
+
+                <Table.Cell style={{ color: '#ce93d8', textAlign: 'center' }}>
+                  {Math.round(player.ehb).toLocaleString()}
+                </Table.Cell>
+
+                <Table.Cell style={{ color: '#ce93d8', textAlign: 'center' }}>
+                  {Math.round(player.ehp).toLocaleString()}
+                </Table.Cell>
+
+                <Table.Cell style={{ color: '#ce93d8', textAlign: 'center' }}>
+                  {formatXpInMillions(player.totalXp)}
+                </Table.Cell>
+
+                <Table.Cell style={{ textAlign: 'center' }}>
+                  {player.isMaxed ? (
+                    <Image
+                      width={20}
+                      height={20}
+                      src={formatWikiImageUrl('Max_cape', 'item')}
+                      alt="Maxed"
+                      title="Max Cape"
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: '20px',
+                      }}
+                    >
+                      ❌
+                    </div>
+                  )}
+                </Table.Cell>
+
+                <Table.Cell style={{ textAlign: 'center' }}>
+                  <Image
+                    width={30}
+                    height={30}
+                    src={formatWikiImageUrl(
+                      caTierToIcon[
+                        player.caTier &&
+                        caTierToIcon[player.caTier as keyof typeof caTierToIcon]
+                          ? (player.caTier as keyof typeof caTierToIcon)
+                          : 'Gnome'
+                      ] || caTierToIcon.Gnome,
+                    )}
+                    alt={player.caTier || 'Gnome'}
+                    title={`${player.caTier || 'Gnome'} Combat Achievement Tier`}
+                  />
+                </Table.Cell>
+              </Table.Row>
+            );
+          })}
         </Table.Body>
       </Table.Root>
 

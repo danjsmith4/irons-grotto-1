@@ -67,7 +67,9 @@ export const addPlayerAction = authActionClient
             },
           });
         }
-        console.debug(`${playerName} validation skipped due to unranked GIM override - confirmed as main account`);
+        console.debug(
+          `${playerName} validation skipped due to unranked GIM override - confirmed as main account`,
+        );
       } else {
         // Normal validation - account must be ironman
         if (!validation.isValid) {
