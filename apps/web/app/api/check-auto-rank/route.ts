@@ -101,7 +101,7 @@ export async function GET(request: NextRequest) {
     }
     // Sync player data to postgres database for future relational queries
     try {
-      await processPlayerData(playerDetails.data, undefined);
+      await processPlayerData(playerDetails.data, discordId);
     } catch (error) {
       console.error('Failed to sync player data to database:', error);
       // Continue with rank calculation even if database sync fails

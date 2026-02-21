@@ -1,0 +1,1 @@
+ALTER TABLE "players" ALTER COLUMN "discord_user_id" SET NOT NULL;

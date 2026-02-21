@@ -138,6 +138,14 @@ export async function fetchPlayerDetails(
           userDraftRankSubmissionKey(userId, player),
         )
       : undefined;
+
+    // Always preserve manual checkbox values from database regardless of mergeSavedData
+    const currentDbValues = !mergeSavedData
+      ? {
+          hasRadiantOathplate: playerRecord.hasRadiantOathplate,
+        }
+      : undefined;
+
     const { joinDate, playerName: rsn, rank: currentRank } = playerRecord;
     const [wikiSyncData, templePlayerStats, templeCollectionLog, discordRoles] =
       await Promise.all([
@@ -330,7 +338,10 @@ export async function fetchPlayerDetails(
         currentRank: currentRank as Rank,
         tzhaarCape: mergeTzhaarCapes(tzhaarCape, savedData?.tzhaarCape),
         hasBloodTorva: (hasBloodTorva || savedData?.hasBloodTorva) ?? false,
-        hasRadiantOathplate: savedData?.hasRadiantOathplate ?? false,
+        hasRadiantOathplate:
+          savedData?.hasRadiantOathplate ??
+          currentDbValues?.hasRadiantOathplate ??
+          false,
         hasDizanasQuiver:
           (hasDizanasQuiver || savedData?.hasDizanasQuiver) ?? false,
         hasAchievementDiaryCape:

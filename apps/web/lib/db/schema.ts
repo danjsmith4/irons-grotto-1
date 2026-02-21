@@ -70,7 +70,7 @@ export const players = pgTable(
     points: real('points').notNull().default(0),
 
     // Discord integration
-    discordUserId: varchar('discord_user_id', { length: 20 }), // Discord user IDs are numeric strings up to 20 characters
+    discordUserId: varchar('discord_user_id', { length: 20 }).notNull(), // Discord user IDs are numeric strings up to 20 characters
 
     // Player preferences
     isMobileOnly: boolean('is_mobile_only').notNull().default(false),
@@ -175,20 +175,3 @@ export const playerRankUpsRelations = relations(playerRankUps, ({ one }) => ({
     references: [players.playerName],
   }),
 }));
-
-export const ironmanStatus = pgTable(
-  'ironman_status',
-  {
-    id: uuid('id')
-      .primaryKey()
-      .default(sql`gen_random_uuid()`),
-    playerName: varchar('player_name', { length: 12 }).notNull(),
-    lastChecked: timestamp('created_at').defaultNow().notNull(),
-  },
-  (table) => ({
-    // Unique constraint to ensure one record per player per item
-    playerNameLowerUnique: uniqueIndex('players_player_name_lower_unique').on(
-      sql`lower(${table.playerName})`,
-    ),
-  }),
-);
