@@ -34,7 +34,7 @@ export function PlayerCard() {
       <Separator size="4" />
       <DataCard.Row
         left={
-          <Text style={{ color: '#b39ddb' }} size="2">
+          <Text style={{ color: 'var(--theme-text-secondary)' }} size="2">
             Join Date
           </Text>
         }
@@ -45,7 +45,7 @@ export function PlayerCard() {
         }
       />
       <Flex gap="4" align="center">
-        <Text style={{ color: '#b39ddb' }} size="2">
+        <Text style={{ color: 'var(--theme-text-secondary)' }} size="2">
           Proof Link
         </Text>
         <Flex asChild justify="end" flexShrink="1" flexGrow="1" flexBasis="0">

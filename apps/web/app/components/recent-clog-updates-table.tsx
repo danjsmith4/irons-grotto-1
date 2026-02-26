@@ -101,7 +101,7 @@ export function RecentClogUpdatesTable({
                         target="_blank"
                         rel="noopener noreferrer"
                         style={{
-                          color: '#ce93d8',
+                          color: 'var(--theme-tertiary)',
                           textDecoration: 'none',
                         }}
                       >

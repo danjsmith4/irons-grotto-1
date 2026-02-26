@@ -65,8 +65,8 @@ export default async function DashboardPage() {
       style={{
         minHeight: '100vh',
         background:
-          'radial-gradient(ellipse at center, #2d1b4e 0%, #1a0d2e 70%)',
-        color: 'white',
+          'var(--theme-surface-gradient)',
+        color: 'var(--theme-text-primary)',
         position: 'relative',
         overflow: 'hidden',
       }}
@@ -95,7 +95,7 @@ export default async function DashboardPage() {
               width: '2px',
               height: '50vw',
               background:
-                'linear-gradient(transparent 0%, rgba(233, 30, 99, 0.05) 40%, rgba(156, 39, 176, 0.08) 50%, rgba(233, 30, 99, 0.05) 60%, transparent 100%)',
+                'linear-gradient(transparent 0%, rgba(255, 255, 255, 0.05) 40%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.05) 60%, transparent 100%)',
               transformOrigin: 'bottom center',
               opacity: 0.4,
               transform: `translate(-50%, -100%) rotate(${i * 45}deg)`,
@@ -138,7 +138,7 @@ export default async function DashboardPage() {
                 <h2
                   className={cinzel.className}
                   style={{
-                    color: '#ce93d8',
+                    color: 'var(--theme-tertiary)',
                     fontSize: '1.5rem',
                     fontWeight: 600,
                     margin: 0,
@@ -175,7 +175,7 @@ export default async function DashboardPage() {
                   fontSize: '28px',
                   fontWeight: '700',
                   margin: 0,
-                  background: 'linear-gradient(135deg, #e91e63, #9c27b0)',
+                  background: 'var(--theme-primary-gradient)',
                   backgroundClip: 'text',
                   WebkitBackgroundClip: 'text',
                   color: 'transparent',
@@ -202,7 +202,8 @@ export default async function DashboardPage() {
           >
             <p
               style={{
-                color: 'rgba(255, 255, 255, 0.7)',
+                color: 'var(--theme-text-primary)',
+                opacity: 0.7,
                 fontSize: '14px',
                 margin: 0,
               }}

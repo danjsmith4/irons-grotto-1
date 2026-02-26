@@ -104,9 +104,10 @@ export function NavBar({
         left: 0,
         right: 0,
         zIndex: 1000,
-        background: 'rgba(26, 13, 46, 0.95)',
+        background: 'var(--theme-surface-1)',
+        opacity: 0.95,
         backdropFilter: 'blur(10px)',
-        borderBottom: '1px solid rgba(206, 147, 216, 0.2)',
+        borderBottom: '1px solid var(--theme-primary-alpha-20)',
         padding: '1rem 2rem',
       }}
     >
@@ -122,7 +123,7 @@ export function NavBar({
                 width={70}
                 height={70}
                 style={{
-                  filter: 'drop-shadow(0 0 10px rgba(233, 30, 99, 0.3))',
+                  filter: 'drop-shadow(0 0 10px var(--theme-primary-alpha-30))',
                   cursor: 'pointer',
                 }}
               />
@@ -171,7 +172,8 @@ export function NavBar({
                             style={{
                               marginLeft: 'auto',
                               fontSize: '0.75rem',
-                              color: 'rgba(255, 255, 255, 0.6)',
+                              color: 'var(--theme-text-primary)',
+                              opacity: 0.6,
                             }}
                           >
                             ({player.rank ?? 'Unranked'})

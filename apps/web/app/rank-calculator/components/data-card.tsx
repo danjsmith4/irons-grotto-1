@@ -29,17 +29,17 @@ function DataCardRoot({ children }: PropsWithChildren) {
   return (
     <Card
       style={{
-        background: 'rgba(45, 27, 78, 0.6)',
-        border: '1px solid rgba(233, 30, 99, 0.2)',
+        background: 'var(--theme-card-background)',
+        border: '1px solid var(--theme-card-border)',
         backdropFilter: 'blur(10px)',
         transition: 'all 0.3s ease',
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = 'rgba(233, 30, 99, 0.4)';
-        e.currentTarget.style.boxShadow = '0 4px 20px rgba(233, 30, 99, 0.3)';
+        e.currentTarget.style.borderColor = 'var(--theme-card-hover-border)';
+        e.currentTarget.style.boxShadow = '0 4px 20px var(--theme-card-hover-shadow)';
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = 'rgba(233, 30, 99, 0.2)';
+        e.currentTarget.style.borderColor = 'var(--theme-card-border)';
         e.currentTarget.style.boxShadow = 'none';
       }}
     >

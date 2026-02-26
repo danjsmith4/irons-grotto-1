@@ -8,6 +8,7 @@ import { ToastContainer } from 'react-toastify';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/next';
 import Providers from './providers';
+import { Header } from './components/header';
 
 if (process.env.NEXT_PUBLIC_API_MOCKING === 'enabled') {
   await import('../mocks');
@@ -42,7 +43,10 @@ export default function RootLayout({
           radius="small"
           className="dark-theme"
         >
-          <Providers>{children}</Providers>
+          <Providers>
+            <Header />
+            {children}
+          </Providers>
           <ToastContainer
             theme="dark"
             pauseOnHover

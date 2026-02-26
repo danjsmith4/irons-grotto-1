@@ -7,25 +7,66 @@
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
 
-  /* Custom Irons Grotto Color Palette */
-  --ig-purple-deep: #1a0d2e;
-  --ig-purple-mid: #2d1b4e;
-  --ig-pink: #e91e63;
-  --ig-purple-accent: #9c27b0;
-  --ig-purple-light: #ce93d8;
-  --ig-text-primary: #ffffff;
-  --ig-text-secondary: #b39ddb;
+  /* Theme CSS Custom Properties */
+  --theme-primary: #e91e63;
+  --theme-secondary: #9c27b0;
+  --theme-tertiary: #ce93d8;
+  --theme-text-primary: #ffffff;
+  --theme-text-secondary: #b39ddb;
+
+  /* Extended theme colors */
+  --theme-primary-alpha-10: rgba(233, 30, 99, 0.1);
+  --theme-primary-alpha-20: rgba(233, 30, 99, 0.2);
+  --theme-primary-alpha-30: rgba(233, 30, 99, 0.3);
+  --theme-primary-alpha-40: rgba(233, 30, 99, 0.4);
+  --theme-primary-alpha-50: rgba(233, 30, 99, 0.5);
+  --theme-primary-alpha-70: rgba(233, 30, 99, 0.7);
+  --theme-secondary-alpha-15: rgba(156, 39, 176, 0.15);
+
+  /* Surface colors */
+  --theme-surface-1: #1a0d2e;
+  --theme-surface-2: #2d1b4e;
+  --theme-surface-3: rgba(255, 255, 255, 0.05);
+
+  /* Gradients */
+  --theme-primary-gradient: linear-gradient(
+    135deg,
+    var(--theme-primary) 0%,
+    var(--theme-secondary) 100%
+  );
+  --theme-secondary-gradient: linear-gradient(
+    90deg,
+    var(--theme-primary),
+    var(--theme-secondary)
+  );
+  --theme-surface-gradient: radial-gradient(
+    ellipse at center,
+    var(--theme-surface-2) 0%,
+    var(--theme-surface-1) 70%
+  );
+
+  /* Card backgrounds (extremely subtle) */
+  --theme-card-background: rgba(206, 147, 216, 0.01);
+  --theme-card-border: rgba(206, 147, 216, 0.03);
+  --theme-card-hover-border: rgba(206, 147, 216, 0.08);
+  --theme-card-hover-shadow: rgba(206, 147, 216, 0.05);
+
+  /* Legacy support - will be deprecated */
+  --ig-purple-deep: var(--theme-surface-1);
+  --ig-purple-mid: var(--theme-surface-2);
+  --ig-pink: var(--theme-primary);
+  --ig-purple-accent: var(--theme-secondary);
+  --ig-purple-light: var(--theme-tertiary);
+  --ig-text-primary: var(--theme-text-primary);
+  --ig-text-secondary: var(--theme-text-secondary);
 }
 .rt-ProgressRoot {
-  background-color: rgba(45, 27, 78, 0.6) !important;
+  background-color: var(--theme-surface-2) !important;
+  opacity: 0.6;
 }
 
 .rt-ProgressIndicator {
-  background: linear-gradient(
-    90deg,
-    var(--ig-pink),
-    var(--ig-purple-accent)
-  ) !important;
+  background: var(--theme-secondary-gradient) !important;
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -367,26 +408,26 @@ img.rt-AvatarImage {
 
 /* Additional Irons Grotto theme overrides */
 .rt-Card {
-  background-color: rgba(45, 27, 78, 0.6) !important;
-  border: 1px solid rgba(233, 30, 99, 0.2) !important;
+  background-color: var(--theme-card-background) !important;
+  border: 1px solid var(--theme-card-border) !important;
   backdrop-filter: blur(10px);
 }
 
 .rt-Card:hover {
-  border-color: rgba(233, 30, 99, 0.4) !important;
-  box-shadow: 0 4px 20px rgba(233, 30, 99, 0.3) !important;
+  border-color: var(--theme-card-hover-border) !important;
+  box-shadow: 0 4px 20px var(--theme-card-hover-shadow) !important;
 }
 
 /* BaseCard styling */
 .rt-BaseCard {
-  background-color: rgba(45, 27, 78, 0.6) !important;
-  border: 1px solid rgba(233, 30, 99, 0.2) !important;
+  background-color: var(--theme-card-background) !important;
+  border: 1px solid var(--theme-card-border) !important;
   backdrop-filter: blur(10px);
 }
 
 .rt-BaseCard:hover {
-  border-color: rgba(233, 30, 99, 0.4) !important;
-  box-shadow: 0 4px 20px rgba(233, 30, 99, 0.3) !important;
+  border-color: var(--theme-card-hover-border) !important;
+  box-shadow: 0 4px 20px var(--theme-card-hover-shadow) !important;
 }
 
 .rt-Button:where(.rt-variant-solid) {
@@ -441,7 +482,7 @@ img.rt-AvatarImage {
 .rt-TextFieldInput:focus,
 .rt-TextAreaInput:focus {
   border-color: var(--ig-pink) !important;
-  box-shadow: 0 0 0 1px var(--ig-pink) !important;
+  box-shadow: 0 0 0 1px var(--theme-primary) !important;
 }
 
 .rt-Select .rt-SelectTrigger {
@@ -465,4 +506,131 @@ img.rt-AvatarImage {
 .irons-button:hover {
   transition: none !important;
   transform: none !important;
+}
+
+/* Theme Utility Classes */
+
+/* Background utilities */
+.theme-bg-surface-1 {
+  background-color: var(--theme-surface-1);
+}
+
+.theme-bg-surface-2 {
+  background-color: var(--theme-surface-2);
+}
+
+.theme-bg-surface-3 {
+  background-color: var(--theme-surface-3);
+}
+
+.theme-bg-primary {
+  background-color: var(--theme-primary);
+}
+
+.theme-bg-gradient-primary {
+  background: var(--theme-primary-gradient);
+}
+
+.theme-bg-gradient-secondary {
+  background: var(--theme-secondary-gradient);
+}
+
+.theme-bg-gradient-surface {
+  background: var(--theme-surface-gradient);
+}
+
+/* Text color utilities */
+.theme-text-primary {
+  color: var(--theme-text-primary);
+}
+
+.theme-text-secondary {
+  color: var(--theme-text-secondary);
+}
+
+.theme-color-primary {
+  color: var(--theme-primary);
+}
+
+.theme-color-secondary {
+  color: var(--theme-secondary);
+}
+
+.theme-color-tertiary {
+  color: var(--theme-tertiary);
+}
+
+/* Border utilities */
+.theme-border-primary {
+  border-color: var(--theme-primary);
+}
+
+.theme-border-primary-alpha {
+  border-color: var(--theme-primary-alpha-30);
+}
+
+/* Shadow utilities */
+.theme-shadow-primary {
+  box-shadow: 0 8px 25px var(--theme-primary-alpha-40);
+}
+
+.theme-shadow-primary-hover {
+  box-shadow: 0 12px 35px var(--theme-primary-alpha-50);
+}
+
+/* Text shadow utilities */
+.theme-text-shadow-primary {
+  text-shadow:
+    0 0 10px var(--theme-primary),
+    0 0 20px var(--theme-primary),
+    0 0 40px var(--theme-primary);
+}
+
+/* Glow effects */
+.theme-filter-glow {
+  filter: drop-shadow(0 0 20px var(--theme-primary));
+}
+
+/* Hover effects */
+.theme-hover-bg-primary:hover {
+  background-color: var(--theme-primary-alpha-20);
+}
+
+.theme-hover-border-primary:hover {
+  border-color: var(--theme-primary);
+}
+
+.theme-hover-shadow:hover {
+  box-shadow: 0 8px 25px var(--theme-primary-alpha-30);
+}
+
+/* Improved TextField styling */
+.rt-TextFieldRoot {
+  background-color: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid rgba(206, 147, 216, 0.15) !important;
+  border-radius: 6px !important;
+  transition: all 0.2s ease !important;
+}
+
+.rt-TextFieldRoot:hover {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+  border-color: rgba(206, 147, 216, 0.25) !important;
+}
+
+.rt-TextFieldRoot:focus-within {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  border-color: var(--theme-primary) !important;
+  box-shadow: 0 0 0 2px var(--theme-primary-alpha-20) !important;
+  outline: none !important;
+}
+
+.rt-TextFieldInput {
+  color: var(--theme-text-primary) !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+.rt-TextFieldInput::placeholder {
+  color: var(--theme-text-secondary) !important;
+  opacity: 0.6;
 }

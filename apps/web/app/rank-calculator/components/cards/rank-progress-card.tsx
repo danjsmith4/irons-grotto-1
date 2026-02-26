@@ -71,7 +71,7 @@ export function RankProgressCard() {
         type="hidden"
       />
       <Card>
-        <Flex direction="column" gap="3" style={{ color: '#b39ddb' }}>
+        <Flex direction="column" gap="3" style={{ color: 'var(--theme-text-secondary)' }}>
           <DataCard.Row
             left={
               <Flex direction="column">
@@ -92,7 +92,7 @@ export function RankProgressCard() {
                 <Text
                   size="2"
                   id="points-to-next-rank-label"
-                  style={{ color: '#b39ddb' }}
+                  style={{ color: 'var(--theme-text-secondary)' }}
                 >
                   Points to next rank
                 </Text>
@@ -115,7 +115,7 @@ export function RankProgressCard() {
               <Text
                 aria-label="Current rank"
                 size="2"
-                style={{ color: '#b39ddb' }}
+                style={{ color: 'var(--theme-text-secondary)' }}
               >
                 {rankName}
               </Text>
@@ -140,7 +140,7 @@ export function RankProgressCard() {
               <Text
                 aria-label="Next rank"
                 size="2"
-                style={{ color: '#b39ddb' }}
+                style={{ color: 'var(--theme-text-secondary)' }}
               >
                 {nextRankName}
               </Text>
@@ -149,7 +149,7 @@ export function RankProgressCard() {
           <Separator size="4" />
           <DataCard.Row
             left={
-              <Text style={{ color: '#b39ddb' }} size="2">
+              <Text style={{ color: 'var(--theme-text-secondary)' }} size="2">
                 Rank structure
               </Text>
             }

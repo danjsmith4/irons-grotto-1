@@ -66,9 +66,9 @@ export function RecentClogsScroller({
             alignItems: 'center',
             justifyContent: 'center',
             padding: '3rem',
-            background: 'rgba(206, 147, 216, 0.1)',
+            background: 'var(--theme-card-background)',
             borderRadius: '12px',
-            border: '1px solid rgba(206, 147, 216, 0.2)',
+            border: '1px solid var(--theme-card-border)',
           }}
         >
           <div
@@ -83,8 +83,8 @@ export function RecentClogsScroller({
               style={{
                 width: '40px',
                 height: '40px',
-                border: '3px solid rgba(206, 147, 216, 0.3)',
-                borderTop: '3px solid #ce93d8',
+                border: '3px solid var(--theme-card-border)',
+                borderTop: '3px solid var(--theme-tertiary)',
                 borderRadius: '50%',
                 animation: 'spin 1s linear infinite',
               }}
@@ -110,9 +110,9 @@ export function RecentClogsScroller({
         <div
           style={{
             padding: '1rem',
-            background: 'rgba(206, 147, 216, 0.1)',
+            background: 'var(--theme-card-background)',
             borderRadius: '12px',
-            border: '1px solid rgba(206, 147, 216, 0.2)',
+            border: '1px solid var(--theme-card-border)',
             color: 'rgba(255, 255, 255, 0.6)',
             textAlign: 'center',
           }}
@@ -134,11 +134,11 @@ export function RecentClogsScroller({
             overflowX: 'auto',
             overflowY: 'hidden',
             padding: '1rem',
-            background: 'rgba(206, 147, 216, 0.1)',
+            background: 'var(--theme-card-background)',
             borderRadius: '12px',
-            border: '1px solid rgba(206, 147, 216, 0.2)',
+            border: '1px solid var(--theme-card-border)',
             scrollbarWidth: 'thin',
-            scrollbarColor: 'rgba(206, 147, 216, 0.5) transparent',
+            scrollbarColor: 'var(--theme-card-border) transparent',
           }}
         >
           {items.map((item, index) => (
@@ -151,9 +151,9 @@ export function RecentClogsScroller({
                 gap: '0.5rem',
                 minWidth: '120px',
                 padding: '1rem',
-                background: 'rgba(26, 13, 46, 0.8)',
+                background: 'var(--theme-surface-1)',
                 borderRadius: '8px',
-                border: '1px solid rgba(206, 147, 216, 0.3)',
+                border: '1px solid var(--theme-card-border)',
                 transition: 'all 0.3s ease',
                 animation: `fadeIn 0.5s ease ${index * 0.1}s both`,
               }}
@@ -171,7 +171,7 @@ export function RecentClogsScroller({
                   fontSize: '0.75rem',
                   fontWeight: 500,
                   textAlign: 'center',
-                  color: '#ce93d8',
+                  color: 'var(--theme-text-secondary)',
                   lineHeight: '1.2',
                   maxWidth: '100px',
                   overflow: 'hidden',
@@ -218,9 +218,9 @@ export function RecentClogsScroller({
                   gap: '0.5rem',
                   minWidth: '120px',
                   padding: '1rem',
-                  background: 'rgba(26, 13, 46, 0.6)',
+                  background: 'var(--theme-surface-1)',
                   borderRadius: '8px',
-                  border: '1px solid rgba(206, 147, 216, 0.2)',
+                  border: '1px solid var(--theme-card-border)',
                   opacity: 0.7,
                 }}
               >
@@ -228,7 +228,7 @@ export function RecentClogsScroller({
                   style={{
                     width: '48px',
                     height: '48px',
-                    background: 'rgba(206, 147, 216, 0.2)',
+                    background: 'var(--theme-card-border)',
                     borderRadius: '4px',
                     animation: 'pulse 2s infinite',
                   }}
@@ -237,7 +237,7 @@ export function RecentClogsScroller({
                   style={{
                     width: '80px',
                     height: '12px',
-                    background: 'rgba(206, 147, 216, 0.2)',
+                    background: 'var(--theme-card-border)',
                     borderRadius: '2px',
                     animation: 'pulse 2s infinite 0.2s both',
                   }}
@@ -326,12 +326,12 @@ export function RecentClogsScroller({
           }
 
           div::-webkit-scrollbar-thumb {
-            background: rgba(206, 147, 216, 0.5);
+            background: var(--theme-card-border);
             border-radius: 3px;
           }
 
           div::-webkit-scrollbar-thumb:hover {
-            background: rgba(206, 147, 216, 0.7);
+            background: var(--theme-card-border);
           }
         `}</style>
       </div>

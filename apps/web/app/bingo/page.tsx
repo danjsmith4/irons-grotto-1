@@ -14,8 +14,7 @@ export default function BingoPage() {
     <div
       style={{
         minHeight: '100vh',
-        background:
-          'radial-gradient(ellipse at center, #2d1b4e 0%, #1a0d2e 70%)',
+        background: 'var(--theme-surface-gradient)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -48,7 +47,7 @@ export default function BingoPage() {
               width: '2px',
               height: '50vw',
               background:
-                'linear-gradient(transparent 0%, rgba(233, 30, 99, 0.1) 40%, rgba(156, 39, 176, 0.15) 50%, rgba(233, 30, 99, 0.1) 60%, transparent 100%)',
+                'linear-gradient(transparent 0%, var(--theme-primary-alpha-10) 40%, var(--theme-secondary-alpha-15) 50%, var(--theme-primary-alpha-10) 60%, transparent 100%)',
               transformOrigin: 'bottom center',
               opacity: 0.6,
               transform: `translate(-50%, -100%) rotate(${i * 45}deg)`,
@@ -75,7 +74,7 @@ export default function BingoPage() {
           width={200}
           height={200}
           style={{
-            filter: 'drop-shadow(0 0 20px rgba(233, 30, 99, 0.5))',
+            filter: 'drop-shadow(0 0 20px var(--theme-primary-alpha-50))',
           }}
         />
 
@@ -94,11 +93,11 @@ export default function BingoPage() {
               fontSize: 'clamp(3rem, 8vw, 6rem)',
               fontWeight: '700',
               background:
-                'linear-gradient(135deg, #e91e63 0%, #9c27b0 50%, #ce93d8 100%)',
+                'var(--theme-primary-gradient)',
               backgroundClip: 'text',
               WebkitBackgroundClip: 'text',
               color: 'transparent',
-              textShadow: '0 4px 20px rgba(233, 30, 99, 0.3)',
+              textShadow: '0 4px 20px var(--theme-primary-alpha-30)',
               margin: 0,
             }}
           >
@@ -108,7 +107,7 @@ export default function BingoPage() {
           <h2
             style={{
               fontSize: '2.5rem',
-              color: '#ce93d8',
+              color: 'var(--theme-tertiary)',
               fontWeight: '300',
               margin: 0,
             }}
@@ -140,10 +139,10 @@ export default function BingoPage() {
             fontSize: '1.1rem',
             fontWeight: '600',
             color: 'white',
-            background: 'linear-gradient(135deg, #e91e63 0%, #9c27b0 100%)',
+            background: 'var(--theme-primary-gradient)',
             border: 'none',
             borderRadius: '12px',
-            boxShadow: '0 8px 25px rgba(233, 30, 99, 0.4)',
+            boxShadow: '0 8px 25px var(--theme-primary-alpha-40)',
             textDecoration: 'none',
             transition: 'all 0.3s ease',
             backdropFilter: 'blur(10px)',
@@ -151,7 +150,7 @@ export default function BingoPage() {
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = 'translateY(-2px)';
             e.currentTarget.style.boxShadow =
-              '0 12px 35px rgba(233, 30, 99, 0.5)';
+              '0 12px 35px var(--theme-primary-alpha-50)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = 'translateY(0)';

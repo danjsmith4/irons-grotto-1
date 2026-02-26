@@ -49,7 +49,7 @@ export function PlayerList({ accounts }: PlayerListProps) {
       gap="6"
       direction="column"
     >
-      <Heading size="5" style={{ color: '#ce93d8' }}>
+      <Heading size="5" style={{ color: 'var(--theme-tertiary)' }}>
         Irons Grotto Rank Calculator
       </Heading>
       <Flex direction="column" gap="4" width="330px">

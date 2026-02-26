@@ -27,7 +27,7 @@ export function ItemImageWithFallback({
         size={size > 40 ? '4' : size > 24 ? '3' : '2'}
         fallback={itemName.charAt(0).toUpperCase()}
         style={{
-          background: 'linear-gradient(135deg, #e91e63, #9c27b0)',
+          background: 'var(--theme-primary-gradient)',
           color: 'white',
           fontWeight: 'bold',
           ...style,

@@ -175,9 +175,9 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
       <div
         style={{
           padding: '2rem',
-          background: 'rgba(206, 147, 216, 0.1)',
+          background: 'var(--theme-card-background)',
           borderRadius: '12px',
-          border: '1px solid rgba(206, 147, 216, 0.2)',
+          border: '1px solid var(--theme-card-border)',
           color: 'rgba(255, 255, 255, 0.6)',
           textAlign: 'center',
         }}
@@ -192,14 +192,14 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
       style={{
         width: '100%',
         height: '500px',
-        background: 'rgba(206, 147, 216, 0.1)',
+        background: 'var(--theme-card-background)',
         borderRadius: '12px',
-        border: '1px solid rgba(206, 147, 216, 0.2)',
+        border: '1px solid var(--theme-card-border)',
       }}
     >
       <Table.Root>
         <Table.Header style={{ position: 'sticky', top: 0, zIndex: 1 }}>
-          <Table.Row style={{ background: 'rgba(26, 13, 46, 0.95)' }}>
+          <Table.Row style={{ background: 'var(--theme-surface-1)' }}>
             <Table.ColumnHeaderCell>#</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Player</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell
@@ -317,7 +317,7 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
                           ? '#C0C0C0'
                           : pointRank === 3
                             ? '#CD7F32'
-                            : '#e91e63',
+                            : 'var(--theme-primary)',
                     fontWeight: 'bold',
                   }}
                 >
@@ -328,7 +328,7 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
                   <a
                     href={`${clientConstants.temple.baseUrl}/player/overview.php?player=${player.playerName.toLowerCase()}`}
                     style={{
-                      color: '#ce93d8',
+                      color: 'var(--theme-tertiary)',
                       textDecoration: 'none',
                       fontWeight: 500,
                       fontSize: 16,
@@ -372,7 +372,7 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
                         style={{ width: '16px', height: '16px' }}
                       />
                     )}
-                    <span style={{ color: '#ce93d8' }}>
+                    <span style={{ color: 'var(--theme-tertiary)' }}>
                       {player.rank
                         ? getRankName(player.rank as Rank)
                         : 'Unranked'}
@@ -495,23 +495,23 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
                   )}
                 </Table.Cell>
 
-                <Table.Cell style={{ color: '#ce93d8', textAlign: 'center' }}>
+                <Table.Cell style={{ color: 'var(--theme-tertiary)', textAlign: 'center' }}>
                   {player.clogSlots.toLocaleString()}
                 </Table.Cell>
 
-                <Table.Cell style={{ color: '#ce93d8', textAlign: 'center' }}>
+                <Table.Cell style={{ color: 'var(--theme-tertiary)', textAlign: 'center' }}>
                   {player.totalPets.toLocaleString()}
                 </Table.Cell>
 
-                <Table.Cell style={{ color: '#ce93d8', textAlign: 'center' }}>
+                <Table.Cell style={{ color: 'var(--theme-tertiary)', textAlign: 'center' }}>
                   {Math.round(player.ehb).toLocaleString()}
                 </Table.Cell>
 
-                <Table.Cell style={{ color: '#ce93d8', textAlign: 'center' }}>
+                <Table.Cell style={{ color: 'var(--theme-tertiary)', textAlign: 'center' }}>
                   {Math.round(player.ehp).toLocaleString()}
                 </Table.Cell>
 
-                <Table.Cell style={{ color: '#ce93d8', textAlign: 'center' }}>
+                <Table.Cell style={{ color: 'var(--theme-tertiary)', textAlign: 'center' }}>
                   {formatXpInMillions(player.totalXp)}
                 </Table.Cell>
 
@@ -567,7 +567,7 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
             display: 'flex',
             justifyContent: 'center',
             padding: '1rem',
-            background: 'rgba(206, 147, 216, 0.1)',
+            background: 'var(--theme-card-background)',
           }}
         >
           <button
@@ -575,8 +575,8 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
             disabled={loading}
             style={{
               background: loading
-                ? 'rgba(206, 147, 216, 0.3)'
-                : 'linear-gradient(135deg, #e91e63, #9c27b0)',
+                ? 'var(--theme-card-background)'
+                : 'var(--theme-primary-gradient)',
               color: 'white',
               border: 'none',
               padding: '0.75rem 1.5rem',

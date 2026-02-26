@@ -156,7 +156,7 @@ export default async function HomePage() {
             <h2
               className={`${cinzel.className}`}
               style={{
-                color: '#ce93d8',
+                color: 'var(--theme-tertiary)',
                 fontSize: '1.8rem',
                 marginBottom: '0.5rem',
               }}
@@ -185,7 +185,7 @@ export default async function HomePage() {
                   <h3
                     className={`${cinzel.className}`}
                     style={{
-                      color: '#ce93d8',
+                      color: 'var(--theme-tertiary)',
                       fontSize: '1.5rem',
                       marginBottom: '0.5rem',
                     }}

@@ -56,19 +56,19 @@ export function CollectionLogAndCluesCard() {
       <Separator size="4" />
       <DataCard.Row
         left={
-          <Text style={{ color: '#b39ddb' }} weight="medium" size="2">
+          <Text style={{ color: 'var(--theme-text-secondary)' }} weight="medium" size="2">
             Category
           </Text>
         }
         right={
-          <Text style={{ color: '#b39ddb' }} weight="medium" size="2">
+          <Text style={{ color: 'var(--theme-text-secondary)' }} weight="medium" size="2">
             Points
           </Text>
         }
       />
       <DataCard.Row
         left={
-          <Text style={{ color: '#b39ddb' }} size="2">
+          <Text style={{ color: 'var(--theme-text-secondary)' }} size="2">
             Collection Log slots
           </Text>
         }
@@ -87,7 +87,7 @@ export function CollectionLogAndCluesCard() {
         right={
           <Text
             aria-label="Collection log slot points"
-            style={{ color: '#b39ddb' }}
+            style={{ color: 'var(--theme-text-secondary)' }}
             size="2"
           >
             {formatNumber(collectionLogSlotPoints)}
@@ -98,7 +98,7 @@ export function CollectionLogAndCluesCard() {
         <DataCard.Row
           key={tier}
           left={
-            <Text style={{ color: '#b39ddb' }} size="2">
+            <Text style={{ color: 'var(--theme-text-secondary)' }} size="2">
               {tier} clues
             </Text>
           }
@@ -116,7 +116,7 @@ export function CollectionLogAndCluesCard() {
           right={
             <Text
               aria-label={`${tier} clue scroll points`}
-              style={{ color: '#b39ddb' }}
+              style={{ color: 'var(--theme-text-secondary)' }}
               size="2"
             >
               {formatNumber(clueScrollTierPoints[tier])}
@@ -126,7 +126,7 @@ export function CollectionLogAndCluesCard() {
       ))}
       <DataCard.Row
         left={
-          <Text style={{ color: '#b39ddb' }} size="2">
+          <Text style={{ color: 'var(--theme-text-secondary)' }} size="2">
             Clog Diary Tier
           </Text>
         }
@@ -138,7 +138,7 @@ export function CollectionLogAndCluesCard() {
         right={
           <Text
             aria-label="Clog diary tier points"
-            style={{ color: '#b39ddb' }}
+            style={{ color: 'var(--theme-text-secondary)' }}
             size="2"
           >
             {collectionLogBonusPoints
@@ -150,7 +150,7 @@ export function CollectionLogAndCluesCard() {
 
       <DataCard.Row
         left={
-          <Text style={{ color: '#b39ddb' }} size="2">
+          <Text style={{ color: 'var(--theme-text-secondary)' }} size="2">
             Progress
           </Text>
         }
@@ -165,7 +165,7 @@ export function CollectionLogAndCluesCard() {
         right={
           <Text
             aria-label="Collection log points remaining"
-            style={{ color: '#b39ddb' }}
+            style={{ color: 'var(--theme-text-secondary)' }}
             size="2"
           >
             {getPointsRemainingLabel(pointsRemaining)}

@@ -42,8 +42,9 @@ export function Navigation({
         md: 'auto',
       }}
       style={{
-        background: 'rgba(45, 27, 78, 0.95)',
-        borderBottom: '1px solid rgba(233, 30, 99, 0.3)',
+        background: 'var(--theme-surface-2)',
+        opacity: 0.95,
+        borderBottom: '1px solid var(--theme-primary-alpha-30)',
         zIndex: 100,
         backdropFilter: 'blur(10px)',
       }}

@@ -22,7 +22,7 @@ export function IronsButton({
         return {
           radixVariant: 'solid' as const,
           customStyle: {
-            background: 'linear-gradient(135deg, #e91e63 0%, #9c27b0 100%)',
+            background: 'var(--theme-primary-gradient)',
             border: 'none',
           },
         };
@@ -31,7 +31,7 @@ export function IronsButton({
           radixVariant: 'soft' as const,
           customStyle: {
             background: 'rgba(255, 255, 255, 0.1)',
-            border: '2px solid #ce93d8',
+            border: '2px solid var(--theme-tertiary)',
             backdropFilter: 'blur(10px)',
           },
         };
@@ -40,8 +40,8 @@ export function IronsButton({
           radixVariant: 'ghost' as const,
           customStyle: {
             background: 'transparent',
-            color: '#ce93d8',
-            border: '1px solid rgba(206, 147, 216, 0.3)',
+            color: 'var(--theme-tertiary)',
+            border: '1px solid var(--theme-card-border)',
           },
         };
       case 'danger':

@@ -1,0 +1,95 @@
+/* Theme Utility Classes */
+
+/* Background utilities */
+.theme-bg-surface-1 {
+  background-color: var(--theme-surface-1);
+}
+
+.theme-bg-surface-2 {
+  background-color: var(--theme-surface-2);
+}
+
+.theme-bg-surface-3 {
+  background-color: var(--theme-surface-3);
+}
+
+.theme-bg-primary {
+  background-color: var(--theme-primary);
+}
+
+.theme-bg-gradient-primary {
+  background: var(--theme-primary-gradient);
+}
+
+.theme-bg-gradient-secondary {
+  background: var(--theme-secondary-gradient);
+}
+
+.theme-bg-gradient-surface {
+  background: var(--theme-surface-gradient);
+}
+
+/* Text color utilities */
+.theme-text-primary {
+  color: var(--theme-text-primary);
+}
+
+.theme-text-secondary {
+  color: var(--theme-text-secondary);
+}
+
+.theme-color-primary {
+  color: var(--theme-primary);
+}
+
+.theme-color-secondary {
+  color: var(--theme-secondary);
+}
+
+.theme-color-tertiary {
+  color: var(--theme-tertiary);
+}
+
+/* Border utilities */
+.theme-border-primary {
+  border-color: var(--theme-primary);
+}
+
+.theme-border-primary-alpha {
+  border-color: var(--theme-primary-alpha-30);
+}
+
+/* Shadow utilities */
+.theme-shadow-primary {
+  box-shadow: 0 8px 25px var(--theme-primary-alpha-40);
+}
+
+.theme-shadow-primary-hover {
+  box-shadow: 0 12px 35px var(--theme-primary-alpha-50);
+}
+
+/* Text shadow utilities */
+.theme-text-shadow-primary {
+  text-shadow:
+    0 0 10px var(--theme-primary),
+    0 0 20px var(--theme-primary),
+    0 0 40px var(--theme-primary);
+}
+
+/* Glow effects */
+.theme-filter-glow {
+  filter: drop-shadow(0 0 20px var(--theme-primary));
+}
+
+/* Hover effects */
+.theme-hover-bg-primary:hover {
+  background-color: var(--theme-primary-alpha-20);
+}
+
+.theme-hover-border-primary:hover {
+  border-color: var(--theme-primary);
+}
+
+.theme-hover-shadow:hover {
+  box-shadow: 0 8px 25px var(--theme-primary-alpha-30);
+}
