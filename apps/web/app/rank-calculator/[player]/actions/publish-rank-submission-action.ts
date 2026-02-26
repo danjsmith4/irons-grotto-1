@@ -353,6 +353,57 @@ export const publishRankSubmissionAction = authActionClient
         }
       }
 
+      const reasons: string[] = [];
+
+      if (!hasTempleCollectionLog) {
+        reasons.push("User's Temple OSRS collection log is unavailable.");
+      }
+
+      if (isTempleCollectionLogOutdated) {
+        reasons.push("User's Temple OSRS collection log is out of date.");
+      }
+
+      if (!hasWikiSyncData) {
+        reasons.push("User's Wiki sync data is unavailable.");
+      }
+
+      if (!hasTemplePlayerStats) {
+        reasons.push("User's Temple OSRS player stats are unavailable.");
+      }
+
+      const diffReasons = Object.entries(submissionDiff)
+        .filter(([, value]) => !isEmpty(value))
+        .map(
+          ([key, value]) =>
+            `Submission diff observed in ${key}: ${JSON.stringify(value)}`,
+        );
+
+      reasons.push(...diffReasons);
+
+      const reasonMessage =
+        reasons.length > 0
+          ? `Moderation required for the following reasons:\n- ${reasons.join('\n- ')}`
+          : 'Moderation required for unspecified reasons.';
+
+      console.log('🔍 Moderation reason message:', reasonMessage);
+
+      if (!isAutoApprovalAvailable) {
+        try {
+          await sendDiscordMessage(
+            {
+              content: dedent`
+                <@${userId}>, your rank submission requires moderation.
+
+                ${reasonMessage}
+              `,
+            },
+            discordMessageId,
+          );
+        } catch (error) {
+          Sentry.captureException(error);
+        }
+      }
+
       console.log('✅ publishRankSubmissionAction completed successfully');
       return { success: true };
     },

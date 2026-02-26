@@ -33,10 +33,8 @@ import { calculateCombatDiaryTierBonusPoints } from '../../utils/calculators/cal
 import { processPlayerData, getPlayerByName } from '@/lib/db/player-operations';
 import { TempleOSRSCollectionLogItem } from '@/app/schemas/temple-api';
 
-export interface PlayerDetailsResponse extends Omit<
-  RankCalculatorSchema,
-  'rank' | 'points'
-> {
+export interface PlayerDetailsResponse
+  extends Omit<RankCalculatorSchema, 'rank' | 'points'> {
   currentRank?: Rank;
   hasTemplePlayerStats: boolean;
   hasTempleCollectionLog: boolean;

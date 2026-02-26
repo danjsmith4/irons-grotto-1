@@ -13,7 +13,8 @@ import { useCalculatorScaling } from '../use-calculator-scaling';
 import { useAchievementDiaryCapePoints } from './use-achievement-diary-cape-points';
 
 export interface SkillingPointCalculatorData
-  extends CommonPointCalculatorData, BonusPointCalculatorData {
+  extends CommonPointCalculatorData,
+    BonusPointCalculatorData {
   ehpPoints: number;
   totalLevelPoints: number;
   achievementDiariesPoints: Record<DiaryLocation, number>;
