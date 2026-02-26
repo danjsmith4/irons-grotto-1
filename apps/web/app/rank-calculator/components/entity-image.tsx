@@ -6,8 +6,7 @@ import Image, { ImageProps } from 'next/image';
 import { useState } from 'react';
 
 interface EntityImageProps
-  extends
-    Pick<AvatarProps, 'size' | 'variant' | 'fallback'>,
+  extends Pick<AvatarProps, 'size' | 'variant' | 'fallback'>,
     Pick<ImageProps, 'alt' | 'src' | 'height' | 'width'> {
   size?: Extract<AvatarProps['size'], string>;
 }

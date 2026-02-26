@@ -5,10 +5,8 @@ import {
 import { useEffect } from 'react';
 import { FieldPath, FieldValues, useController } from 'react-hook-form';
 
-interface CheckboxProps<T extends FieldValues = FieldValues> extends Omit<
-  BaseCheckboxProps,
-  'ref' | 'color'
-> {
+interface CheckboxProps<T extends FieldValues = FieldValues>
+  extends Omit<BaseCheckboxProps, 'ref' | 'color'> {
   name: FieldPath<T>;
 }
 

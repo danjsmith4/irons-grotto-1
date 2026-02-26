@@ -11,7 +11,8 @@ import { calculateClueScrollPoints } from '@/app/rank-calculator/utils/calculato
 import { ClueScrollTier } from '@/app/schemas/osrs';
 
 export interface CollectionLogAndCluesPointCalculatorData
-  extends CommonPointCalculatorData, BonusPointCalculatorData {
+  extends CommonPointCalculatorData,
+    BonusPointCalculatorData {
   collectionLogSlotPoints: number;
   clueScrollTierPoints: Record<ClueScrollTier, number>;
   collectionLogBonusPoints: number;

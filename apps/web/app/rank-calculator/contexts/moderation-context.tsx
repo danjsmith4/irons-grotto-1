@@ -1,13 +1,14 @@
 import { RankSubmissionMetadata } from '@/app/schemas/rank-calculator';
 import { createContext, PropsWithChildren, useContext, useMemo } from 'react';
 
-interface ModerationProps extends Pick<
-  RankSubmissionMetadata,
-  | 'hasTemplePlayerStats'
-  | 'hasWikiSyncData'
-  | 'hasTempleCollectionLog'
-  | 'isTempleCollectionLogOutdated'
-> {
+interface ModerationProps
+  extends Pick<
+    RankSubmissionMetadata,
+    | 'hasTemplePlayerStats'
+    | 'hasWikiSyncData'
+    | 'hasTempleCollectionLog'
+    | 'isTempleCollectionLogOutdated'
+  > {
   isModerator: boolean;
   actionedByUsername: string | null;
   playerName: string;
