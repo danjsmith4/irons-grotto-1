@@ -123,6 +123,16 @@ export function RecentClogsScroller({
     );
   }
 
+  // Refine filtering logic to group by playerName and timestamp
+  const filteredItems = items.filter((item, _, array) => {
+    const samePlayerAndTimestampCount = array.filter(
+      (i) =>
+        i.playerName === item.playerName &&
+        i.dateFirstLogged.getTime() === item.dateFirstLogged.getTime()
+    ).length;
+    return samePlayerAndTimestampCount <= 5;
+  });
+
   return (
     <Tooltip content="Your latest clogs">
       <div style={{ position: 'relative' }}>
@@ -141,7 +151,7 @@ export function RecentClogsScroller({
             scrollbarColor: 'rgba(206, 147, 216, 0.5) transparent',
           }}
         >
-          {items.map((item, index) => (
+          {filteredItems.map((item, index) => (
             <div
               key={`${item.playerName}-${item.itemId}-${index}`}
               style={{
