@@ -270,6 +270,7 @@ export const TempleOSRSCollectionLogCategory = z.enum([
   'miscellaneous',
   'doom_of_mokhaiotl',
   'maggot_king',
+  'the_mad_angel',
 ]);
 
 export type TempleOSRSCollectionLogCategory = z.infer<
