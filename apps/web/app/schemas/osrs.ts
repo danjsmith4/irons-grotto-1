@@ -1795,6 +1795,8 @@ export const CollectionLogItemName = z.enum([
   'Elder venator fang',
   'Crimson kisten',
   'Maggot marquess',
+  'Hallowfell',
+  'Aggy',
 ]);
 
 export type CollectionLogItemName = z.infer<typeof CollectionLogItemName>;
