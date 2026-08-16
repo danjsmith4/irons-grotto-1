@@ -1625,7 +1625,9 @@ export const earlyGamePlayerFixture = {
     579, 580, 583, 584, 585, 586, 587, 588, 589, 590, 591, 592, 593, 594, 595,
     596, 597, 598,
   ],
-  league_tasks: [],
+  // The live WikiSync API returns null when Leagues is not active — keep one
+  // fixture null to lock in regression coverage for the nullable case.
+  league_tasks: null,
 } satisfies WikiSyncResponse;
 
 export const midGamePlayerFixture = {
