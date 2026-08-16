@@ -23,6 +23,7 @@ import { kalphiteQueen } from './item-categories/kalphite-queen';
 import { kingBlackDragon } from './item-categories/king-black-dragon';
 import { kraken } from './item-categories/kraken';
 import { krearra } from './item-categories/krearra';
+import { maggotKing } from './item-categories/maggot-king';
 import { krilTsutsaroth } from './item-categories/kril-tsutsaroth';
 import { majorSlayerItems } from './item-categories/major-slayer-items';
 import { miscellaneous } from './item-categories/miscellaneous';
@@ -82,6 +83,7 @@ export const itemList: ItemCategoryMap = {
   Kraken: kraken,
   "Kree'arra": krearra,
   "K'ril Tsutsaroth": krilTsutsaroth,
+  'Maggot King': maggotKing,
   'Major Slayer Items': majorSlayerItems,
   'Miscellaneous Items': miscellaneous,
   'Miscellaneous Wilderness Items': miscellaneousWildernessItems,

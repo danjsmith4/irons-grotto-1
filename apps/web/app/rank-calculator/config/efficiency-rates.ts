@@ -107,6 +107,7 @@ export const ehbRates = {
   'Zombie Pirate Key': 21, // https://oldschool.runescape.wiki/w/Money_making_guide/Killing_zombie_pirates
   'Mithril dragon': 72, // Assuming an average of a 5 minute task consisting of 6 kills
   'Doom of Mokhaiotl': 18,
+  'Maggot King': 33,
 } satisfies Record<string, number>;
 
 /**
