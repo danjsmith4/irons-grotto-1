@@ -108,6 +108,7 @@ export const ehbRates = {
   'Mithril dragon': 72, // Assuming an average of a 5 minute task consisting of 6 kills
   'Doom of Mokhaiotl': 18,
   'Maggot King': 33,
+  'Mad Angel': 60,
 } satisfies Record<string, number>;
 
 /**
