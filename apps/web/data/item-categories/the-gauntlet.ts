@@ -8,14 +8,14 @@ export const theGauntlet: ItemCategory = {
     singleItem({
       name: 'Crystal weapon seed',
       collectionLogCategory: 'the_gauntlet',
-      targetDropSources: ['Reward Chest (The Gauntlet)#(Corrupted)'],
+      targetDropSources: ['Reward Chest (The Gauntlet)#Corrupted'],
     }),
     compoundItem({
       name: 'Crystal helm',
       requiredItems: [
         {
           clogName: 'Crystal armour seed',
-          targetDropSources: ['Reward Chest (The Gauntlet)#(Corrupted)'],
+          targetDropSources: ['Reward Chest (The Gauntlet)#Corrupted'],
         },
       ],
       collectionLogCategories: ['the_gauntlet'],
@@ -26,7 +26,7 @@ export const theGauntlet: ItemCategory = {
         {
           clogName: 'Crystal armour seed',
           amount: 3,
-          targetDropSources: ['Reward Chest (The Gauntlet)#(Corrupted)'],
+          targetDropSources: ['Reward Chest (The Gauntlet)#Corrupted'],
         },
       ],
       collectionLogCategories: ['the_gauntlet'],
@@ -37,7 +37,7 @@ export const theGauntlet: ItemCategory = {
         {
           clogName: 'Crystal armour seed',
           amount: 2,
-          targetDropSources: ['Reward Chest (The Gauntlet)#(Corrupted)'],
+          targetDropSources: ['Reward Chest (The Gauntlet)#Corrupted'],
         },
       ],
 
@@ -48,20 +48,20 @@ export const theGauntlet: ItemCategory = {
       clogName: 'Enhanced crystal weapon seed',
       requiredAmount: 1,
       collectionLogCategory: 'the_gauntlet',
-      targetDropSources: ['Reward Chest (The Gauntlet)#(Corrupted)'],
+      targetDropSources: ['Reward Chest (The Gauntlet)#Corrupted'],
     }),
     singleItem({
       name: 'Enhanced crystal weapon seed (2)',
       clogName: 'Enhanced crystal weapon seed',
       requiredAmount: 2,
       collectionLogCategory: 'the_gauntlet',
-      targetDropSources: ['Reward Chest (The Gauntlet)#(Corrupted)'],
+      targetDropSources: ['Reward Chest (The Gauntlet)#Corrupted'],
       ignoreAmountMultiplier: true,
     }),
     singleItem({
       name: 'Youngllef',
       collectionLogCategory: 'the_gauntlet',
-      targetDropSources: ['Reward Chest (The Gauntlet)#(Corrupted)'],
+      targetDropSources: ['Reward Chest (The Gauntlet)#Corrupted'],
     }),
   ],
 };
