@@ -4,8 +4,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Button, Flex } from '@radix-ui/themes';
 
+import { after } from 'next/server';
 import { auth, signIn } from '@/auth';
 import { redirect } from 'next/navigation';
+import { maybeRunInactivitySync } from '@/lib/db/inactivity-sync';
 import { fetchRecentRankUps } from './data-sources/fetch-recent-rank-ups';
 import { fetchRecentClogUpdates } from './data-sources/fetch-recent-clog-updates';
 import { fetchLeaderboard } from './data-sources/fetch-leaderboard';
@@ -26,6 +28,11 @@ const inter = Inter({
 });
 
 export default async function HomePage() {
+  // Kick off the daily inactivity reconcile (no server cron exists). Runs after
+  // the response is sent and self-throttles to once per 24h, so it never blocks
+  // or breaks the page.
+  after(maybeRunInactivitySync);
+
   // Check auth on page load and redirect if authed
   const session = await auth();
   const dashboardUrl = '/dashboard';
