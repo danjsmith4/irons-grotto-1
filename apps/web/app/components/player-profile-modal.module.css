@@ -1,0 +1,316 @@
+.content {
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 0;
+}
+
+.loading,
+.error {
+  padding: 3rem 1rem;
+  text-align: center;
+  color: rgb(var(--ig-text-muted));
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 13px;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.4rem 1.5rem 1.25rem;
+  border-bottom: 1px solid rgb(var(--ig-text-muted) / 0.1);
+}
+.rankBadge {
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: rgb(var(--ig-surface-2) / 0.9);
+  border: 1px solid rgb(var(--ig-text-muted) / 0.12);
+}
+.headMain {
+  flex: 1;
+  min-width: 0;
+}
+.name {
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: rgb(var(--ig-text));
+  margin: 0;
+  line-height: 1.1;
+}
+.rankLabel {
+  font-size: 13px;
+  color: rgb(var(--ig-text-muted));
+  margin-top: 0.15rem;
+}
+.pointsBox {
+  text-align: right;
+  flex-shrink: 0;
+}
+.pointsValue {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: rgb(var(--ig-secondary));
+  line-height: 1;
+}
+.pointsLabel {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(var(--ig-text-muted));
+  margin-top: 0.25rem;
+}
+
+/* Progress bar */
+.progressWrap {
+  padding: 1rem 1.5rem 0;
+}
+.progressMeta {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  color: rgb(var(--ig-text-muted));
+  margin-bottom: 0.4rem;
+}
+.progressTrack {
+  height: 8px;
+  border-radius: 999px;
+  background: rgb(var(--ig-text-muted) / 0.12);
+  overflow: hidden;
+}
+.progressFill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    rgb(var(--ig-secondary)),
+    rgb(var(--ig-teal))
+  );
+}
+
+/* Sections */
+.section {
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid rgb(var(--ig-text-muted) / 0.08);
+}
+.sectionTitle {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(var(--ig-text-muted));
+  margin: 0 0 0.85rem;
+}
+
+/* Hall of Fame */
+.hofRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+}
+.hof {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.9rem 0.6rem;
+  border-radius: 10px;
+  background: rgb(var(--ig-surface-2) / 0.6);
+  border: 1px solid rgb(var(--ig-secondary) / 0.18);
+  text-align: center;
+}
+.hofTile {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hofName {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: rgb(var(--ig-text-light));
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.hofOwners {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: rgb(var(--ig-secondary));
+}
+
+/* Stat grid */
+.statGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 0.75rem;
+}
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.statLabel {
+  font-size: 11px;
+  color: rgb(var(--ig-text-muted));
+}
+.statValue {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgb(var(--ig-text));
+}
+
+/* Clue tiles */
+.clueRow {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.5rem;
+}
+.clue {
+  text-align: center;
+  padding: 0.6rem 0.3rem;
+  border-radius: 8px;
+  background: rgb(var(--ig-surface-2) / 0.6);
+  border: 1px solid rgb(var(--ig-text-muted) / 0.08);
+}
+.clueTier {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgb(var(--ig-text-muted));
+}
+.clueCount {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: rgb(var(--ig-text));
+  margin-top: 0.2rem;
+}
+
+/* Notable badges */
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+.badge {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.7rem 0.4rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid rgb(var(--ig-text-muted) / 0.12);
+  background: rgb(var(--ig-surface-2) / 0.5);
+  font-size: 12px;
+  color: rgb(var(--ig-text-muted));
+}
+.badgeOwned {
+  border-color: rgb(var(--ig-secondary) / 0.4);
+  background: rgb(var(--ig-secondary) / 0.1);
+  color: rgb(var(--ig-text));
+}
+.badge img {
+  opacity: 0.35;
+}
+.badgeOwned img {
+  opacity: 1;
+}
+
+/* Diary matrix */
+.diaryGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.diaryRow {
+  display: grid;
+  grid-template-columns: 120px repeat(4, 1fr);
+  gap: 0.4rem;
+  align-items: center;
+}
+.diaryLoc {
+  font-size: 12px;
+  color: rgb(var(--ig-text-light));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.diaryCell {
+  height: 26px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: rgb(var(--ig-text-muted) / 0.06);
+  color: rgb(var(--ig-text-muted) / 0.6);
+  border: 1px solid transparent;
+}
+.diaryDone {
+  background: rgb(var(--ig-secondary) / 0.14);
+  color: rgb(var(--ig-secondary));
+  border-color: rgb(var(--ig-secondary) / 0.3);
+}
+
+/* Rank-up timeline */
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+.timelineRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 13px;
+  color: rgb(var(--ig-text-muted));
+}
+.timelineRank {
+  color: rgb(var(--ig-text-light));
+}
+.timelineArrow {
+  color: rgb(var(--ig-secondary));
+}
+.timelineTime {
+  margin-left: auto;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  color: rgb(var(--ig-text-muted));
+}
+
+/* Footer */
+.footer {
+  padding: 1rem 1.5rem 1.25rem;
+  border-top: 1px solid rgb(var(--ig-text-muted) / 0.08);
+}
+.templeLink {
+  font-size: 12px;
+  color: rgb(var(--ig-secondary));
+  text-decoration: none;
+}
+.templeLink:hover {
+  text-decoration: underline;
+}

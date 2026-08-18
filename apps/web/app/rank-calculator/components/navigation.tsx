@@ -42,8 +42,8 @@ export function Navigation({
         md: 'auto',
       }}
       style={{
-        background: 'rgba(45, 27, 78, 0.95)',
-        borderBottom: '1px solid rgba(233, 30, 99, 0.3)',
+        background: 'rgb(var(--ig-surface-2) / 0.95)',
+        borderBottom: '1px solid rgb(var(--ig-secondary) / 0.3)',
         zIndex: 100,
         backdropFilter: 'blur(10px)',
       }}

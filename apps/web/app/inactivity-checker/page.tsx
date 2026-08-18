@@ -8,6 +8,7 @@ import { GroupMemberInfoResponse } from '@/app/schemas/temple-api';
 import * as Sentry from '@sentry/nextjs';
 import { ClanMember, ClanMemberList } from '../schemas/inactivity-checker';
 import { getRankImageUrl } from '../rank-calculator/utils/get-rank-image-url';
+import { PlayerNameButton } from '../components/player-name-button';
 
 async function getGroupMemberInfo(): Promise<GroupMemberInfoResponse> {
   const response = await fetch(
@@ -95,14 +96,7 @@ export default async function InactivityCheckerPage() {
                 return (
                   <tr key={rsn}>
                     <td className="border-b border-slate-700 p-4 text-slate-500">
-                      <a
-                        className="underline"
-                        href={`https://templeosrs.com/player/overview.php?player=${rsn}&duration=alltime`}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {rsn}
-                      </a>
+                      <PlayerNameButton name={rsn} className="underline" />
                     </td>
                     <td className="border-b border-slate-700 p-4 text-slate-500">
                       {rank && (

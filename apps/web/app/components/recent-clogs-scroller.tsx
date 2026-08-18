@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { ChevronRightIcon } from '@radix-ui/react-icons';
 import { Tooltip } from '@radix-ui/themes';
 import { ItemImageWithFallback } from './item-image-with-fallback';
+import { PlayerNameButton } from './player-name-button';
 import { formatTimeAgo } from '@/app/utils/format-time-ago';
 
 export interface RecentClogItem {
@@ -66,9 +67,9 @@ export function RecentClogsScroller({
             alignItems: 'center',
             justifyContent: 'center',
             padding: '3rem',
-            background: 'rgba(206, 147, 216, 0.1)',
+            background: 'rgb(var(--ig-text-muted) / 0.1)',
             borderRadius: '12px',
-            border: '1px solid rgba(206, 147, 216, 0.2)',
+            border: '1px solid rgb(var(--ig-text-muted) / 0.2)',
           }}
         >
           <div
@@ -83,15 +84,15 @@ export function RecentClogsScroller({
               style={{
                 width: '40px',
                 height: '40px',
-                border: '3px solid rgba(206, 147, 216, 0.3)',
-                borderTop: '3px solid #ce93d8',
+                border: '3px solid rgb(var(--ig-text-muted) / 0.3)',
+                borderTop: '3px solid rgb(var(--ig-text-light))',
                 borderRadius: '50%',
                 animation: 'spin 1s linear infinite',
               }}
             />
             <div
               style={{
-                color: 'rgba(255, 255, 255, 0.7)',
+                color: 'rgb(var(--ig-text-muted))',
                 fontSize: '0.9rem',
                 fontWeight: 500,
               }}
@@ -110,10 +111,10 @@ export function RecentClogsScroller({
         <div
           style={{
             padding: '1rem',
-            background: 'rgba(206, 147, 216, 0.1)',
+            background: 'rgb(var(--ig-text-muted) / 0.1)',
             borderRadius: '12px',
-            border: '1px solid rgba(206, 147, 216, 0.2)',
-            color: 'rgba(255, 255, 255, 0.6)',
+            border: '1px solid rgb(var(--ig-text-muted) / 0.2)',
+            color: 'rgb(var(--ig-text-muted))',
             textAlign: 'center',
           }}
         >
@@ -144,11 +145,11 @@ export function RecentClogsScroller({
             overflowX: 'auto',
             overflowY: 'hidden',
             padding: '1rem',
-            background: 'rgba(206, 147, 216, 0.1)',
+            background: 'rgb(var(--ig-surface) / 0.6)',
             borderRadius: '12px',
-            border: '1px solid rgba(206, 147, 216, 0.2)',
+            border: '1px solid rgb(var(--ig-text-muted) / 0.1)',
             scrollbarWidth: 'thin',
-            scrollbarColor: 'rgba(206, 147, 216, 0.5) transparent',
+            scrollbarColor: 'rgb(var(--ig-text-muted) / 0.3) transparent',
           }}
         >
           {filteredItems.map((item, index) => (
@@ -161,27 +162,23 @@ export function RecentClogsScroller({
                 gap: '0.5rem',
                 minWidth: '120px',
                 padding: '1rem',
-                background: 'rgba(26, 13, 46, 0.8)',
-                borderRadius: '8px',
-                border: '1px solid rgba(206, 147, 216, 0.3)',
-                transition: 'all 0.3s ease',
-                animation: `fadeIn 0.5s ease ${index * 0.1}s both`,
+                background: 'rgb(var(--ig-surface-2) / 0.9)',
+                borderRadius: '10px',
+                border: '1px solid rgb(var(--ig-text-muted) / 0.12)',
+                transition: 'border-color 0.15s ease',
               }}
             >
               <ItemImageWithFallback
                 itemId={item.itemId}
                 itemName={item.itemName}
                 size={48}
-                style={{
-                  filter: 'drop-shadow(0 2px 8px rgba(233, 30, 99, 0.3))',
-                }}
               />
               <div
                 style={{
                   fontSize: '0.75rem',
                   fontWeight: 500,
                   textAlign: 'center',
-                  color: '#ce93d8',
+                  color: 'rgb(var(--ig-text-light))',
                   lineHeight: '1.2',
                   maxWidth: '100px',
                   overflow: 'hidden',
@@ -193,20 +190,20 @@ export function RecentClogsScroller({
               >
                 {item.itemName}
               </div>
-              <div
+              <PlayerNameButton
+                name={item.playerName}
                 style={{
                   fontSize: '0.7rem',
-                  color: '#e91e63',
+                  color: 'rgb(var(--ig-secondary))',
                   fontWeight: 600,
                   textAlign: 'center',
                 }}
-              >
-                {item.playerName}
-              </div>
+              />
               <div
                 style={{
                   fontSize: '0.65rem',
-                  color: 'rgba(255, 255, 255, 0.6)',
+                  fontFamily: 'var(--font-mono), ui-monospace, monospace',
+                  color: 'rgb(var(--ig-text-muted))',
                   textAlign: 'center',
                 }}
               >
@@ -228,9 +225,9 @@ export function RecentClogsScroller({
                   gap: '0.5rem',
                   minWidth: '120px',
                   padding: '1rem',
-                  background: 'rgba(26, 13, 46, 0.6)',
+                  background: 'rgb(var(--ig-surface-2) / 0.6)',
                   borderRadius: '8px',
-                  border: '1px solid rgba(206, 147, 216, 0.2)',
+                  border: '1px solid rgb(var(--ig-text-muted) / 0.2)',
                   opacity: 0.7,
                 }}
               >
@@ -238,7 +235,7 @@ export function RecentClogsScroller({
                   style={{
                     width: '48px',
                     height: '48px',
-                    background: 'rgba(206, 147, 216, 0.2)',
+                    background: 'rgb(var(--ig-text-muted) / 0.2)',
                     borderRadius: '4px',
                     animation: 'pulse 2s infinite',
                   }}
@@ -247,7 +244,7 @@ export function RecentClogsScroller({
                   style={{
                     width: '80px',
                     height: '12px',
-                    background: 'rgba(206, 147, 216, 0.2)',
+                    background: 'rgb(var(--ig-text-muted) / 0.2)',
                     borderRadius: '2px',
                     animation: 'pulse 2s infinite 0.2s both',
                   }}
@@ -256,7 +253,7 @@ export function RecentClogsScroller({
                   style={{
                     width: '60px',
                     height: '10px',
-                    background: 'rgba(233, 30, 99, 0.2)',
+                    background: 'rgb(var(--ig-secondary) / 0.2)',
                     borderRadius: '2px',
                     animation: 'pulse 2s infinite 0.4s both',
                   }}
@@ -265,7 +262,7 @@ export function RecentClogsScroller({
                   style={{
                     width: '50px',
                     height: '8px',
-                    background: 'rgba(255, 255, 255, 0.1)',
+                    background: 'rgb(var(--ig-text-muted) / 0.1)',
                     borderRadius: '2px',
                     animation: 'pulse 2s infinite 0.6s both',
                   }}
@@ -278,36 +275,26 @@ export function RecentClogsScroller({
           <div
             style={{
               position: 'absolute',
-              right: '1rem',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              background: 'rgba(233, 30, 99, 0.9)',
-              borderRadius: '50%',
-              width: '32px',
-              height: '32px',
+              right: 0,
+              top: 0,
+              bottom: 0,
+              width: '48px',
+              borderRadius: '0 12px 12px 0',
+              background:
+                'linear-gradient(90deg, transparent, rgb(var(--ig-bg) / 0.6))',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              animation: 'pulse 2s infinite',
+              justifyContent: 'flex-end',
+              paddingRight: '0.5rem',
+              color: 'rgb(var(--ig-text-muted))',
               pointerEvents: 'none',
             }}
           >
-            <ChevronRightIcon style={{ color: 'white' }} />
+            <ChevronRightIcon />
           </div>
         )}
 
         <style jsx>{`
-          @keyframes fadeIn {
-            from {
-              opacity: 0;
-              transform: translateY(20px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-
           @keyframes spin {
             0% {
               transform: rotate(0deg);
@@ -336,12 +323,12 @@ export function RecentClogsScroller({
           }
 
           div::-webkit-scrollbar-thumb {
-            background: rgba(206, 147, 216, 0.5);
+            background: rgb(var(--ig-text-muted) / 0.5);
             border-radius: 3px;
           }
 
           div::-webkit-scrollbar-thumb:hover {
-            background: rgba(206, 147, 216, 0.7);
+            background: rgb(var(--ig-text-muted) / 0.7);
           }
         `}</style>
       </div>

@@ -7,24 +7,50 @@
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
 
-  /* Custom Irons Grotto Color Palette */
-  --ig-purple-deep: #1a0d2e;
-  --ig-purple-mid: #2d1b4e;
-  --ig-pink: #e91e63;
-  --ig-purple-accent: #9c27b0;
-  --ig-purple-light: #ce93d8;
-  --ig-text-primary: #ffffff;
-  --ig-text-secondary: #b39ddb;
+  /* ============================================================
+     IRONS GROTTO — brand palette (SINGLE SOURCE OF TRUTH)
+     Scanned from the clan logo (public/L1.png): an indigo-navy
+     structure with a cool green -> teal -> blue accent family.
+
+     Re-theme the ENTIRE app by editing only the values below.
+     Each token is stored as "R G B" channels so it composes with
+     any opacity:  color: rgb(var(--ig-text));
+                   border: 1px solid rgb(var(--ig-secondary) / 0.4);
+     ============================================================ */
+
+  /* Structure — indigo / navy neutrals */
+  --ig-bg: 15 10 30; /* #0f0a1e  deepest page background */
+  --ig-surface: 26 22 54; /* #1a1636  base surface */
+  --ig-surface-2: 42 30 80; /* #2a1e50  raised surface / cards */
+  --ig-primary: 74 42 114; /* #4a2a72  indigo — structural brand */
+  --ig-primary-2: 112 96 176; /* #7060b0  lifted indigo / mid purple */
+
+  /* Accent family — cool, the only vivid colours (used with restraint) */
+  --ig-secondary: 53 210 154; /* #35d29a  green — primary interactive accent */
+  --ig-teal: 56 204 184; /* #38ccb8  teal — accent support */
+  --ig-tertiary: 47 143 224; /* #2f8fe0  blue — links / info */
+  --ig-lime: 166 230 180; /* #a6e6b4  lime — highlight */
+
+  /* Text */
+  --ig-text: 242 244 255; /* #f2f4ff  primary text */
+  --ig-text-muted: 167 166 214; /* #a7a6d6  periwinkle — muted text */
+  --ig-text-light: 196 210 240; /* #c4d2f0  light periwinkle — headings */
+  --ig-on-accent: 15 10 30; /* #0f0a1e  text / icons on green + teal fills */
+
+  /* Feedback (harmonious additions, not present in the logo) */
+  --ig-danger: 229 72 77; /* #e5484d */
+  --ig-warning: 245 179 66; /* #f5b342 */
+  --ig-success: 53 210 154; /* == secondary */
 }
 .rt-ProgressRoot {
-  background-color: rgba(45, 27, 78, 0.6) !important;
+  background-color: rgb(var(--ig-surface-2) / 0.6) !important;
 }
 
 .rt-ProgressIndicator {
   background: linear-gradient(
     90deg,
-    var(--ig-pink),
-    var(--ig-purple-accent)
+    rgb(var(--ig-secondary)),
+    rgb(var(--ig-teal))
   ) !important;
 }
 @media (prefers-color-scheme: dark) {
@@ -35,88 +61,130 @@
   }
 }
 
-/* Override Radix UI theme colors to match Irons Grotto palette */
+/* ------------------------------------------------------------------
+   Radix Themes scales, DERIVED from the brand tokens above.
+   Do not hand-edit individual steps — change the base tokens instead.
+   Accent scale = the green interactive family; gray scale = the navy
+   structure. In-between steps are generated with color-mix().
+   ------------------------------------------------------------------ */
 .dark-theme,
 [data-theme='dark'] {
-  /* Background colors */
-  --color-background: var(--ig-purple-deep);
-  --color-surface: var(--ig-purple-mid);
-  --color-panel: var(--ig-purple-mid);
+  /* Type system — Radix reads these (see layout.tsx next/font variables) */
+  --default-font-family: var(--font-body);
+  --heading-font-family: var(--font-display);
+  --code-font-family: var(--font-mono);
+  --em-font-family: var(--font-body);
+  --strong-font-family: var(--font-body);
 
-  /* Accent colors - using pink/purple gradient concept */
-  --accent-1: #2a0d1a;
-  --accent-2: #3d1427;
-  --accent-3: #4f1c34;
-  --accent-4: #5f2241;
-  --accent-5: #6e294e;
-  --accent-6: #7d305b;
-  --accent-7: #8d3968;
-  --accent-8: #a04575;
-  --accent-9: var(--ig-pink);
-  --accent-10: #f02d72;
-  --accent-11: #f54881;
-  --accent-12: #fadde6;
+  /* Panels / surfaces */
+  --color-background: rgb(var(--ig-bg));
+  --color-surface: rgb(var(--ig-surface-2) / 0.8);
+  --color-panel-solid: rgb(var(--ig-surface-2));
+  --color-panel: rgb(var(--ig-surface-2));
 
-  /* Accent alpha colors */
-  --accent-a1: rgba(233, 30, 99, 0.05);
-  --accent-a2: rgba(233, 30, 99, 0.1);
-  --accent-a3: rgba(233, 30, 99, 0.15);
-  --accent-a4: rgba(233, 30, 99, 0.2);
-  --accent-a5: rgba(233, 30, 99, 0.25);
-  --accent-a6: rgba(233, 30, 99, 0.3);
-  --accent-a7: rgba(233, 30, 99, 0.4);
-  --accent-a8: rgba(233, 30, 99, 0.5);
-  --accent-a9: rgba(233, 30, 99, 0.7);
-  --accent-a10: rgba(233, 30, 99, 0.8);
-  --accent-a11: rgba(233, 30, 99, 0.9);
-  --accent-a12: rgba(233, 30, 99, 0.95);
+  /* Accent scale — green (bg -> secondary -> light) */
+  --accent-1: color-mix(in srgb, rgb(var(--ig-secondary)) 4%, rgb(var(--ig-bg)));
+  --accent-2: color-mix(in srgb, rgb(var(--ig-secondary)) 9%, rgb(var(--ig-bg)));
+  --accent-3: color-mix(in srgb, rgb(var(--ig-secondary)) 16%, rgb(var(--ig-bg)));
+  --accent-4: color-mix(in srgb, rgb(var(--ig-secondary)) 24%, rgb(var(--ig-bg)));
+  --accent-5: color-mix(in srgb, rgb(var(--ig-secondary)) 34%, rgb(var(--ig-bg)));
+  --accent-6: color-mix(in srgb, rgb(var(--ig-secondary)) 46%, rgb(var(--ig-bg)));
+  --accent-7: color-mix(in srgb, rgb(var(--ig-secondary)) 60%, rgb(var(--ig-bg)));
+  --accent-8: color-mix(in srgb, rgb(var(--ig-secondary)) 76%, rgb(var(--ig-bg)));
+  --accent-9: rgb(var(--ig-secondary));
+  --accent-10: color-mix(in srgb, rgb(var(--ig-secondary)) 86%, white);
+  --accent-11: color-mix(in srgb, rgb(var(--ig-secondary)) 60%, rgb(var(--ig-text-light)));
+  --accent-12: color-mix(in srgb, rgb(var(--ig-text)) 82%, rgb(var(--ig-secondary)));
+  --accent-contrast: rgb(var(--ig-on-accent));
+  --accent-surface: color-mix(in srgb, rgb(var(--ig-secondary)) 12%, rgb(var(--ig-surface)));
+  --accent-indicator: rgb(var(--ig-secondary));
+  --accent-track: rgb(var(--ig-secondary));
 
-  /* Override gray scale with purple variants */
-  --gray-1: #2a0d1a;
-  --gray-2: #3d1427;
-  --gray-3: #4f1c34;
-  --gray-4: var(--ig-purple-mid);
-  --gray-5: #6e294e;
-  --gray-6: #7d305b;
-  --gray-7: #8d3968;
-  --gray-8: #a04575;
-  --gray-9: #b854a0;
-  --gray-10: #ce93d8;
-  --gray-11: var(--ig-text-secondary);
-  --gray-12: var(--ig-text-primary);
+  /* Accent alpha — green over the dark background */
+  --accent-a1: rgb(var(--ig-secondary) / 0.05);
+  --accent-a2: rgb(var(--ig-secondary) / 0.08);
+  --accent-a3: rgb(var(--ig-secondary) / 0.12);
+  --accent-a4: rgb(var(--ig-secondary) / 0.18);
+  --accent-a5: rgb(var(--ig-secondary) / 0.24);
+  --accent-a6: rgb(var(--ig-secondary) / 0.32);
+  --accent-a7: rgb(var(--ig-secondary) / 0.42);
+  --accent-a8: rgb(var(--ig-secondary) / 0.55);
+  --accent-a9: rgb(var(--ig-secondary) / 0.7);
+  --accent-a10: rgb(var(--ig-secondary) / 0.8);
+  --accent-a11: rgb(var(--ig-secondary) / 0.9);
+  --accent-a12: rgb(var(--ig-secondary) / 0.95);
 
-  /* Gray alpha variants */
-  --gray-a1: rgba(206, 147, 216, 0.05);
-  --gray-a2: rgba(206, 147, 216, 0.1);
-  --gray-a3: rgba(206, 147, 216, 0.15);
-  --gray-a4: rgba(206, 147, 216, 0.2);
-  --gray-a5: rgba(206, 147, 216, 0.3);
-  --gray-a6: rgba(206, 147, 216, 0.4);
-  --gray-a7: rgba(206, 147, 216, 0.5);
-  --gray-a8: rgba(206, 147, 216, 0.6);
-  --gray-a9: rgba(206, 147, 216, 0.7);
-  --gray-a10: rgba(206, 147, 216, 0.8);
-  --gray-a11: rgba(206, 147, 216, 0.9);
-  --gray-a12: rgba(206, 147, 216, 0.95);
+  /* Gray scale — navy / indigo structure (bg -> primary -> text) */
+  --gray-1: rgb(var(--ig-bg));
+  --gray-2: color-mix(in srgb, rgb(var(--ig-surface)) 55%, rgb(var(--ig-bg)));
+  --gray-3: rgb(var(--ig-surface));
+  --gray-4: color-mix(in srgb, rgb(var(--ig-surface-2)) 60%, rgb(var(--ig-surface)));
+  --gray-5: rgb(var(--ig-surface-2));
+  --gray-6: color-mix(in srgb, rgb(var(--ig-primary)) 55%, rgb(var(--ig-surface-2)));
+  --gray-7: rgb(var(--ig-primary));
+  --gray-8: color-mix(in srgb, rgb(var(--ig-primary-2)) 60%, rgb(var(--ig-primary)));
+  --gray-9: rgb(var(--ig-primary-2));
+  --gray-10: color-mix(in srgb, rgb(var(--ig-primary-2)) 55%, rgb(var(--ig-text-muted)));
+  --gray-11: rgb(var(--ig-text-muted));
+  --gray-12: rgb(var(--ig-text));
+
+  /* Gray alpha — periwinkle over the dark background */
+  --gray-a1: rgb(var(--ig-text-muted) / 0.05);
+  --gray-a2: rgb(var(--ig-text-muted) / 0.1);
+  --gray-a3: rgb(var(--ig-text-muted) / 0.15);
+  --gray-a4: rgb(var(--ig-text-muted) / 0.2);
+  --gray-a5: rgb(var(--ig-text-muted) / 0.3);
+  --gray-a6: rgb(var(--ig-text-muted) / 0.4);
+  --gray-a7: rgb(var(--ig-text-muted) / 0.5);
+  --gray-a8: rgb(var(--ig-text-muted) / 0.6);
+  --gray-a9: rgb(var(--ig-text-muted) / 0.7);
+  --gray-a10: rgb(var(--ig-text-muted) / 0.8);
+  --gray-a11: rgb(var(--ig-text-muted) / 0.9);
+  --gray-a12: rgb(var(--ig-text-muted) / 0.95);
 }
 
 /* Apply background gradient similar to landing page */
 #theme-root {
   background: radial-gradient(
     ellipse at center,
-    var(--ig-purple-mid) 0%,
-    var(--ig-purple-deep) 70%
+    rgb(var(--ig-surface)) 0%,
+    rgb(var(--ig-bg)) 70%
   ) !important;
   min-height: 100vh;
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
+  color: rgb(var(--ig-text));
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
   background: radial-gradient(
     ellipse at center,
-    var(--ig-purple-mid) 0%,
-    var(--ig-purple-deep) 70%
+    rgb(var(--ig-surface)) 0%,
+    rgb(var(--ig-bg)) 70%
   );
+}
+
+/* ------------------------------------------------------------------
+   Type + structure utilities (data-desk language)
+   ------------------------------------------------------------------ */
+.ig-display {
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Small uppercase micro-label used for eyebrows and column headers */
+.ig-eyebrow {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(var(--ig-text-muted));
+}
+
+/* Tabular monospace figures for stats / data cells */
+.ig-tabular {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
 }
 
 @layer utilities {
@@ -326,20 +394,24 @@ img.rt-AvatarImage {
   position: relative !important;
   background: linear-gradient(
     135deg,
-    var(--ig-pink) 0%,
-    var(--ig-purple-accent) 100%
+    rgb(var(--ig-secondary)) 0%,
+    rgb(var(--ig-teal)) 100%
   ) !important;
-  color: var(--ig-text-primary) !important;
+  color: rgb(var(--ig-on-accent)) !important;
   border: none !important;
   transition: none !important;
   transform: none !important;
 }
 
 .save-dropdown-button:hover {
-  background: linear-gradient(135deg, #f02d72 0%, #b030cc 100%) !important;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, rgb(var(--ig-secondary)) 86%, white) 0%,
+    color-mix(in srgb, rgb(var(--ig-teal)) 86%, white) 100%
+  ) !important;
   transform: none !important;
   transition: none !important;
-  box-shadow: 0 4px 15px rgba(233, 30, 99, 0.4) !important;
+  box-shadow: 0 4px 15px rgb(var(--ig-secondary) / 0.4) !important;
 }
 
 .save-dropdown-button:before {
@@ -355,8 +427,8 @@ img.rt-AvatarImage {
 }
 
 .save-dropdown-button[disabled] {
-  background: rgba(45, 27, 78, 0.6) !important;
-  color: rgba(255, 255, 255, 0.5) !important;
+  background: rgb(var(--ig-surface-2) / 0.6) !important;
+  color: rgb(var(--ig-text) / 0.5) !important;
   transform: none !important;
   box-shadow: none !important;
 }
@@ -365,94 +437,85 @@ img.rt-AvatarImage {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Additional Irons Grotto theme overrides */
-.rt-Card {
-  background-color: rgba(45, 27, 78, 0.6) !important;
-  border: 1px solid rgba(233, 30, 99, 0.2) !important;
-  backdrop-filter: blur(10px);
-}
-
-.rt-Card:hover {
-  border-color: rgba(233, 30, 99, 0.4) !important;
-  box-shadow: 0 4px 20px rgba(233, 30, 99, 0.3) !important;
-}
-
-/* BaseCard styling */
+/* Cards — hairline structure, no accent border (green is reserved for
+   interactive / active elements only). */
+.rt-Card,
 .rt-BaseCard {
-  background-color: rgba(45, 27, 78, 0.6) !important;
-  border: 1px solid rgba(233, 30, 99, 0.2) !important;
+  background-color: rgb(var(--ig-surface-2) / 0.55) !important;
+  border: 1px solid rgb(var(--ig-text-muted) / 0.1) !important;
   backdrop-filter: blur(10px);
 }
 
+.rt-Card:hover,
 .rt-BaseCard:hover {
-  border-color: rgba(233, 30, 99, 0.4) !important;
-  box-shadow: 0 4px 20px rgba(233, 30, 99, 0.3) !important;
+  border-color: rgb(var(--ig-text-muted) / 0.18) !important;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.35) !important;
 }
 
+/* Primary button — solid green, dark text, flat (no lift / glow) */
 .rt-Button:where(.rt-variant-solid) {
-  background: linear-gradient(
-    135deg,
-    var(--ig-pink) 0%,
-    var(--ig-purple-accent) 100%
-  ) !important;
-  color: var(--ig-text-primary) !important;
+  background: rgb(var(--ig-secondary)) !important;
+  color: rgb(var(--ig-on-accent)) !important;
   border: none !important;
-  transition: all 0.2s ease !important;
+  font-weight: 600 !important;
+  transition:
+    background-color 0.15s ease,
+    filter 0.15s ease !important;
 }
 
 .rt-Button:where(.rt-variant-solid):hover {
-  background: linear-gradient(135deg, #f02d72 0%, #b030cc 100%) !important;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(233, 30, 99, 0.4) !important;
+  filter: brightness(1.08) !important;
 }
 
+/* Secondary / ghost button — hairline, subtle fill, green only on hover */
 .rt-Button:where(.rt-variant-soft),
 .rt-Button:where(.rt-variant-outline) {
-  background: rgba(255, 255, 255, 0.1) !important;
-  border: 1px solid var(--ig-purple-light) !important;
-  color: var(--ig-text-primary) !important;
+  background: rgb(var(--ig-text) / 0.05) !important;
+  border: 1px solid rgb(var(--ig-text-muted) / 0.2) !important;
+  color: rgb(var(--ig-text)) !important;
   backdrop-filter: blur(10px);
-  transition: all 0.2s ease !important;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease !important;
 }
 
 .rt-Button:where(.rt-variant-soft):hover,
 .rt-Button:where(.rt-variant-outline):hover {
-  background: rgba(233, 30, 99, 0.2) !important;
-  border-color: var(--ig-pink) !important;
-  transform: translateY(-2px);
+  background: rgb(var(--ig-secondary) / 0.12) !important;
+  border-color: rgb(var(--ig-secondary) / 0.6) !important;
 }
 
 .rt-Heading {
-  color: var(--ig-purple-light) !important;
+  color: rgb(var(--ig-text-light)) !important;
 }
 
 .rt-Text {
-  color: var(--ig-text-secondary) !important;
+  color: rgb(var(--ig-text-muted)) !important;
 }
 
 /* Form elements */
 .rt-TextFieldInput,
 .rt-TextAreaInput {
-  background-color: rgba(45, 27, 78, 0.8) !important;
-  border: 1px solid rgba(206, 147, 216, 0.3) !important;
-  color: var(--ig-text-primary) !important;
+  background-color: rgb(var(--ig-surface-2) / 0.8) !important;
+  border: 1px solid rgb(var(--ig-primary-2) / 0.4) !important;
+  color: rgb(var(--ig-text)) !important;
 }
 
 .rt-TextFieldInput:focus,
 .rt-TextAreaInput:focus {
-  border-color: var(--ig-pink) !important;
-  box-shadow: 0 0 0 1px var(--ig-pink) !important;
+  border-color: rgb(var(--ig-secondary)) !important;
+  box-shadow: 0 0 0 1px rgb(var(--ig-secondary)) !important;
 }
 
 .rt-Select .rt-SelectTrigger {
-  background-color: rgba(45, 27, 78, 0.8) !important;
-  border: 1px solid rgba(206, 147, 216, 0.3) !important;
-  color: var(--ig-text-primary) !important;
+  background-color: rgb(var(--ig-surface-2) / 0.8) !important;
+  border: 1px solid rgb(var(--ig-primary-2) / 0.4) !important;
+  color: rgb(var(--ig-text)) !important;
 }
 
 .rt-SelectContent {
-  background-color: var(--ig-purple-mid) !important;
-  border: 1px solid rgba(233, 30, 99, 0.3) !important;
+  background-color: rgb(var(--ig-surface-2)) !important;
+  border: 1px solid rgb(var(--ig-secondary) / 0.3) !important;
   backdrop-filter: blur(10px);
 }
 
@@ -465,4 +528,19 @@ img.rt-AvatarImage {
 .irons-button:hover {
   transition: none !important;
   transform: none !important;
+}
+
+/* Quality floor: honour reduced-motion for the button lift/hover effects */
+@media (prefers-reduced-motion: reduce) {
+  .rt-Button:where(.rt-variant-solid),
+  .rt-Button:where(.rt-variant-soft),
+  .rt-Button:where(.rt-variant-outline) {
+    transition: none !important;
+  }
+
+  .rt-Button:where(.rt-variant-solid):hover,
+  .rt-Button:where(.rt-variant-soft):hover,
+  .rt-Button:where(.rt-variant-outline):hover {
+    transform: none !important;
+  }
 }

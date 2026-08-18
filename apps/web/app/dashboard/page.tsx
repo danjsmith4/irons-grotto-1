@@ -1,6 +1,6 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import { Cinzel, Inter } from 'next/font/google';
+import { Inter } from 'next/font/google';
 import { fetchRecentRankUps } from '@/app/data-sources/fetch-recent-rank-ups';
 import { fetchRecentClogUpdates } from '@/app/data-sources/fetch-recent-clog-updates';
 import { fetchPlayerAccounts } from '@/app/rank-calculator/data-sources/fetch-player-accounts';
@@ -11,11 +11,6 @@ import { RecentClogUpdatesTable } from '@/app/components/recent-clog-updates-tab
 import { ClientRecentClogs } from '@/app/components/client-recent-clogs';
 import { Leaderboard } from '@/app/components/leaderboard';
 import { NavBar } from '@/app/components/nav-bar';
-
-const cinzel = Cinzel({
-  weight: ['400', '600', '700'],
-  subsets: ['latin'],
-});
 
 const inter = Inter({
   weight: ['300', '400', '500', '600'],
@@ -65,45 +60,13 @@ export default async function DashboardPage() {
       style={{
         minHeight: '100vh',
         background:
-          'radial-gradient(ellipse at center, #2d1b4e 0%, #1a0d2e 70%)',
+          'radial-gradient(ellipse at center, rgb(var(--ig-surface-2)) 0%, rgb(var(--ig-bg)) 70%)',
         color: 'white',
         position: 'relative',
         overflow: 'hidden',
       }}
     >
       <NavBar currentPage="dashboard" userCalculators={userCalculators} />
-
-      {/* Animated rays background */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '100vw',
-          height: '100vw',
-          pointerEvents: 'none',
-        }}
-      >
-        {Array.from({ length: 8 }, (_, i) => (
-          <div
-            key={i}
-            style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              width: '2px',
-              height: '50vw',
-              background:
-                'linear-gradient(transparent 0%, rgba(233, 30, 99, 0.05) 40%, rgba(156, 39, 176, 0.08) 50%, rgba(233, 30, 99, 0.05) 60%, transparent 100%)',
-              transformOrigin: 'bottom center',
-              opacity: 0.4,
-              transform: `translate(-50%, -100%) rotate(${i * 45}deg)`,
-              animation: 'rotateRays 40s linear infinite',
-            }}
-          />
-        ))}
-      </div>
 
       {/* Main content */}
       <div
@@ -136,11 +99,12 @@ export default async function DashboardPage() {
                 }}
               >
                 <h2
-                  className={cinzel.className}
                   style={{
-                    color: '#ce93d8',
+                    fontFamily: 'var(--font-display), ui-sans-serif, system-ui',
+                    color: 'rgb(var(--ig-text))',
                     fontSize: '1.5rem',
                     fontWeight: 600,
+                    letterSpacing: '-0.01em',
                     margin: 0,
                   }}
                 >
@@ -161,29 +125,6 @@ export default async function DashboardPage() {
               marginBottom: '1.5rem',
             }}
           >
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '1rem',
-                marginBottom: '1.5rem',
-                justifyContent: 'center',
-              }}
-            >
-              <h2
-                style={{
-                  fontSize: '28px',
-                  fontWeight: '700',
-                  margin: 0,
-                  background: 'linear-gradient(135deg, #e91e63, #9c27b0)',
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  color: 'transparent',
-                }}
-              >
-                🏆 Leaderboard
-              </h2>
-            </div>
             <div
               style={{
                 maxWidth: '1200px',

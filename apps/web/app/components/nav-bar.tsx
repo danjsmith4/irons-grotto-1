@@ -104,10 +104,10 @@ export function NavBar({
         left: 0,
         right: 0,
         zIndex: 1000,
-        background: 'rgba(26, 13, 46, 0.95)',
+        background: 'rgb(var(--ig-bg) / 0.85)',
         backdropFilter: 'blur(10px)',
-        borderBottom: '1px solid rgba(206, 147, 216, 0.2)',
-        padding: '1rem 2rem',
+        borderBottom: '1px solid rgb(var(--ig-text-muted) / 0.1)',
+        padding: '0.75rem 2rem',
       }}
     >
       <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
@@ -117,14 +117,11 @@ export function NavBar({
             {/* Logo */}
             <Link href="/dashboard">
               <Image
-                src="/L2.png"
+                src="/L1.png"
                 alt="Irons Grotto Logo"
-                width={70}
-                height={70}
-                style={{
-                  filter: 'drop-shadow(0 0 10px rgba(233, 30, 99, 0.3))',
-                  cursor: 'pointer',
-                }}
+                width={48}
+                height={48}
+                style={{ cursor: 'pointer' }}
               />
             </Link>
 

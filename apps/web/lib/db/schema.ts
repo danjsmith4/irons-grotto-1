@@ -10,6 +10,7 @@ import {
   varchar,
   unique,
   uniqueIndex,
+  index,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm/sql/sql';
 import { relations } from 'drizzle-orm';
@@ -114,6 +115,9 @@ export const playerAcquiredItems = pgTable(
   (table) => ({
     // Unique constraint to ensure one record per player per item
     playerItemUnique: unique().on(table.playerName, table.itemId),
+    // Item-id lookups (clan-wide owner counts / rarity, e.g. Hall of Fame).
+    // The unique index above leads with player_name, so it can't serve these.
+    itemIdIdx: index('player_acquired_items_item_id_idx').on(table.itemId),
   }),
 );
 
