@@ -75,6 +75,12 @@ export const players = pgTable(
     // Player preferences
     isMobileOnly: boolean('is_mobile_only').notNull().default(false),
 
+    // Soft-delete flag driven by the daily inactivity reconcile. Inactive
+    // players (no XP gain on TempleOSRS beyond the threshold, or no longer in
+    // the Temple group) are hidden from the leaderboard but their row is kept
+    // so they can be restored automatically if they become active again.
+    isActive: boolean('is_active').notNull().default(true),
+
     // Metadata
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -175,3 +181,14 @@ export const playerRankUpsRelations = relations(playerRankUps, ({ one }) => ({
     references: [players.playerName],
   }),
 }));
+
+// Singleton bookkeeping for scheduled-ish jobs that are triggered by page
+// traffic rather than a server cron (there is no long-running server). Each
+// job keeps one row keyed by a stable id and records when it last ran, so a
+// request can atomically "claim" a run and avoid duplicate work.
+export const syncMetadata = pgTable('sync_metadata', {
+  id: varchar('id', { length: 50 }).primaryKey(),
+  lastRunAt: timestamp('last_run_at').notNull().defaultNow(),
+});
+
+export type SyncMetadata = typeof syncMetadata.$inferSelect;

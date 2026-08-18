@@ -1,6 +1,6 @@
 import { db } from '@/lib/db';
 import { playerAcquiredItems, players } from '@/lib/db/schema';
-import { desc, sql } from 'drizzle-orm';
+import { desc, eq, sql } from 'drizzle-orm';
 import { AllPetItemIds } from '../schemas/osrs';
 
 export interface LeaderboardPlayer {
@@ -57,6 +57,8 @@ export async function fetchLeaderboard(
         playerAcquiredItems,
         sql`${players.playerName} = ${playerAcquiredItems.playerName} AND ${playerAcquiredItems.itemName} = 'Cursed phalanx'`,
       )
+      // Hide players soft-deleted by the daily inactivity reconcile.
+      .where(eq(players.isActive, true))
       .orderBy(desc(players.points))
       .limit(limit)
       .offset(offset);
