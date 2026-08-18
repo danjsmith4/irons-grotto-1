@@ -1,5 +1,5 @@
 import css from './homepage.module.css';
-import { Cinzel, Inter } from 'next/font/google';
+import { Inter } from 'next/font/google';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button, Flex } from '@radix-ui/themes';
@@ -11,15 +11,14 @@ import { maybeRunInactivitySync } from '@/lib/db/inactivity-sync';
 import { fetchRecentRankUps } from './data-sources/fetch-recent-rank-ups';
 import { fetchRecentClogUpdates } from './data-sources/fetch-recent-clog-updates';
 import { fetchLeaderboard } from './data-sources/fetch-leaderboard';
+import { fetchClanStats } from './data-sources/fetch-clan-stats';
+import { fetchCollectionLogInsights } from './data-sources/fetch-collection-log-insights';
+import { ClanStats } from './components/clan-stats';
+import { RarestDrops } from './components/rarest-drops';
 import { RecentRankUpsTable } from './components/recent-rank-ups-table';
 import { RecentClogUpdatesTable } from './components/recent-clog-updates-table';
 import { Leaderboard } from './components/leaderboard';
 import { FadeInOnScroll } from './components/fade-in-on-scroll';
-
-const cinzel = Cinzel({
-  weight: ['400', '600', '700'],
-  subsets: ['latin'],
-});
 
 const inter = Inter({
   weight: ['300', '400', '500', '600'],
@@ -55,6 +54,14 @@ export default async function HomePage() {
   const leaderboardResult = await fetchLeaderboard(20, 0);
   const leaderboard = leaderboardResult.success ? leaderboardResult.data : [];
 
+  const clanStatsResult = await fetchClanStats();
+  const clanStats = clanStatsResult.success ? clanStatsResult.data : null;
+
+  const clogInsightsResult = await fetchCollectionLogInsights();
+  const clogInsights = clogInsightsResult.success
+    ? clogInsightsResult.data
+    : null;
+
   const handleSubmit = async () => {
     'use server';
 
@@ -79,31 +86,21 @@ export default async function HomePage() {
         </form>
       </Flex>
 
-      {/* Animated rays background */}
-      <div className={css['rays-container']}>
-        {Array.from({ length: 12 }, (_, i) => (
-          <div key={i} className={`${css.ray} ${css[`ray-${i + 1}`]}`} />
-        ))}
-      </div>
-
       {/* Main content */}
       <div className={css['main-content']}>
         {/* Logo section */}
         <div className={css['logo-section']}>
           <div className={css['logo-container']}>
             <Image
-              src="/L2.png"
+              src="/L1.png"
               alt="Irons Grotto Logo"
               width={160}
               height={160}
               className={css.logo}
               priority
             />
-            <div className={css['logo-glow']} />
           </div>
-          <h1 className={`${css['main-title']} ${cinzel.className}`}>
-            Irons Grotto
-          </h1>
+          <h1 className={css['main-title']}>Irons Grotto</h1>
           <p className={css.subtitle}>
             A thriving Old School RuneScape community for Ironman accounts
           </p>
@@ -113,13 +110,13 @@ export default async function HomePage() {
             style={{
               marginTop: '2rem',
               textAlign: 'center',
-              color: 'rgba(255, 255, 255, 0.7)',
+              color: 'rgb(var(--ig-text-muted))',
               fontSize: '14px',
             }}
           >
-            <p style={{ margin: '0.3rem 0' }}>Owners: Avios & Tyluh</p>
+            <p style={{ margin: '0.3rem 0' }}>Owner: Aceriwyn</p>
             <p style={{ margin: '0.3rem 0' }}>
-              Deputies: Claytonaa, Aceriwyn, Dead Player, The Victory
+              Deputies: Dead Player, Hoagie, ciaran258, Avios, Gods, Rewind
             </p>
           </div>
         </div>
@@ -161,14 +158,16 @@ export default async function HomePage() {
         >
           <div style={{ marginBottom: '2rem' }}>
             <h2
-              className={`${cinzel.className}`}
               style={{
-                color: '#ce93d8',
+                fontFamily: 'var(--font-display), ui-sans-serif, system-ui',
+                fontWeight: 600,
+                color: 'rgb(var(--ig-text))',
                 fontSize: '1.8rem',
+                letterSpacing: '-0.01em',
                 marginBottom: '0.5rem',
               }}
             >
-              What's happening in Grotto...
+              What&apos;s happening in Grotto
             </h2>
           </div>
 
@@ -181,6 +180,13 @@ export default async function HomePage() {
                 alignItems: 'center',
               }}
             >
+              {/* Clan at a glance */}
+              {clanStats && (
+                <div style={{ width: '100%', maxWidth: '1250px' }}>
+                  <ClanStats stats={clanStats} />
+                </div>
+              )}
+
               {/* Leaderboard */}
               <div
                 style={{
@@ -188,27 +194,6 @@ export default async function HomePage() {
                   maxWidth: '1250px',
                 }}
               >
-                <div style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
-                  <h3
-                    className={`${cinzel.className}`}
-                    style={{
-                      color: '#ce93d8',
-                      fontSize: '1.5rem',
-                      marginBottom: '0.5rem',
-                    }}
-                  >
-                    Top Players
-                  </h3>
-                  <p
-                    style={{
-                      color: 'rgba(255, 255, 255, 0.7)',
-                      fontSize: '14px',
-                      margin: 0,
-                    }}
-                  >
-                    Our highest achieving clan members
-                  </p>
-                </div>
                 <Leaderboard initialPlayers={leaderboard} />
               </div>
 
@@ -244,6 +229,13 @@ export default async function HomePage() {
                   />
                 </div>
               </div>
+
+              {/* Rarest collection-log items across the clan */}
+              {clogInsights && (
+                <div style={{ width: '100%', maxWidth: '1250px' }}>
+                  <RarestDrops insights={clogInsights} />
+                </div>
+              )}
             </div>
           </FadeInOnScroll>
         </div>

@@ -1,20 +1,11 @@
 'use client';
 
-import { useState } from 'react';
-import {
-  Table,
-  Text,
-  Flex,
-  Box,
-  Card,
-  Heading,
-  ScrollArea,
-  Avatar,
-} from '@radix-ui/themes';
-import Image from 'next/image';
-import { formatWikiImageUrl } from '@/app/rank-calculator/utils/format-wiki-url';
+import { BackpackIcon } from '@radix-ui/react-icons';
 import { formatTimeAgo } from '@/app/utils/format-time-ago';
-import { clientConstants } from '@/config/constants.client';
+import { ItemImageWithFallback } from './item-image-with-fallback';
+import { SectionHeader } from './section-header';
+import { PlayerNameButton } from './player-name-button';
+import styles from './activity-feed.module.css';
 
 interface ClogUpdateData {
   id: string;
@@ -29,105 +20,66 @@ interface RecentClogUpdatesProps {
   clogUpdates: ClogUpdateData[];
 }
 
-function ItemImageWithFallback({ itemName }: { itemName: string }) {
-  const [hasError, setHasError] = useState(false);
-
-  if (hasError) {
-    return (
-      <Avatar size="1" fallback="?" style={{ width: '20px', height: '20px' }} />
-    );
-  }
-
-  return (
-    <Image
-      src={formatWikiImageUrl(itemName)}
-      alt={itemName}
-      width={20}
-      height={20}
-      style={{
-        borderRadius: '2px',
-        imageRendering: 'pixelated',
-      }}
-      onError={() => setHasError(true)}
-    />
-  );
-}
-
 export function RecentClogUpdatesTable({
   clogUpdates,
 }: RecentClogUpdatesProps) {
+  const header = (
+    <div className={styles.header}>
+      <SectionHeader
+        title="Collection Log"
+        subtitle="Latest drops logged by the clan"
+        icon={<BackpackIcon width={18} height={18} />}
+      />
+    </div>
+  );
+
   if (clogUpdates.length === 0) {
     return (
-      <Card size="3">
-        <Flex direction="column" align="center" py="6">
-          <Text size="3" color="gray">
-            No recent collection log updates
-          </Text>
-          <Text size="2" color="gray">
-            Collection log updates will appear here when members log new items
-          </Text>
-        </Flex>
-      </Card>
+      <div className={styles.card}>
+        {header}
+        <div className={styles.empty}>
+          No recent collection log updates
+          <span className={styles.emptyHint}>
+            New drops appear here as members log them
+          </span>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card size="3">
-      <Box mb="3">
-        <Heading size="4">Recent Collection Log Updates</Heading>
-        <Text size="2" color="gray">
-          Latest items logged by clan members
-        </Text>
-      </Box>
-
-      <ScrollArea style={{ height: '400px' }}>
-        <Table.Root>
-          <Table.Header>
-            <Table.Row>
-              <Table.ColumnHeaderCell>Player</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Item</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>When</Table.ColumnHeaderCell>
-            </Table.Row>
-          </Table.Header>
-
-          <Table.Body>
-            {clogUpdates.map((update) => (
-              <Table.Row key={update.id}>
-                <Table.Cell>
-                  <Flex align="center" gap="2">
-                    <Text size="2" weight="medium">
-                      <a
-                        href={`${clientConstants.temple.baseUrl}/player/overview.php?player=${update.playerName.toLowerCase()}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{
-                          color: '#ce93d8',
-                          textDecoration: 'none',
-                        }}
-                      >
-                        {update.playerName}
-                      </a>
-                    </Text>
-                  </Flex>
-                </Table.Cell>
-
-                <Table.Cell>
-                  <Flex align="center" gap="2">
-                    <ItemImageWithFallback itemName={update.itemName} />
-                    <Text size="2">{update.itemName}</Text>
-                  </Flex>
-                </Table.Cell>
-
-                <Table.Cell>
-                  <Text size="2" color="gray">
-                    {formatTimeAgo(update.dateFirstLogged)}
-                  </Text>
-                </Table.Cell>
-              </Table.Row>
-            ))}
-          </Table.Body>
-        </Table.Root>
-      </ScrollArea>
-    </Card>
+    <div className={styles.card}>
+      {header}
+      <div className={styles.list}>
+        {clogUpdates.map((update) => (
+          <div key={update.id} className={styles.row}>
+            <div className={styles.tile}>
+              <ItemImageWithFallback
+                itemId={update.itemId}
+                itemName={update.itemName}
+                size={30}
+              />
+            </div>
+            <div className={styles.body}>
+              <span className={styles.title}>{update.itemName}</span>
+              <span className={styles.meta}>
+                <PlayerNameButton
+                  name={update.playerName}
+                  className={styles.player}
+                />
+              </span>
+            </div>
+            <div className={styles.trailing}>
+              <span className={styles.time}>
+                {formatTimeAgo(update.dateFirstLogged)}
+              </span>
+              {update.count > 1 && (
+                <span className={styles.count}>&times;{update.count}</span>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

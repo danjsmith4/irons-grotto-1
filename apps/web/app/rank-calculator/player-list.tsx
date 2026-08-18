@@ -49,7 +49,7 @@ export function PlayerList({ accounts }: PlayerListProps) {
       gap="6"
       direction="column"
     >
-      <Heading size="5" style={{ color: '#ce93d8' }}>
+      <Heading size="5" style={{ color: 'rgb(var(--ig-text-light))' }}>
         Irons Grotto Rank Calculator
       </Heading>
       <Flex direction="column" gap="4" width="330px">
@@ -58,18 +58,18 @@ export function PlayerList({ accounts }: PlayerListProps) {
             <Card
               key={rsn}
               style={{
-                background: 'rgba(45, 27, 78, 0.6)',
-                border: '1px solid rgba(233, 30, 99, 0.2)',
+                background: 'rgb(var(--ig-surface-2) / 0.6)',
+                border: '1px solid rgb(var(--ig-secondary) / 0.2)',
                 backdropFilter: 'blur(10px)',
                 transition: 'all 0.3s ease',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = 'rgba(233, 30, 99, 0.4)';
+                e.currentTarget.style.borderColor = 'rgb(var(--ig-secondary) / 0.4)';
                 e.currentTarget.style.boxShadow =
-                  '0 4px 20px rgba(233, 30, 99, 0.3)';
+                  '0 4px 20px rgb(var(--ig-secondary) / 0.3)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'rgba(233, 30, 99, 0.2)';
+                e.currentTarget.style.borderColor = 'rgb(var(--ig-secondary) / 0.2)';
                 e.currentTarget.style.boxShadow = 'none';
               }}
             >

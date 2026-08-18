@@ -22,7 +22,8 @@ export function IronsButton({
         return {
           radixVariant: 'solid' as const,
           customStyle: {
-            background: 'linear-gradient(135deg, #e91e63 0%, #9c27b0 100%)',
+            background: 'rgb(var(--ig-secondary))',
+            color: 'rgb(var(--ig-on-accent))',
             border: 'none',
           },
         };
@@ -30,8 +31,8 @@ export function IronsButton({
         return {
           radixVariant: 'soft' as const,
           customStyle: {
-            background: 'rgba(255, 255, 255, 0.1)',
-            border: '2px solid #ce93d8',
+            background: 'rgb(var(--ig-text) / 0.05)',
+            border: '1px solid rgb(var(--ig-text-muted) / 0.2)',
             backdropFilter: 'blur(10px)',
           },
         };
@@ -40,15 +41,15 @@ export function IronsButton({
           radixVariant: 'ghost' as const,
           customStyle: {
             background: 'transparent',
-            color: '#ce93d8',
-            border: '1px solid rgba(206, 147, 216, 0.3)',
+            color: 'rgb(var(--ig-text-light))',
+            border: '1px solid rgb(var(--ig-text-muted) / 0.2)',
           },
         };
       case 'danger':
         return {
           radixVariant: 'solid' as const,
           customStyle: {
-            background: 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
+            background: 'rgb(var(--ig-danger))',
             color: '#ffffff',
           },
         };
