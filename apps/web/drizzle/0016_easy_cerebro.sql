@@ -1,0 +1,1 @@
+CREATE INDEX IF NOT EXISTS "player_acquired_items_item_id_idx" ON "player_acquired_items" USING btree ("item_id");
