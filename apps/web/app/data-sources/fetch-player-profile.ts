@@ -51,6 +51,9 @@ export interface PlayerProfile {
 
   diaries: { location: string; tier: string; completed: boolean }[];
   rankUps: { oldRank: string | null; newRank: string; createdAt: string }[];
+
+  // The player's rarest items (fewest active owners clan-wide), top 3.
+  hallOfFame: { itemName: string; itemId: number; owners: number }[];
 }
 
 function computeRankProgress(points: number) {
@@ -121,6 +124,26 @@ export async function fetchPlayerProfile(
       .orderBy(desc(playerRankUps.createdAt))
       .limit(20);
 
+    // Hall of Fame: the player's items ranked by how few active members own
+    // them clan-wide (rarest first).
+    const hallOfFame = (await db.execute(sql`
+      SELECT pai.item_name AS "itemName", pai.item_id AS "itemId", oc.owners
+      FROM player_acquired_items pai
+      JOIN (
+        SELECT p.item_id, COUNT(DISTINCT p.player_name)::int AS owners
+        FROM player_acquired_items p
+        JOIN players pl ON pl.player_name = p.player_name AND pl.is_active = true
+        GROUP BY p.item_id
+      ) oc ON oc.item_id = pai.item_id
+      WHERE pai.player_name = ${player.playerName}
+      ORDER BY oc.owners ASC, pai.item_name ASC
+      LIMIT 3
+    `)) as unknown as {
+      itemName: string;
+      itemId: number;
+      owners: number;
+    }[];
+
     const progress = computeRankProgress(player.points);
 
     return {
@@ -163,6 +186,11 @@ export async function fetchPlayerProfile(
           oldRank: r.oldRank,
           newRank: r.newRank,
           createdAt: r.createdAt.toISOString(),
+        })),
+        hallOfFame: hallOfFame.map((h) => ({
+          itemName: h.itemName,
+          itemId: Number(h.itemId),
+          owners: Number(h.owners),
         })),
       },
     };

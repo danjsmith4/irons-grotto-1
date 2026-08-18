@@ -10,6 +10,7 @@ import { formatWikiImageUrl } from '../rank-calculator/utils/format-wiki-url';
 import { formatXpInMillions } from '@/app/utils/format-number';
 import { formatTimeAgo } from '@/app/utils/format-time-ago';
 import { clientConstants } from '@/config/constants.client';
+import { ItemImageWithFallback } from './item-image-with-fallback';
 import type { PlayerProfile } from '../data-sources/fetch-player-profile';
 import styles from './player-profile-modal.module.css';
 
@@ -155,6 +156,31 @@ export function PlayerProfileModal({
                 />
               </div>
             </div>
+
+            {profile.hallOfFame.length > 0 && (
+              <div className={styles.section}>
+                <h3 className={styles.sectionTitle}>Hall of Fame</h3>
+                <div className={styles.hofRow}>
+                  {profile.hallOfFame.map((item) => (
+                    <div key={item.itemId} className={styles.hof}>
+                      <div className={styles.hofTile}>
+                        <ItemImageWithFallback
+                          itemId={item.itemId}
+                          itemName={item.itemName}
+                          size={40}
+                        />
+                      </div>
+                      <span className={styles.hofName}>{item.itemName}</span>
+                      <span className={styles.hofOwners}>
+                        {item.owners === 1
+                          ? 'Only owner'
+                          : `${item.owners} own this`}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className={styles.section}>
               <div className={styles.statGrid}>
