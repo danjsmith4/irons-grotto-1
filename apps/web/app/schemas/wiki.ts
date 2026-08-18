@@ -160,6 +160,14 @@ export const DroppedItemJSON = z
 
 export type DroppedItemJSON = z.infer<typeof DroppedItemJSON>;
 
+// The wiki's `Dropped item` casing drifts over time (e.g. it now returns
+// "Pet Snakeling" / "Staff of the Dead" in title case) whereas our collection
+// log names, item configs and override maps use the in-game casing. Re-case the
+// wiki value back to our canonical name so lookups stay stable across drift.
+const canonicalItemNameByLowercase = new Map(
+  CollectionLogItemName.options.map((name) => [name.toLowerCase(), name]),
+);
+
 export const DroppedItemResponse = z
   .object({
     bucket: z.array(
@@ -176,8 +184,20 @@ export const DroppedItemResponse = z
     bucket.reduce<Record<string, Record<string, number>>>(
       (
         acc,
-        { drop_json: { altRarity, itemName, dropSource, rarity, rolls } },
+        {
+          drop_json: {
+            altRarity,
+            itemName: rawItemName,
+            dropSource,
+            rarity,
+            rolls,
+          },
+        },
       ) => {
+        const itemName =
+          canonicalItemNameByLowercase.get(rawItemName.toLowerCase()) ??
+          rawItemName;
+
         acc[itemName] = acc[itemName] ?? {};
 
         const rarityOverride =

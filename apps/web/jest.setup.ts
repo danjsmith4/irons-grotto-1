@@ -27,6 +27,20 @@ server.events.on('unhandledException', ({ request, error }) => {
   console.error(error);
 });
 
+// `unstable_cache` needs Next's incremental cache runtime, which isn't present
+// under Jest. Call through so cached data-sources (e.g. fetchItemDropRates) run.
+jest.mock('next/cache', () => {
+  const actual = jest.requireActual<typeof import('next/cache')>('next/cache');
+
+  return {
+    ...actual,
+    unstable_cache:
+      (fn: (...args: unknown[]) => unknown) =>
+      (...args: unknown[]) =>
+        fn(...args),
+  };
+});
+
 jest.mock('next-auth', () => {
   const originalModule =
     jest.requireActual<typeof import('next-auth')>('next-auth');
