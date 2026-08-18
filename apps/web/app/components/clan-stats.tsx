@@ -18,13 +18,19 @@ const fmt = (n: number) => (n >= 10000 ? compact.format(n) : n.toLocaleString())
 export function ClanStats({ stats }: ClanStatsProps) {
   const cells: { label: string; value: string; accent?: boolean }[] = [
     { label: 'Members', value: fmt(stats.memberCount) },
-    { label: 'Total points', value: fmt(stats.totalPoints) },
+    { label: 'Total rank points', value: fmt(stats.totalPoints) },
     { label: 'Clog slots', value: fmt(stats.totalClogSlots) },
     { label: 'Pets', value: fmt(stats.totalPets) },
     { label: 'Maxed', value: fmt(stats.maxedCount) },
     { label: 'Avg total level', value: fmt(stats.avgTotalLevel) },
     { label: 'Infernal capes', value: fmt(stats.infernalCount) },
-    { label: 'Blood torvas', value: fmt(stats.bloodTorvaCount), accent: true },
+    { label: 'Blood Ornament kits', value: fmt(stats.bloodTorvaCount) },
+    { label: "Dizana's Quivers", value: fmt(stats.quiverCount) },
+    {
+      label: 'Radiant Oathplate completions',
+      value: fmt(stats.radiantCount),
+      accent: true,
+    },
   ];
 
   return (
