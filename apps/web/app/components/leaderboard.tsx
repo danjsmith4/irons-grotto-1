@@ -261,7 +261,7 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
   const header = (
     <SectionHeader
       title="Leaderboard"
-      subtitle={`${filteredInitialPlayers.length} ranked members`}
+      subtitle={`Top ${players.length} players by points`}
       icon={<BarChartIcon width={18} height={18} />}
       actions={
         <label className={styles.search}>

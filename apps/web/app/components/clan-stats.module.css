@@ -2,6 +2,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 1px;
+  width: 100%;
   background: rgb(var(--ig-text-muted) / 0.1);
   border: 1px solid rgb(var(--ig-text-muted) / 0.1);
   border-radius: 12px;
@@ -14,6 +15,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
+  min-width: 0;
 }
 
 .label {
