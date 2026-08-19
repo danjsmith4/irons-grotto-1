@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { ChevronRightIcon } from '@radix-ui/react-icons';
 import { Tooltip } from '@radix-ui/themes';
 import { ItemImageWithFallback } from './item-image-with-fallback';
@@ -14,6 +14,26 @@ export interface RecentClogItem {
   itemCategory: string;
   dateFirstLogged: Date;
 }
+
+/**
+ * Shape the paginated `/api/user-recent-clogs` responses actually have: JSON
+ * has no Date, so `dateFirstLogged` arrives as an ISO string.
+ */
+export type SerializedRecentClogItem = Omit<
+  RecentClogItem,
+  'dateFirstLogged'
+> & {
+  dateFirstLogged: string | Date;
+};
+
+/** Rehydrate a fetched item so `RecentClogItem`'s `Date` contract holds. */
+export function deserializeRecentClogItem(
+  item: SerializedRecentClogItem,
+): RecentClogItem {
+  return { ...item, dateFirstLogged: new Date(item.dateFirstLogged) };
+}
+
+const MAX_ITEMS_PER_SYNC = 5;
 
 interface RecentClogsScrollerProps {
   items: RecentClogItem[];
@@ -57,6 +77,21 @@ export function RecentClogsScroller({
     container.addEventListener('scroll', handleScroll);
     return () => container.removeEventListener('scroll', handleScroll);
   }, [hasMore, loading, onLoadMore]);
+
+  // A player syncing a large chunk of their clog at once lands as many rows
+  // sharing one timestamp; keep the newest few so one sync can't flood the rail.
+  const filteredItems = useMemo(() => {
+    const countsPerSync = new Map<string, number>();
+
+    return items.filter((item) => {
+      const key = `${item.playerName}|${item.dateFirstLogged.getTime()}`;
+      const count = countsPerSync.get(key) ?? 0;
+      if (count >= MAX_ITEMS_PER_SYNC) return false;
+
+      countsPerSync.set(key, count + 1);
+      return true;
+    });
+  }, [items]);
 
   if (initialLoading) {
     return (
@@ -123,16 +158,6 @@ export function RecentClogsScroller({
       </Tooltip>
     );
   }
-
-  // Refine filtering logic to group by playerName and timestamp
-  const filteredItems = items.filter((item, _, array) => {
-    const samePlayerAndTimestampCount = array.filter(
-      (i) =>
-        i.playerName === item.playerName &&
-        i.dateFirstLogged.getTime() === item.dateFirstLogged.getTime()
-    ).length;
-    return samePlayerAndTimestampCount <= 5;
-  });
 
   return (
     <Tooltip content="Your latest clogs">

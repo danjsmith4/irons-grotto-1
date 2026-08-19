@@ -8,7 +8,7 @@ import { fetchUserRecentClogs } from '@/app/data-sources/fetch-user-recent-clogs
 import { fetchLeaderboard } from '@/app/data-sources/fetch-leaderboard';
 import { RecentRankUpsTable } from '@/app/components/recent-rank-ups-table';
 import { RecentClogUpdatesTable } from '@/app/components/recent-clog-updates-table';
-import { ClientRecentClogs } from '@/app/components/client-recent-clogs';
+import { RecentClogsContainer } from '@/app/components/recent-clogs-container';
 import { Leaderboard } from '@/app/components/leaderboard';
 import { NavBar } from '@/app/components/nav-bar';
 
@@ -111,7 +111,7 @@ export default async function DashboardPage() {
                   Your Latest Collection Logs
                 </h2>
               </div>
-              <ClientRecentClogs
+              <RecentClogsContainer
                 initialItems={userRecentClogs}
                 playerNames={playerNames}
               />
