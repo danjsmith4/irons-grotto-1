@@ -65,6 +65,9 @@ interface LeaderboardProps {
   initialPlayers: LeaderboardPlayer[];
 }
 
+/** How many extra rows each infinite-scroll fetch pulls in. */
+const PAGE_SIZE = 50;
+
 // Achievement columns rendered as present (wiki icon) / absent (muted dash).
 const itemColumns: {
   key:
@@ -117,8 +120,11 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
     filteredInitialPlayers,
   );
   const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(initialPlayers.length === 50);
-  const [offset, setOffset] = useState(50);
+  // Seed paging from what the server actually sent, not an assumed page size —
+  // the homepage seeds fewer rows than PAGE_SIZE, and hardcoding it here left
+  // hasMore false (scroll did nothing) and offset past the unfetched rows.
+  const [hasMore, setHasMore] = useState(initialPlayers.length > 0);
+  const [offset, setOffset] = useState(initialPlayers.length);
   const [sortState, setSortState] = useState<SortState>({
     field: 'points',
     direction: 'desc',
@@ -161,7 +167,7 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
       const response = await fetch('/api/leaderboard', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ limit: 50, offset }),
+        body: JSON.stringify({ limit: PAGE_SIZE, offset }),
       });
 
       if (response.ok) {
@@ -186,7 +192,7 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
 
           setPlayers(sorted);
           setOffset((prev) => prev + data.data.length);
-          setHasMore(data.data.length === 50);
+          setHasMore(data.data.length === PAGE_SIZE);
         } else {
           setHasMore(false);
         }
