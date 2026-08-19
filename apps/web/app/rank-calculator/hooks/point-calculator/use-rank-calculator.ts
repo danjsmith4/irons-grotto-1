@@ -1,4 +1,3 @@
-import { CommonPointCalculatorData } from '@/app/schemas/rank-calculator';
 import { useWatch } from 'react-hook-form';
 import { useCollectionLogAndCluesPointCalculator } from './collection-log-and-clues/use-collection-log-and-clues-point-calculator';
 import { useNotableItemsPointCalculator } from './notable-items/use-notable-items-point-calculator';
@@ -6,12 +5,20 @@ import { useSkillingPointCalculator } from './skilling/use-skilling-point-calcul
 import { useCombatPointCalculator } from './combat/use-combat-point-calculator';
 import { useRank } from '../use-rank';
 import { RankCalculatorSchema } from '../../[player]/submit-rank-calculator-validation';
-import { RankData } from '../../utils/calculators/calculate-rank';
 import { calculateTotalPoints } from '../../utils/calculators/calculate-total-points';
-import { rankThresholds } from '@/config/ranks';
+import {
+  calculateRankProgress,
+  RankProgress,
+} from '../../utils/calculators/calculate-rank-progress';
 import { useCurrentPlayer } from '../../contexts/current-player-context';
 
-export type RankCalculatorData = CommonPointCalculatorData & RankData;
+export type RankCalculatorData = RankProgress & {
+  /**
+   * Progress through the Standard rank structure, for players on a staff
+   * structure. Null when Standard is already the selected structure.
+   */
+  standardRankProgress: RankProgress | null;
+};
 
 export function useRankCalculator() {
   const rankStructure = useWatch<RankCalculatorSchema, 'rankStructure'>({
@@ -37,29 +44,12 @@ export function useRankCalculator() {
     totalCombatPoints,
   );
 
-  const { rank, nextRank, throttleReason } = useRank(pointsAwarded, playerName);
-
-  const currentRankThreshold = rankThresholds[rankStructure][rank]!;
-
-  const nextRankThreshold = !nextRank
-    ? pointsAwarded
-    : rankThresholds[rankStructure][nextRank]!;
-
-  const pointsRemaining = nextRankThreshold
-    ? nextRankThreshold - pointsAwarded
-    : pointsAwarded;
-
-  const pointsAwardedPercentage = nextRankThreshold
-    ? (pointsAwarded - currentRankThreshold) /
-      (nextRankThreshold - currentRankThreshold)
-    : pointsAwarded / nextRankThreshold;
+  const { standardRankData, ...rankData } = useRank(pointsAwarded, playerName);
 
   return {
-    pointsAwarded,
-    pointsAwardedPercentage,
-    pointsRemaining,
-    rank,
-    nextRank,
-    throttleReason,
+    ...calculateRankProgress(pointsAwarded, rankStructure, rankData),
+    standardRankProgress: standardRankData
+      ? calculateRankProgress(pointsAwarded, 'Standard', standardRankData)
+      : null,
   } satisfies RankCalculatorData;
 }

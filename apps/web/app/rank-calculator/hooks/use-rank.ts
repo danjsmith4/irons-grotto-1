@@ -25,6 +25,19 @@ export function useRank(pointsAwarded: number, playerName: string) {
     rankStructure,
   );
 
+  // Staff structures (Admin, Owner, ...) are a single fixed rank, which hides
+  // where the player's points actually place them. Resolve the Standard rank
+  // alongside it so that stays visible regardless of staff role.
+  const standardRankData =
+    rankStructure === 'Standard'
+      ? null
+      : calculateRank(
+          acquiredItems,
+          combatAchievementTier,
+          pointsAwarded,
+          'Standard',
+        );
+
   // Update player points when points change
   useEffect(() => {
     if (pointsAwarded > 0) {
@@ -37,5 +50,5 @@ export function useRank(pointsAwarded: number, playerName: string) {
     }
   }, [playerName, pointsAwarded]);
 
-  return result;
+  return { ...result, standardRankData };
 }
