@@ -1,4 +1,4 @@
-import { RankCalculatorData } from '@/app/rank-calculator/hooks/point-calculator/use-rank-calculator';
+import { RankProgress } from '@/app/rank-calculator/utils/calculators/calculate-rank-progress';
 import { Rank } from '@/config/enums';
 import { CategoryFixture } from '@/cypress/support/types';
 
@@ -129,4 +129,4 @@ export const rankExpectedValues = {
       throttleReason: null,
     },
   },
-} satisfies CategoryFixture<RankCalculatorData>;
+} satisfies CategoryFixture<RankProgress>;
