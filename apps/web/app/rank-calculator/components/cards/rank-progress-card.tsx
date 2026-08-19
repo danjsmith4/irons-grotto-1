@@ -32,6 +32,7 @@ export function RankProgressCard() {
     nextRank,
     rank,
     throttleReason,
+    standardRankProgress,
   } = useRankCalculator();
   const { register, setValue, getValues } = useFormContext();
   const { playerName, rank: currentRank } = useCurrentPlayer();
@@ -40,6 +41,12 @@ export function RankProgressCard() {
   );
   const rankName = getRankName(rank);
   const nextRankName = nextRank ? getRankName(nextRank) : 'Max rank';
+  const standardRankName = standardRankProgress
+    ? getRankName(standardRankProgress.rank)
+    : null;
+  const standardNextRankName = standardRankProgress?.nextRank
+    ? getRankName(standardRankProgress.nextRank)
+    : 'Max rank';
   const { executeAsync: publishRankSubmission } = useAction(
     publishRankSubmissionAction.bind(null, currentRank, playerName),
   );
@@ -146,6 +153,77 @@ export function RankProgressCard() {
               </Text>
             </Flex>
           </Flex>
+          {standardRankProgress && (
+            <>
+              <Separator size="4" />
+              <DataCard.Row
+                left={
+                  <Text
+                    size="2"
+                    id="standard-rank-label"
+                    style={{ color: 'rgb(var(--ig-text-muted))' }}
+                  >
+                    Standard rank progress
+                  </Text>
+                }
+                right={
+                  <Text
+                    aria-labelledby="standard-rank-label"
+                    size="3"
+                    weight="medium"
+                  >
+                    {getPointsRemainingLabel(
+                      standardRankProgress.pointsRemaining,
+                      standardRankProgress.throttleReason,
+                    )}
+                  </Text>
+                }
+              />
+              <Progress
+                size="2"
+                value={Math.min(
+                  100,
+                  standardRankProgress.pointsAwardedPercentage * 100,
+                )}
+              />
+              <Flex justify="between">
+                <Flex gap="2" align="center">
+                  <Text
+                    aria-label="Current standard rank"
+                    size="2"
+                    style={{ color: 'rgb(var(--ig-text-muted))' }}
+                  >
+                    {standardRankName}
+                  </Text>
+                  <Image
+                    alt={`${standardRankProgress.rank} standard rank icon`}
+                    src={getRankImageUrl(standardRankProgress.rank)}
+                    width={22}
+                    height={22}
+                    unoptimized
+                  />
+                </Flex>
+                <Flex gap="2" align="center">
+                  {standardRankProgress.nextRank && (
+                    <Image
+                      alt={`${standardRankProgress.nextRank} next standard rank icon`}
+                      src={getRankImageUrl(standardRankProgress.nextRank)}
+                      height={22}
+                      width={22}
+                      unoptimized
+                    />
+                  )}
+                  <Text
+                    aria-label="Next standard rank"
+                    size="2"
+                    style={{ color: 'rgb(var(--ig-text-muted))' }}
+                  >
+                    {standardNextRankName}
+                  </Text>
+                </Flex>
+              </Flex>
+            </>
+          )}
           <Separator size="4" />
           <DataCard.Row
             left={
