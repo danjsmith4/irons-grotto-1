@@ -19,7 +19,7 @@ export function ClanStats({ stats }: ClanStatsProps) {
   const cells: { label: string; value: string; accent?: boolean }[] = [
     { label: 'Members', value: fmt(stats.memberCount) },
     { label: 'Clog slots', value: fmt(stats.totalClogSlots) },
-    { label: 'Maxed', value: fmt(stats.maxedCount) },
+    { label: 'Zuk helms', value: fmt(stats.zukHelmCount) },
     { label: 'Infernal capes', value: fmt(stats.infernalCount) },
     { label: "Dizana's Quivers", value: fmt(stats.quiverCount) },
     { label: 'Blood Ornament kits', value: fmt(stats.bloodTorvaCount) },

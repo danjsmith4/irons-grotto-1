@@ -8,7 +8,7 @@ export interface ClanStats {
   totalPoints: number;
   totalClogSlots: number;
   totalPets: number;
-  maxedCount: number;
+  zukHelmCount: number;
   avgTotalLevel: number;
   bloodTorvaCount: number;
   radiantCount: number;
@@ -29,7 +29,7 @@ export async function fetchClanStats(): Promise<
         memberCount: sql<number>`count(*)::int`,
         totalPoints: sql<number>`coalesce(round(sum(${players.points})), 0)::int`,
         totalClogSlots: sql<number>`coalesce(sum(${players.collectionLogCount}), 0)::int`,
-        maxedCount: sql<number>`count(*) filter (where ${players.totalLevel} = 2376)::int`,
+        zukHelmCount: sql<number>`count(*) filter (where ${players.combatAchievementTier} = 'Grandmaster')::int`,
         avgTotalLevel: sql<number>`coalesce(round(avg(${players.totalLevel})), 0)::int`,
         bloodTorvaCount: sql<number>`count(*) filter (where ${players.hasBloodTorva})::int`,
         radiantCount: sql<number>`count(*) filter (where ${players.hasRadiantOathplate})::int`,
@@ -60,7 +60,7 @@ export async function fetchClanStats(): Promise<
         totalPoints: Number(row?.totalPoints ?? 0),
         totalClogSlots: Number(row?.totalClogSlots ?? 0),
         totalPets: Number(petRow?.totalPets ?? 0),
-        maxedCount: Number(row?.maxedCount ?? 0),
+        zukHelmCount: Number(row?.zukHelmCount ?? 0),
         avgTotalLevel: Number(row?.avgTotalLevel ?? 0),
         bloodTorvaCount: Number(row?.bloodTorvaCount ?? 0),
         radiantCount: Number(row?.radiantCount ?? 0),
