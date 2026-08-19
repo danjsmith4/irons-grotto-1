@@ -36,6 +36,10 @@ export async function GET() {
     const results = [];
     let successCount = 0;
     let errorCount = 0;
+    // Players whose discord account is gone, and players we simply could not
+    // reach discord for — surfaced so a batch run never hides either silently.
+    const playersMissingFromDiscord: string[] = [];
+    const playersWithStaleDiscordRoles: string[] = [];
 
     // Process each player with rate limiting
     for (let i = 0; i < allPlayers.length; i++) {
@@ -58,10 +62,26 @@ export async function GET() {
 
         if (result.success) {
           successCount++;
+
+          const { discordMembership } = result.data;
+
+          if (discordMembership === 'not-a-member') {
+            playersMissingFromDiscord.push(player.playerName);
+          } else if (discordMembership === 'unavailable') {
+            playersWithStaleDiscordRoles.push(player.playerName);
+          }
+
           results.push({
             playerName: player.playerName,
             success: true,
             message: 'Updated successfully',
+            ...(discordMembership === 'not-a-member' && {
+              warning: `Discord user ${player.discordUserId} is no longer in the guild — diary bonus points have been cleared`,
+            }),
+            ...(discordMembership === 'unavailable' && {
+              warning:
+                'Could not reach discord — diary bonus points were carried over from the previous run',
+            }),
           });
         } else {
           errorCount++;
@@ -81,11 +101,25 @@ export async function GET() {
       }
     }
 
+    if (playersMissingFromDiscord.length > 0) {
+      console.warn(
+        `Players no longer in the discord guild: ${playersMissingFromDiscord.join(', ')}`,
+      );
+    }
+
+    if (playersWithStaleDiscordRoles.length > 0) {
+      console.warn(
+        `Discord roles could not be read for: ${playersWithStaleDiscordRoles.join(', ')}`,
+      );
+    }
+
     return NextResponse.json({
       success: true,
       message: `Batch update completed: ${successCount} successful, ${errorCount} failed`,
       playersUpdated: successCount,
       playersTotal: allPlayers.length,
+      playersMissingFromDiscord,
+      playersWithStaleDiscordRoles,
       results,
     });
   } catch (error) {

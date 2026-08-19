@@ -28,7 +28,10 @@ import { fetchTemplePlayerCollectionLog } from './fetch-temple-collection-log';
 import { fetchTempleConstants } from './fetch-temple-constants';
 import { mergeTzhaarCapes } from './utils/merge-tzhaar-capes';
 import { isAchievementDiaryCapeAchieved } from '../../utils/is-achievement-diary-cape-achieved';
-import { fetchUserDiscordRoles } from '../fetch-user-discord-roles';
+import {
+  DiscordRolesResult,
+  fetchUserDiscordRoles,
+} from '../fetch-user-discord-roles';
 import { calculateCombatDiaryTierBonusPoints } from '../../utils/calculators/calculate-custom-diary-tier-multipliers';
 import { processPlayerData, getPlayerByName } from '@/lib/db/player-operations';
 import { TempleOSRSCollectionLogItem } from '@/app/schemas/temple-api';
@@ -43,6 +46,12 @@ export interface PlayerDetailsResponse
   isTempleCollectionLogOutdated: boolean;
   isMobileOnly: boolean;
   rawCollectionLogItems?: TempleOSRSCollectionLogItem[];
+  /**
+   * Whether we were able to read this player's discord roles. `unavailable`
+   * means the role-derived bonus points below are carried over from the stored
+   * record rather than freshly calculated.
+   */
+  discordMembership?: DiscordRolesResult['status'];
 }
 
 export const emptyResponse = {
@@ -301,8 +310,13 @@ export async function fetchPlayerDetails(
       ? isAchievementDiaryCapeAchieved(achievementDiaries)
       : false;
 
+    // A failed discord lookup is not evidence that the player holds no diary
+    // roles, so fall back to the stored values instead of zeroing them out.
     const { combatBonusPoints, collectionLogBonusPoints } =
-      calculateCombatDiaryTierBonusPoints(discordRoles);
+      calculateCombatDiaryTierBonusPoints(discordRoles) ?? {
+        combatBonusPoints: playerRecord.combatBonusPoints,
+        collectionLogBonusPoints: playerRecord.collectionLogBonusPoints,
+      };
 
     const result = {
       success: true as const,
@@ -351,6 +365,7 @@ export async function fetchPlayerDetails(
         hasThirdPartyData,
         isTempleCollectionLogOutdated,
         isMobileOnly: playerRecord.isMobileOnly ?? false,
+        discordMembership: discordRoles.status,
         collectionLogBonusPoints: collectionLogBonusPoints,
         combatBonusPoints,
         skillingBonusPoints: 0, // Leaving this in for future use, if we decide to add a skilling diary
