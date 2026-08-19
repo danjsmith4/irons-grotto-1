@@ -1,27 +1,58 @@
 import { customDiaryDiscordRoles } from '@/config/discord-roles';
+import {
+  clogDiaryTierBonusPoints,
+  customDiaryTierBonusPoints,
+} from '@/config/custom-diaries';
 import { calculateCombatDiaryTierBonusPoints } from './calculate-custom-diary-tier-multipliers';
 
-it('calculates the correct tier multipliers', () => {
-  const roles = new Set<string>([customDiaryDiscordRoles.Combat.get('Easy')!]);
+function withRoles(...roles: string[]) {
+  return { status: 'ok' as const, roles: new Set(roles) };
+}
 
-  const { collectionLogBonusPoints, combatBonusPoints, skillingBonusPoints } =
-    calculateCombatDiaryTierBonusPoints(roles);
+it('calculates the correct tier bonus points', () => {
+  const result = calculateCombatDiaryTierBonusPoints(
+    withRoles(
+      customDiaryDiscordRoles.Combat.get('Easy')!,
+      customDiaryDiscordRoles.Clog.get('Elite')!,
+    ),
+  );
 
-  expect(collectionLogBonusPoints).toEqual(0.4);
-  expect(combatBonusPoints).toEqual(0.3);
-  expect(skillingBonusPoints).toEqual(0.1);
+  expect(result).toEqual({
+    combatBonusPoints: customDiaryTierBonusPoints.Easy,
+    collectionLogBonusPoints: clogDiaryTierBonusPoints.Elite,
+  });
 });
 
-it('calculates the correct tier multipliers when multiple roles for the same diary are present', () => {
-  const roles = new Set<string>([
-    customDiaryDiscordRoles.Combat.get('Easy')!,
-    customDiaryDiscordRoles.Combat.get('Hard')!,
-  ]);
+it('takes the highest tier when multiple roles for the same diary are present', () => {
+  const result = calculateCombatDiaryTierBonusPoints(
+    withRoles(
+      customDiaryDiscordRoles.Combat.get('Easy')!,
+      customDiaryDiscordRoles.Combat.get('Hard')!,
+    ),
+  );
 
-  const { collectionLogBonusPoints, combatBonusPoints, skillingBonusPoints } =
-    calculateCombatDiaryTierBonusPoints(roles);
+  expect(result).toEqual({
+    combatBonusPoints: customDiaryTierBonusPoints.Hard,
+    collectionLogBonusPoints: 0,
+  });
+});
 
-  expect(collectionLogBonusPoints).toEqual(0.4);
-  expect(combatBonusPoints).toEqual(0.4);
-  expect(skillingBonusPoints).toEqual(0.2);
+it('awards no bonus points when the user has left the guild', () => {
+  expect(
+    calculateCombatDiaryTierBonusPoints({ status: 'not-a-member' }),
+  ).toEqual({
+    combatBonusPoints: 0,
+    collectionLogBonusPoints: 0,
+  });
+});
+
+it('returns null when discord could not be reached, so the caller keeps its stored values', () => {
+  expect(
+    calculateCombatDiaryTierBonusPoints({
+      status: 'unavailable',
+      error: new Error('rate limited'),
+    }),
+  ).toBeNull();
+
+  expect(calculateCombatDiaryTierBonusPoints(null)).toBeNull();
 });
