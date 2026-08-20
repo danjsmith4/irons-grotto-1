@@ -25,5 +25,6 @@ describe('Collection Log - Early-game player', () => {
         `(${fixture.pointsRemaining})`,
       );
     },
+    /^collection log & clues$/i,
   );
 });

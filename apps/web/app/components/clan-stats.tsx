@@ -22,9 +22,9 @@ export function ClanStats({ stats }: ClanStatsProps) {
     { label: 'Zuk helms', value: fmt(stats.zukHelmCount) },
     { label: 'Infernal capes', value: fmt(stats.infernalCount) },
     { label: "Dizana's Quivers", value: fmt(stats.quiverCount) },
-    { label: 'Blood Ornament kits', value: fmt(stats.bloodTorvaCount) },
+    { label: 'Blorva kits', value: fmt(stats.bloodTorvaCount) },
     {
-      label: 'Radiant Oathplate completions',
+      label: 'Radiant kits',
       value: fmt(stats.radiantCount),
     },
   ];

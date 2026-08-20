@@ -1,16 +1,11 @@
 import { useWatch } from 'react-hook-form';
-import { useCollectionLogAndCluesPointCalculator } from './collection-log-and-clues/use-collection-log-and-clues-point-calculator';
-import { useNotableItemsPointCalculator } from './notable-items/use-notable-items-point-calculator';
-import { useSkillingPointCalculator } from './skilling/use-skilling-point-calculator';
-import { useCombatPointCalculator } from './combat/use-combat-point-calculator';
 import { useRank } from '../use-rank';
+import { useTotalPoints } from './use-total-points';
 import { RankCalculatorSchema } from '../../[player]/submit-rank-calculator-validation';
-import { calculateTotalPoints } from '../../utils/calculators/calculate-total-points';
 import {
   calculateRankProgress,
   RankProgress,
 } from '../../utils/calculators/calculate-rank-progress';
-import { useCurrentPlayer } from '../../contexts/current-player-context';
 
 export type RankCalculatorData = RankProgress & {
   /**
@@ -25,26 +20,9 @@ export function useRankCalculator() {
     name: 'rankStructure',
   });
 
-  const { playerName } = useCurrentPlayer();
+  const pointsAwarded = useTotalPoints();
 
-  const { pointsAwarded: totalCollectionLogPoints } =
-    useCollectionLogAndCluesPointCalculator();
-
-  const { pointsAwarded: totalNotableItemsPoints } =
-    useNotableItemsPointCalculator();
-
-  const { pointsAwarded: totalSkillingPoints } = useSkillingPointCalculator();
-
-  const { pointsAwarded: totalCombatPoints } = useCombatPointCalculator();
-
-  const pointsAwarded = calculateTotalPoints(
-    totalCollectionLogPoints,
-    totalNotableItemsPoints,
-    totalSkillingPoints,
-    totalCombatPoints,
-  );
-
-  const { standardRankData, ...rankData } = useRank(pointsAwarded, playerName);
+  const { standardRankData, ...rankData } = useRank(pointsAwarded);
 
   return {
     ...calculateRankProgress(pointsAwarded, rankStructure, rankData),

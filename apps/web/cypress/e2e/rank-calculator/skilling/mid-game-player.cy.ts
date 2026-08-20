@@ -39,5 +39,6 @@ describe('Skilling - Mid-game player', () => {
         `(${fixture.pointsRemaining})`,
       );
     },
+    /^skilling$/i,
   );
 });

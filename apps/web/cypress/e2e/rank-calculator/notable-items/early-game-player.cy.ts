@@ -33,5 +33,6 @@ describe('Notable items - Early-game player', () => {
         '1.69%',
       );
     },
+    /^notable items$/i,
   );
 });

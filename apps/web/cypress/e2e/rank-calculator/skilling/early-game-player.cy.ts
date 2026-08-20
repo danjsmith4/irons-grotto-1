@@ -39,5 +39,6 @@ describe('Skilling - Early-game player', () => {
         `(${fixture.pointsRemaining})`,
       );
     },
+    /^skilling$/i,
   );
 });

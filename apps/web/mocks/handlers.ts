@@ -4,6 +4,8 @@ import { delay, http, HttpResponse, passthrough } from 'msw';
 import { WikiSyncResponse } from '@/app/schemas/wiki';
 import { ClanMember } from '@/app/schemas/inactivity-checker';
 import { TempleOSRSPlayerStats } from '@/app/schemas/temple-api';
+import type { ClanPointDistribution } from '@/app/data-sources/fetch-clan-point-distribution';
+import type { RankPace } from '@/app/data-sources/fetch-rank-pace';
 import * as wikiSync from './wiki-sync';
 import * as templePlayerStats from './temple-player-stats';
 import { memberListFixture } from './misc/member-list';
@@ -87,6 +89,38 @@ const memberListHandler = http.get(
   () => HttpResponse.json<ClanMember[]>(memberListFixture),
 );
 
+// The rank calculator asks for this on every load to place a player against
+// the clan. A fixed curve keeps the standing chip deterministic in tests.
+const clanPointDistributionHandler = http.get(
+  '*/api/clan-point-distribution',
+  () =>
+    HttpResponse.json<{ success: true; data: ClanPointDistribution }>({
+      success: true,
+      data: {
+        points: [9000, 7000, 5000, 3000, 1000],
+        memberCount: 6,
+      },
+    }),
+);
+
+// Rank pace for the scoreboard's "at this rank for X" strip.
+const rankPaceHandler = http.get('*/api/rank-pace', () =>
+  HttpResponse.json<{ success: true; data: RankPace }>({
+    success: true,
+    data: {
+      history: [
+        {
+          oldRank: 'Recruit',
+          newRank: 'Corporal',
+          createdAt: '2026-06-01T00:00:00.000Z',
+        },
+      ],
+      joinDate: '2025-01-01',
+      clanPaceByRank: { Corporal: { medianDays: 60, sampleSize: 8 } },
+    },
+  }),
+);
+
 const passthroughHandlers = [
   'https://*.googleapis.com/*',
   'https://*.gstatic.com/*',
@@ -110,5 +144,7 @@ export const handlers = [
   templePlayerStatsHandler,
   memberListHandler,
   wikiApiHandler,
+  clanPointDistributionHandler,
+  rankPaceHandler,
   ...passthroughHandlers,
 ];

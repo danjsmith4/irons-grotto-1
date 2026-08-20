@@ -1,12 +1,12 @@
 import { memo } from 'react';
 import { FieldError } from 'react-hook-form';
-import { Flex, Table, Text } from '@radix-ui/themes';
 import { isCollectionLogItem, Item } from '@/app/schemas/items';
 import { Checkbox } from './checkbox';
 import { stripEntityName } from '../utils/strip-entity-name';
 import { EntityImage } from './entity-image';
 import { useCalculatorScaling } from '../hooks/point-calculator/use-calculator-scaling';
 import { ValidationTooltip } from './validation-tooltip';
+import styles from './rank-calculator.module.css';
 
 interface ItemProps {
   acquired: boolean;
@@ -28,40 +28,27 @@ export const MemoisedItem = memo(({ item, acquired, error }: ItemProps) => {
       : undefined;
 
   return (
-    <Table.Row key={item.name} align="center">
-      <Table.Cell>
-        <Flex align="center" gap="2">
-          <EntityImage
-            alt={`${item.name} icon`}
-            src={item.image}
-            fallback="?"
-          />
-          <ValidationTooltip error={pointsError ?? error}>
-            <Text>{item.name}</Text>
-          </ValidationTooltip>
-        </Flex>
-      </Table.Cell>
-      <Table.Cell align="right">
-        <Checkbox
-          checked={acquired}
-          disabled={!!(error ?? pointsError)}
-          name={`acquiredItems.${stripEntityName(item.name)}` as const}
-        />
-      </Table.Cell>
-      <Table.Cell
+    <div className={`${styles.item} ${acquired ? styles.itemAcquired : ''}`}>
+      <span className={styles.itemIcon}>
+        <EntityImage alt={`${item.name} icon`} src={item.image} fallback="?" />
+      </span>
+      <ValidationTooltip error={pointsError ?? error}>
+        <span className={styles.itemName}>{item.name}</span>
+      </ValidationTooltip>
+      <Checkbox
+        checked={acquired}
+        disabled={!!(error ?? pointsError)}
+        name={`acquiredItems.${stripEntityName(item.name)}` as const}
+      />
+      <span
         aria-label={`${item.name} points`}
-        align="right"
-        width="100px"
+        className={`${styles.itemPoints} ${
+          pointsError ? styles.itemError : ''
+        }`}
       >
-        {pointsError ? (
-          <Text color="red" weight="medium">
-            -
-          </Text>
-        ) : (
-          `${acquired ? scaledItemPoints : 0} / ${scaledItemPoints}`
-        )}
-      </Table.Cell>
-    </Table.Row>
+        {pointsError ? '-' : scaledItemPoints}
+      </span>
+    </div>
   );
 });
 

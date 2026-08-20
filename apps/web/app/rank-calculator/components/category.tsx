@@ -1,6 +1,6 @@
-import { memo } from 'react';
-import { Box, Card, Flex, Separator, Table, Text } from '@radix-ui/themes';
+import { memo, useEffect, useId, useState } from 'react';
 import { FieldError, useWatch } from 'react-hook-form';
+import { ChevronDownIcon } from '@radix-ui/react-icons';
 import { Item } from '@/app/schemas/items';
 import { formatWikiImageUrl } from '../utils/format-wiki-url';
 import { MemoisedItem } from './item';
@@ -9,6 +9,7 @@ import { EntityImage } from './entity-image';
 import { parseInitials } from '../utils/parse-initials';
 import { formatPercentage } from '../utils/format-percentage';
 import { RankCalculatorSchema } from '../[player]/submit-rank-calculator-validation';
+import styles from './rank-calculator.module.css';
 
 interface CategoryProps {
   title: string;
@@ -26,7 +27,8 @@ export const Category = memo(
     errors,
     query,
   }: CategoryProps) => {
-    // Create a map of item names to their acquired status
+    const [isOpen, setIsOpen] = useState(true);
+    const bodyId = useId();
     const itemNames = items.map(({ name }) => stripEntityName(name));
     const fieldsArray = useWatch<
       RankCalculatorSchema,
@@ -34,89 +36,92 @@ export const Category = memo(
     >({
       name: itemNames.map((name) => `acquiredItems.${name}` as const),
     });
-    // Map item name to acquired value
     const fields: Record<string, boolean> = {};
     itemNames.forEach((name, idx) => {
       fields[name] = !!fieldsArray[idx];
     });
-    // Map item name to error
     const errorsMap: Record<string, FieldError | undefined> = {};
     itemNames.forEach((name, idx) => {
       errorsMap[name] = errors[idx];
     });
     const completedCount = Object.values(fields).filter(Boolean).length;
-    const percentComplete = formatPercentage(completedCount / items.length, 0);
+    const completion = completedCount / items.length;
+    const percentComplete = formatPercentage(completion, 0);
     const queryLower = query?.toLowerCase() ?? '';
+    const isSearching = queryLower.length > 0;
 
     const matchesCategory = title.toLowerCase().includes(queryLower);
     const visibleItems = items.filter(
       (item) => matchesCategory || item.name.toLowerCase().includes(queryLower),
     );
+
+    // A search should always reveal what it matched, even in a collapsed
+    // category.
+    useEffect(() => {
+      if (isSearching) {
+        setIsOpen(true);
+      }
+    }, [isSearching]);
+
     if (!matchesCategory && visibleItems.length === 0) {
       return null;
     }
 
     return (
-      <Card my="3">
-        <Flex justify="between" align="center">
-          <Flex align="center" gap="3">
-            <EntityImage
-              alt={`${title} icon`}
-              src={image}
-              size="3"
-              height={40}
-              width={40}
-              fallback={parseInitials(title)}
+      <section className={styles.category}>
+        <button
+          type="button"
+          className={styles.categoryHeader}
+          aria-expanded={isOpen}
+          aria-controls={bodyId}
+          onClick={() => {
+            setIsOpen((open) => !open);
+          }}
+        >
+          <EntityImage
+            alt={`${title} icon`}
+            src={image}
+            size="2"
+            height={32}
+            width={32}
+            fallback={parseInitials(title)}
+          />
+          <span className={styles.categoryIdentity}>
+            <span className={styles.categoryTitle}>{title}</span>
+            <span
+              aria-label={`${title} item count`}
+              className={styles.categoryCount}
+            >
+              {`${completedCount} / ${items.length}`}
+            </span>
+          </span>
+          <span className={styles.categoryMeter}>
+            <span
+              className={styles.categoryMeterFill}
+              style={{ width: `${completion * 100}%` }}
             />
-            <Box>
-              <Box>
-                <Text size="2" weight="medium">
-                  {title}
-                </Text>
-              </Box>
-              <Box>
-                <Text aria-label={`${title} item count`} size="2" color="gray">
-                  {`${completedCount} / ${items.length}`}
-                </Text>
-              </Box>
-            </Box>
-          </Flex>
-          <Text
+          </span>
+          <span
             aria-label={`${title} percentage complete`}
-            color={percentComplete === '100%' ? 'green' : undefined}
-            weight="medium"
-            size="4"
+            className={`${styles.categoryPercent} ${
+              completion >= 1 ? styles.categoryComplete : ''
+            }`}
           >
             {percentComplete}
-          </Text>
-        </Flex>
-        <Separator
-          size="4"
-          my="3"
-          style={{ backgroundColor: 'var(--accent-a4)' }}
-        />
-        <Table.Root size="1">
-          <Table.Header>
-            <Table.Row>
-              <Text asChild weight="medium">
-                <Table.ColumnHeaderCell>Item name</Table.ColumnHeaderCell>
-              </Text>
-              <Text asChild weight="medium">
-                <Table.ColumnHeaderCell align="right">
-                  Acquired?
-                </Table.ColumnHeaderCell>
-              </Text>
-              <Text asChild weight="medium">
-                <Table.ColumnHeaderCell width="100px" align="right">
-                  Points
-                </Table.ColumnHeaderCell>
-              </Text>
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {visibleItems.length > 0 ? (
-              visibleItems.map((item) => {
+          </span>
+          <ChevronDownIcon
+            aria-hidden
+            className={`${styles.panelChevron} ${
+              isOpen ? styles.panelChevronOpen : ''
+            }`}
+          />
+        </button>
+        <div id={bodyId} hidden={!isOpen}>
+          {isOpen && (
+            <div className={styles.itemGrid}>
+              {visibleItems.map((item) => {
                 const nameKey = stripEntityName(item.name);
+
                 return (
                   <MemoisedItem
                     key={item.name}
@@ -125,19 +130,11 @@ export const Category = memo(
                     error={errorsMap[nameKey]}
                   />
                 );
-              })
-            ) : (
-              <Table.Row>
-                <Table.Cell colSpan={3}>
-                  <Text size="2" color="gray">
-                    No matching items
-                  </Text>
-                </Table.Cell>
-              </Table.Row>
-            )}
-          </Table.Body>
-        </Table.Root>
-      </Card>
+              })}
+            </div>
+          )}
+        </div>
+      </section>
     );
   },
 );

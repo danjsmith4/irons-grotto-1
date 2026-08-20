@@ -3,25 +3,19 @@ import * as formDataMocks from '@/mocks/misc/form-data';
 import { MockFormProvider } from '@/test-utils/mock-form-provider';
 import { generatePlayerTests } from '@/test-utils/generate-player-tests';
 import { format } from 'date-fns';
-import { calculateScaling } from '../../utils/calculators/calculate-scaling';
-import { PlayerCard } from './player-card';
-import { formatPercentage } from '../../utils/format-percentage';
+import { calculateScaling } from '../utils/calculators/calculate-scaling';
+import { PlayerMeta } from './player-meta';
+import { formatPercentage } from '../utils/format-percentage';
 
 generatePlayerTests(formDataMocks, (formData) => {
   beforeEach(async () => {
     render(
       <MockFormProvider defaultValues={formData}>
-        <PlayerCard />
+        <PlayerMeta />
       </MockFormProvider>,
     );
 
-    await screen.findByRole('heading', { name: /player/i });
-  });
-
-  it('renders the player name', () => {
-    expect(screen.getByLabelText(/player name/i).textContent).toMatch(
-      formData.playerName,
-    );
+    await screen.findByLabelText(/join date/i);
   });
 
   it('renders the join date', () => {

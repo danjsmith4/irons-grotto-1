@@ -37,6 +37,9 @@
   --ig-text-light: 196 210 240; /* #c4d2f0  light periwinkle — headings */
   --ig-on-accent: 15 10 30; /* #0f0a1e  text / icons on green + teal fills */
 
+  /* Layout — the sticky nav's height, which page-level sticky offsets use */
+  --ig-nav-h: 56px;
+
   /* Feedback (harmonious additions, not present in the logo) */
   --ig-danger: 229 72 77; /* #e5484d */
   --ig-warning: 245 179 66; /* #f5b342 */

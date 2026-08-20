@@ -31,5 +31,6 @@ describe('Combat - Early-game player', () => {
         `(${fixture.pointsRemaining})`,
       );
     },
+    /^combat$/i,
   );
 });

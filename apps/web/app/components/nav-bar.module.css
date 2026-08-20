@@ -1,0 +1,218 @@
+/* ==========================================================================
+   Global navigation
+
+   Quiet by design: navigation is text with an active indicator, and the only
+   solid green control is the page's primary action (Save). Everything
+   secondary — help, sign out — collapses into the overflow menu so the bar
+   reads as one row of information, not seven competing buttons.
+   ========================================================================== */
+
+.nav {
+  position: sticky;
+  height: var(--ig-nav-h);
+  top: 0;
+  z-index: 1000;
+  background: rgb(var(--ig-bg) / 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgb(var(--ig-text-muted) / 0.1);
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  height: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+@media (max-width: 640px) {
+  .inner {
+    gap: 0.5rem;
+    padding: 0 0.75rem;
+  }
+}
+
+/* -- brand ---------------------------------------------------------------- */
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.brandMark {
+  border-radius: 6px;
+}
+
+.brandName {
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: rgb(var(--ig-text));
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .brandName {
+    display: none;
+  }
+}
+
+/* -- nav links ------------------------------------------------------------ */
+
+.links {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.45rem 0.7rem 0.5rem;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.2;
+  color: rgb(var(--ig-text-muted));
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+}
+
+.link:hover {
+  color: rgb(var(--ig-text));
+  background: rgb(var(--ig-text-muted) / 0.07);
+}
+
+.link:focus-visible {
+  outline: 2px solid rgb(var(--ig-secondary) / 0.6);
+  outline-offset: 2px;
+}
+
+.linkActive {
+  color: rgb(var(--ig-text));
+}
+
+.linkActive::after {
+  content: '';
+  position: absolute;
+  left: 0.7rem;
+  right: 0.7rem;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: rgb(var(--ig-secondary));
+}
+
+.spacer {
+  flex: 1;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+/* -- split primary action ------------------------------------------------- */
+
+.save {
+  display: flex;
+  align-items: stretch;
+}
+
+.saveMain,
+.saveMore {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  height: 32px;
+  padding: 0 0.85rem;
+  border: 0;
+  background: rgb(var(--ig-secondary));
+  color: rgb(var(--ig-on-accent));
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.saveMain {
+  border-radius: 8px 0 0 8px;
+}
+
+.saveMore {
+  padding: 0 0.45rem;
+  border-radius: 0 8px 8px 0;
+  border-left: 1px solid rgb(var(--ig-on-accent) / 0.2);
+}
+
+.saveMain:hover:not(:disabled),
+.saveMore:hover:not(:disabled) {
+  background: color-mix(in srgb, rgb(var(--ig-secondary)) 88%, white);
+}
+
+.saveMain:disabled,
+.saveMore:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.saveMain:focus-visible,
+.saveMore:focus-visible {
+  outline: 2px solid rgb(var(--ig-text) / 0.7);
+  outline-offset: 2px;
+}
+
+/* -- overflow menu -------------------------------------------------------- */
+
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid rgb(var(--ig-text-muted) / 0.16);
+  background: rgb(var(--ig-surface-2) / 0.5);
+  color: rgb(var(--ig-text-muted));
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.iconButton:hover {
+  color: rgb(var(--ig-text));
+  border-color: rgb(var(--ig-secondary) / 0.4);
+}
+
+.iconButton:focus-visible {
+  outline: 2px solid rgb(var(--ig-secondary) / 0.6);
+  outline-offset: 2px;
+}
+
+/* Trailing detail inside a dropdown row (an account's rank). */
+.menuMeta {
+  margin-left: auto;
+  padding-left: 1.25rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  color: rgb(var(--ig-text-muted));
+}

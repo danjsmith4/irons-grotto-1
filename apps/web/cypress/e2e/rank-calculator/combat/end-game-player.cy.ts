@@ -31,5 +31,6 @@ describe('Combat - End-game player', () => {
         `(${fixture.pointsRemaining})`,
       );
     },
+    /^combat$/i,
   );
 });

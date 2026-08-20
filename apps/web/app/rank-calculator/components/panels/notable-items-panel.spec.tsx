@@ -1,9 +1,9 @@
-import { render, screen } from '@/test-utils/testing-library';
+import { fireEvent, render, screen } from '@/test-utils/testing-library';
 import * as formDataMocks from '@/mocks/misc/form-data';
 import { notableItemsExpectedValues } from '@/fixtures/rank-calculator/notable-items-expected-values';
 import { MockFormProvider } from '@/test-utils/mock-form-provider';
 import { generateScaledPlayerTests } from '@/test-utils/generated-scaled-player-tests';
-import { NotableItemsCard } from './notable-items-card';
+import { NotableItemsPanel } from './notable-items-panel';
 import { formatPercentage } from '../../utils/format-percentage';
 import { formatNumber } from '../../utils/format-number';
 
@@ -14,11 +14,15 @@ generateScaledPlayerTests(
     beforeEach(async () => {
       render(
         <MockFormProvider defaultValues={formData}>
-          <NotableItemsCard />
+          <NotableItemsPanel />
         </MockFormProvider>,
       );
 
-      await screen.findByRole('heading', { name: /notable items/i });
+      const trigger = await screen.findByRole('button', { name: /^notable items$/i });
+
+      // The tile is a summary; its inputs open in a modal.
+      fireEvent.click(trigger);
+      await screen.findByRole('dialog');
     });
 
     it('renders the total points', () => {

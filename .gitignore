@@ -32,6 +32,8 @@ next-env.d.ts
 # Cypress
 cypress/screenshots
 cypress/downloads
+**/cypress/screenshots
+**/cypress/downloads
 
 # Sentry Config File
 .env.sentry-build-plugin

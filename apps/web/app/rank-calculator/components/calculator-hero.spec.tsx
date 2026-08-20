@@ -4,10 +4,10 @@ import * as formDataMocks from '@/mocks/misc/form-data';
 import { MockFormProvider } from '@/test-utils/mock-form-provider';
 import { generateScaledPlayerTests } from '@/test-utils/generated-scaled-player-tests';
 import { rankExpectedValues } from '@/fixtures/rank-calculator/rank-expected-values';
-import { RankProgressCard } from './rank-progress-card';
-import { getRankName } from '../../utils/get-rank-name';
-import { formatNumber } from '../../utils/format-number';
-import { getRankImageUrl } from '../../utils/get-rank-image-url';
+import { CalculatorHero } from './calculator-hero';
+import { getRankName } from '../utils/get-rank-name';
+import { formatNumber } from '../utils/format-number';
+import { getRankImageUrl } from '../utils/get-rank-image-url';
 
 generateScaledPlayerTests(
   formDataMocks,
@@ -16,11 +16,17 @@ generateScaledPlayerTests(
     beforeEach(async () => {
       render(
         <MockFormProvider defaultValues={formData}>
-          <RankProgressCard />
+          <CalculatorHero />
         </MockFormProvider>,
       );
 
       await screen.findByText(/^total points$/i);
+    });
+
+    it('renders the player name', () => {
+      expect(screen.getByLabelText(/^player name$/i).textContent).toMatch(
+        formData.playerName,
+      );
     });
 
     it('renders the total points', () => {

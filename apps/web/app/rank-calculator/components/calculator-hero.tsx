@@ -1,0 +1,268 @@
+import { useEffect, useId, useState } from 'react';
+import { useFormContext, useWatch } from 'react-hook-form';
+import { Button, Dialog, Flex } from '@radix-ui/themes';
+import { ArrowRightIcon } from '@radix-ui/react-icons';
+import { RankStructure } from '@/app/schemas/rank-calculator';
+import { useAction } from 'next-safe-action/hooks';
+import Image from 'next/image';
+import { Select } from './select';
+import { PlayerMeta } from './player-meta';
+import { RankPace } from './rank-pace';
+import { RankStructureInfoModal } from './rank-structure-info-modal';
+import { useRankCalculator } from '../hooks/point-calculator/use-rank-calculator';
+import { getRankName } from '../utils/get-rank-name';
+import { getPointsRemainingLabel } from '../utils/get-points-remaining-label';
+import { formatNumber } from '../utils/format-number';
+import { formatPercentage } from '../utils/format-percentage';
+import {
+  exactPositionThreshold,
+  useClanStanding,
+} from '../hooks/use-clan-standing';
+import { getRankImageUrl } from '../utils/get-rank-image-url';
+import { useCurrentPlayer } from '../contexts/current-player-context';
+import { RankCalculatorSchema } from '../[player]/submit-rank-calculator-validation';
+import { handleToastUpdates } from '../utils/handle-toast-updates';
+import { publishRankSubmissionAction } from '../[player]/actions/publish-rank-submission-action';
+import { updatePlayerPointsAction } from '../actions/update-player-points-action';
+import styles from './rank-calculator.module.css';
+
+/**
+ * The scoreboard: who the submission is for, what it scores, and how far that
+ * is from the next rank. Sticks beneath the nav so the total stays visible
+ * while the item workbench scrolls.
+ */
+export function CalculatorHero() {
+  const {
+    pointsAwarded,
+    pointsAwardedPercentage,
+    pointsRemaining,
+    nextRank,
+    rank,
+    throttleReason,
+    standardRankProgress,
+  } = useRankCalculator();
+  const { register, setValue, getValues } = useFormContext();
+  const { playerName, rank: currentRank } = useCurrentPlayer();
+  // The displayed name comes from the submission itself; the context name is
+  // what the publish action is bound to.
+  const submissionPlayerName = useWatch<RankCalculatorSchema, 'playerName'>({
+    name: 'playerName',
+  });
+  const [showRankUpDialog, setShowRankUpDialog] = useState(
+    currentRank && currentRank !== rank,
+  );
+  const standing = useClanStanding();
+  const totalId = useId();
+  const remainingId = useId();
+  const standardRemainingId = useId();
+  const rankName = getRankName(rank);
+  const nextRankName = nextRank ? getRankName(nextRank) : 'Max rank';
+  const standardRankName = standardRankProgress
+    ? getRankName(standardRankProgress.rank)
+    : null;
+  const standardNextRankName = standardRankProgress?.nextRank
+    ? getRankName(standardRankProgress.nextRank)
+    : 'Max rank';
+  const { executeAsync: publishRankSubmission } = useAction(
+    publishRankSubmissionAction.bind(null, currentRank, playerName),
+  );
+
+  useEffect(() => {
+    if (rank !== getValues('rank')) {
+      setValue('rank', rank, {
+        shouldDirty: true,
+      });
+    }
+  }, [rank, setValue, getValues]);
+
+  useEffect(() => {
+    setValue('points', pointsAwarded, {
+      shouldDirty: true,
+    });
+  }, [pointsAwarded, setValue]);
+
+  // The scoreboard is the page's single owner of the running total, so the
+  // write lives here. It used to sit inside `useRank`, which meant every
+  // consumer of `useRankCalculator` (hero, nav bar, navigation actions) fired
+  // its own duplicate write on each recalculation.
+  useEffect(() => {
+    if (pointsAwarded > 0 && playerName) {
+      updatePlayerPointsAction(playerName, pointsAwarded).catch((error) => {
+        console.error(
+          `Failed to update points for player ${playerName}:`,
+          error,
+        );
+      });
+    }
+  }, [playerName, pointsAwarded]);
+
+  return (
+    <>
+      <input
+        {...register('rank', { value: rank })}
+        defaultValue={rank}
+        type="hidden"
+      />
+      <input
+        {...register('points', { value: pointsAwarded })}
+        defaultValue={pointsAwarded}
+        type="hidden"
+      />
+      <header className={styles.scoreboard}>
+        <div className={styles.scoreHead}>
+          <span className={styles.rankBadge}>
+            <Image
+              alt={`${rank} icon`}
+              src={getRankImageUrl(rank)}
+              width={32}
+              height={32}
+              unoptimized
+            />
+          </span>
+          <div className={styles.scoreIdentity}>
+            <h1 className={styles.playerName} aria-label="Player name">
+              {decodeURIComponent(submissionPlayerName)}
+            </h1>
+            <p className={styles.rankTrack}>
+              <span aria-label="Current rank">{rankName}</span>
+              <ArrowRightIcon aria-hidden className={styles.rankArrow} />
+              <span aria-label="Next rank">{nextRankName}</span>
+              {nextRank && (
+                <Image
+                  alt={`${nextRank} icon`}
+                  src={getRankImageUrl(nextRank)}
+                  height={18}
+                  width={18}
+                  unoptimized
+                />
+              )}
+            </p>
+          </div>
+          <div className={styles.scoreTotal}>
+            <div className={styles.totalValue} aria-labelledby={totalId}>
+              {formatNumber(pointsAwarded)}
+            </div>
+            <div className={styles.totalLabel} id={totalId}>
+              Total points
+            </div>
+            {standing && (
+              <div
+                className={`${styles.standing} ${
+                  standing.position <= exactPositionThreshold
+                    ? styles.standingElite
+                    : ''
+                }`}
+                title={`${formatNumber(standing.position)} of ${formatNumber(
+                  standing.memberCount,
+                )} active members`}
+              >
+                {standing.position <= exactPositionThreshold
+                  ? `#${formatNumber(standing.position)} in the Grotto`
+                  : `Top ${formatPercentage(standing.topPercent, 0)} of the Grotto`}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className={styles.meter}>
+          <div className={styles.meterMeta}>
+            <span id={remainingId}>Points to next rank</span>
+            <span>
+              {formatPercentage(pointsAwardedPercentage)}
+              {' · '}
+              <span aria-labelledby={remainingId}>
+                {getPointsRemainingLabel(pointsRemaining, throttleReason)}
+              </span>
+            </span>
+          </div>
+          <div className={styles.meterTrack}>
+            <div
+              className={styles.meterFill}
+              style={{
+                width: `${Math.min(100, pointsAwardedPercentage * 100)}%`,
+              }}
+            />
+          </div>
+        </div>
+
+        {standardRankProgress && (
+          <div className={`${styles.meter} ${styles.meterSecondary}`}>
+            <div className={styles.meterMeta}>
+              <span id={standardRemainingId}>
+                Standard rank progress — {standardRankName}
+                {' → '}
+                {standardNextRankName}
+              </span>
+              <span aria-labelledby={standardRemainingId}>
+                {getPointsRemainingLabel(
+                  standardRankProgress.pointsRemaining,
+                  standardRankProgress.throttleReason,
+                )}
+              </span>
+            </div>
+            <div className={styles.meterTrack}>
+              <div
+                className={styles.meterFill}
+                style={{
+                  width: `${Math.min(
+                    100,
+                    standardRankProgress.pointsAwardedPercentage * 100,
+                  )}%`,
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        <div className={styles.scoreFoot}>
+          <RankPace rank={rank} />
+          <PlayerMeta />
+          <div className={`${styles.metaItem} ${styles.metaPush}`}>
+            <span className={styles.metaLabel}>Structure</span>
+            <Select
+              aria-label="Selected rank structure"
+              name="rankStructure"
+              options={RankStructure.options}
+            />
+          </div>
+          <RankStructureInfoModal />
+        </div>
+      </header>
+
+      <Dialog.Root
+        open={showRankUpDialog}
+        onOpenChange={() => {
+          setShowRankUpDialog(false);
+        }}
+      >
+        <Dialog.Content maxWidth="450px">
+          <Dialog.Title>Rank up</Dialog.Title>
+          <Dialog.Description size="2" mb="2">
+            Congratulations, you have achieved the <strong>{rankName}</strong>{' '}
+            rank!
+          </Dialog.Description>
+          <Flex gap="3" mt="4" justify="end">
+            <Dialog.Close>
+              <Button variant="soft" color="gray">
+                Cancel
+              </Button>
+            </Dialog.Close>
+            <Dialog.Close
+              onClick={() => {
+                void handleToastUpdates(
+                  publishRankSubmission({
+                    totalPoints: pointsAwarded,
+                    rank,
+                  }),
+                  { success: 'Rank application submitted!' },
+                );
+              }}
+            >
+              <Button variant="soft">Apply for promotion</Button>
+            </Dialog.Close>
+          </Flex>
+        </Dialog.Content>
+      </Dialog.Root>
+    </>
+  );
+}

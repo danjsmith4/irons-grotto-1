@@ -1,9 +1,9 @@
-import { render, screen } from '@/test-utils/testing-library';
+import { fireEvent, render, screen } from '@/test-utils/testing-library';
 import * as formDataMocks from '@/mocks/misc/form-data';
 import { MockFormProvider } from '@/test-utils/mock-form-provider';
 import { collectionLogAndCluesExpectedValues } from '@/fixtures/rank-calculator/collection-log-and-clues-expected-values';
 import { generateScaledPlayerTests } from '@/test-utils/generated-scaled-player-tests';
-import { CollectionLogAndCluesCard } from './collection-log-and-clues-card';
+import { CollectionLogAndCluesPanel } from './collection-log-and-clues-panel';
 import { formatPercentage } from '../../utils/format-percentage';
 import { formatNumber } from '../../utils/format-number';
 
@@ -14,11 +14,15 @@ generateScaledPlayerTests(
     beforeEach(async () => {
       render(
         <MockFormProvider defaultValues={formData}>
-          <CollectionLogAndCluesCard />
+          <CollectionLogAndCluesPanel />
         </MockFormProvider>,
       );
 
-      await screen.findByRole('heading', { name: /collection log/i });
+      const trigger = await screen.findByRole('button', { name: /^collection log & clues$/i });
+
+      // The tile is a summary; its inputs open in a modal.
+      fireEvent.click(trigger);
+      await screen.findByRole('dialog');
     });
 
     it('renders the total points', () => {

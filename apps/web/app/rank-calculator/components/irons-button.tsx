@@ -50,7 +50,7 @@ export function IronsButton({
           radixVariant: 'solid' as const,
           customStyle: {
             background: 'rgb(var(--ig-danger))',
-            color: '#ffffff',
+            color: 'rgb(var(--ig-text))',
           },
         };
       default:

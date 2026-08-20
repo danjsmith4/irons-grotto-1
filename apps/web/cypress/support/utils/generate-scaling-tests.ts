@@ -6,7 +6,19 @@ export const generateScalingTests = <T extends CommonPointCalculatorData>(
   player: string,
   scalingFixtures: ScalingFixtureMap<T>,
   assertValues: (fixture: T) => void,
+  /**
+   * Category tile to open before asserting. A tile shows only its totals — the
+   * per-input point values live in its modal.
+   */
+  openCategory?: RegExp,
 ) => {
+  const openCategoryModal = () => {
+    if (openCategory) {
+      cy.findByRole('button', { name: openCategory }).click();
+      cy.findByRole('dialog').should('be.visible');
+    }
+  };
+
   it('Calculates the correct points - Full scaling (100%)', () => {
     cy.visit(`/rank-calculator/${player}`);
     cy.setJoinDate(
@@ -16,6 +28,7 @@ export const generateScalingTests = <T extends CommonPointCalculatorData>(
       '100.00%',
     );
 
+    openCategoryModal();
     assertValues(scalingFixtures.fullScaling);
   });
 
@@ -28,6 +41,7 @@ export const generateScalingTests = <T extends CommonPointCalculatorData>(
       '70.00%',
     );
 
+    openCategoryModal();
     assertValues(scalingFixtures.fourMonthScaling);
   });
 
@@ -40,6 +54,7 @@ export const generateScalingTests = <T extends CommonPointCalculatorData>(
       '40.00%',
     );
 
+    openCategoryModal();
     assertValues(scalingFixtures.twoMonthScaling);
   });
 
@@ -52,6 +67,7 @@ export const generateScalingTests = <T extends CommonPointCalculatorData>(
       '17.50%',
     );
 
+    openCategoryModal();
     assertValues(scalingFixtures.threeWeekScaling);
   });
 
@@ -59,6 +75,7 @@ export const generateScalingTests = <T extends CommonPointCalculatorData>(
     cy.visit(`/rank-calculator/${player}`);
     cy.setJoinDate(new Date(), '10.00%');
 
+    openCategoryModal();
     assertValues(scalingFixtures.noScaling);
   });
 };
