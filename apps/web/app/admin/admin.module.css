@@ -1,0 +1,336 @@
+/*
+ * Administration page. Tokens only — no raw colours. Structure is hairlines
+ * and typography, matching the player profile modal and the leaderboard.
+ */
+
+.page {
+  min-height: 100vh;
+  background: radial-gradient(
+    ellipse at center,
+    rgb(var(--ig-surface-2)) 0%,
+    rgb(var(--ig-bg)) 70%
+  );
+  color: rgb(var(--ig-text));
+}
+
+.main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ---------- Panels ---------- */
+
+.panel {
+  border: 1px solid rgb(var(--ig-text-muted) / 0.1);
+  border-radius: 12px;
+  background: rgb(var(--ig-surface) / 0.6);
+  overflow: hidden;
+}
+
+.panelHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid rgb(var(--ig-text-muted) / 0.1);
+}
+
+.panelTitle {
+  margin: 0;
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  color: rgb(var(--ig-text));
+}
+
+.panelMeta {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgb(var(--ig-text-muted));
+}
+
+.empty {
+  margin: 0;
+  padding: 1.25rem 1rem;
+  font-size: 0.875rem;
+  color: rgb(var(--ig-text-muted));
+}
+
+/* ---------- Search ---------- */
+
+.search {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.625rem;
+  border: 1px solid rgb(var(--ig-text-muted) / 0.16);
+  border-radius: 8px;
+  background: rgb(var(--ig-bg) / 0.5);
+  color: rgb(var(--ig-text-muted));
+}
+
+.search:focus-within {
+  border-color: rgb(var(--ig-secondary) / 0.6);
+}
+
+.search input {
+  min-width: 200px;
+  border: none;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  font-size: 0.875rem;
+  color: rgb(var(--ig-text));
+}
+
+.search input::placeholder {
+  color: rgb(var(--ig-text-muted) / 0.75);
+}
+
+/* ---------- Table ---------- */
+
+.tableWrap {
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--ig-text-muted) / 0.3) transparent;
+}
+
+.table {
+  width: 100%;
+  min-width: 620px;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table thead th {
+  padding: 0.625rem 0.75rem;
+  text-align: right;
+  white-space: nowrap;
+  border-bottom: 1px solid rgb(var(--ig-text-muted) / 0.14);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgb(var(--ig-text-muted));
+}
+
+.thLeft {
+  text-align: left !important;
+}
+
+.table tbody td {
+  padding: 0.625rem 0.75rem;
+  border-bottom: 1px solid rgb(var(--ig-text-muted) / 0.07);
+  vertical-align: middle;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table tbody tr:hover td {
+  background: rgb(var(--ig-surface-2) / 0.35);
+}
+
+.nameCell {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+/*
+ * Reserve the badge slot so every name starts at the same x, whether or not
+ * the account has a chat badge — same reason as the leaderboard.
+ */
+.badgeSlot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  flex-shrink: 0;
+}
+
+.name {
+  color: rgb(var(--ig-text));
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.name:hover {
+  color: rgb(var(--ig-secondary));
+}
+
+.roleCell,
+.rankCell {
+  color: rgb(var(--ig-text-muted));
+  white-space: nowrap;
+}
+
+.numberCell {
+  text-align: right;
+  color: rgb(var(--ig-text-light));
+  white-space: nowrap;
+}
+
+.actionCell {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.noAction {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgb(var(--ig-text-muted) / 0.7);
+}
+
+/* ---------- Buttons ---------- */
+
+.manageButton,
+.primaryButton,
+.ghostButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.manageButton,
+.ghostButton {
+  border: 1px solid rgb(var(--ig-text-muted) / 0.2);
+  background: transparent;
+  color: rgb(var(--ig-text));
+}
+
+.manageButton:hover:not(:disabled),
+.ghostButton:hover:not(:disabled) {
+  border-color: rgb(var(--ig-secondary) / 0.5);
+  color: rgb(var(--ig-secondary));
+}
+
+.primaryButton {
+  border: 1px solid transparent;
+  background: rgb(var(--ig-secondary));
+  color: rgb(var(--ig-on-accent));
+}
+
+.primaryButton:hover:not(:disabled) {
+  background: rgb(var(--ig-secondary) / 0.88);
+}
+
+.manageButton:disabled,
+.primaryButton:disabled,
+.ghostButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---------- History ---------- */
+
+.history {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.historyRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 1rem;
+  border-bottom: 1px solid rgb(var(--ig-text-muted) / 0.07);
+}
+
+.historyRow:last-child {
+  border-bottom: none;
+}
+
+.historyIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  color: rgb(var(--ig-text-muted));
+  background: rgb(var(--ig-surface-2) / 0.6);
+  border: 1px solid rgb(var(--ig-text-muted) / 0.1);
+}
+
+.historyText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.historyLine {
+  font-size: 0.875rem;
+  color: rgb(var(--ig-text));
+}
+
+.historyMeta {
+  font-size: 0.75rem;
+  color: rgb(var(--ig-text-muted));
+}
+
+.historyTime {
+  font-size: 11px;
+  color: rgb(var(--ig-text-muted));
+  white-space: nowrap;
+}
+
+/* ---------- Dialog ---------- */
+
+.dialog {
+  background: rgb(var(--ig-surface)) !important;
+  border: 1px solid rgb(var(--ig-text-muted) / 0.12);
+}
+
+.dialogTitle {
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: rgb(var(--ig-text));
+  margin-bottom: 0.5rem;
+}
+
+.dialogBody {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: rgb(var(--ig-text-muted));
+}
+
+.dialogBody strong {
+  color: rgb(var(--ig-text));
+  font-weight: 600;
+}
+
+.dialogActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}

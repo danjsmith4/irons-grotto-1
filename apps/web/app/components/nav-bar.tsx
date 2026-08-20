@@ -20,10 +20,12 @@ import { deletePlayerAccountAction } from '@/app/rank-calculator/actions/delete-
 import { DeleteSubmissionDataDialog } from '@/app/rank-calculator/components/delete-submission-data-dialog';
 import { handleToastUpdates } from '@/app/rank-calculator/utils/handle-toast-updates';
 import { useCurrentPlayer } from '@/app/rank-calculator/contexts/current-player-context';
+import { canAccessAdminDashboard } from '@/app/utils/staff-permissions';
+import { useViewerStaffRole } from './use-viewer-staff-role';
 import styles from './nav-bar.module.css';
 
 interface NavBarProps {
-  currentPage?: 'dashboard' | 'player' | 'submission';
+  currentPage?: 'dashboard' | 'player' | 'submission' | 'admin';
   playerName?: string;
   showSaveActions?: boolean;
   onSave?: () => void;
@@ -55,6 +57,8 @@ export function NavBar({
   additionalButtons,
 }: NavBarProps) {
   const router = useRouter();
+  const viewerStaffRole = useViewerStaffRole();
+  const canAdminister = canAccessAdminDashboard(viewerStaffRole);
 
   // Form hooks - these will be null when not in form context
   const formContext = showSaveActions
@@ -167,6 +171,21 @@ export function NavBar({
               </DropdownMenu.Item>
             </DropdownMenu.Content>
           </DropdownMenu.Root>
+
+          {/*
+            Only elevated accounts see this. The page enforces the same check
+            server-side, so hiding it is presentation, not security.
+          */}
+          {canAdminister && (
+            <Link
+              href="/admin"
+              className={`${styles.link} ${
+                currentPage === 'admin' ? styles.linkActive : ''
+              }`}
+            >
+              Admin
+            </Link>
+          )}
         </div>
 
         <div className={styles.spacer} />
