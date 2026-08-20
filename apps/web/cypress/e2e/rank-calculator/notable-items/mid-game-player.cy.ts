@@ -36,5 +36,6 @@ describe('Notable items - Mid-game player', () => {
         '33.56%',
       );
     },
+    /^notable items$/i,
   );
 });

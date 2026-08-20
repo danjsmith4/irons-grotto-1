@@ -1,10 +1,10 @@
-import { render, screen } from '@/test-utils/testing-library';
+import { fireEvent, render, screen } from '@/test-utils/testing-library';
 import * as formDataMocks from '@/mocks/misc/form-data';
 import { MockFormProvider } from '@/test-utils/mock-form-provider';
 import { generateScaledPlayerTests } from '@/test-utils/generated-scaled-player-tests';
 import { skillingExpectedValues } from '@/fixtures/rank-calculator/skilling-expected-values';
 import { DiaryLocation } from '@/app/schemas/osrs';
-import { SkillingCard } from './skilling-card';
+import { SkillingPanel } from './skilling-panel';
 import { formatPercentage } from '../../utils/format-percentage';
 import { formatNumber } from '../../utils/format-number';
 
@@ -15,11 +15,15 @@ generateScaledPlayerTests(
     beforeEach(async () => {
       render(
         <MockFormProvider defaultValues={formData}>
-          <SkillingCard />
+          <SkillingPanel />
         </MockFormProvider>,
       );
 
-      await screen.findByRole('heading', { name: /skilling/i });
+      const trigger = await screen.findByRole('button', { name: /^skilling$/i });
+
+      // The tile is a summary; its inputs open in a modal.
+      fireEvent.click(trigger);
+      await screen.findByRole('dialog');
     });
 
     it('renders the total points', () => {

@@ -1,10 +1,14 @@
 'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { ChevronDownIcon } from '@radix-ui/react-icons';
-import { DropdownMenu, Flex, IconButton } from '@radix-ui/themes';
-import { IronsButton } from '@/app/rank-calculator/components/irons-button';
+import {
+  ChevronDownIcon,
+  DotsHorizontalIcon,
+  PlusIcon,
+} from '@radix-ui/react-icons';
+import { DropdownMenu, Spinner } from '@radix-ui/themes';
 import { useState, useTransition } from 'react';
 import { useFormContext, useFormState } from 'react-hook-form';
 import { useAction } from 'next-safe-action/hooks';
@@ -16,6 +20,7 @@ import { deletePlayerAccountAction } from '@/app/rank-calculator/actions/delete-
 import { DeleteSubmissionDataDialog } from '@/app/rank-calculator/components/delete-submission-data-dialog';
 import { handleToastUpdates } from '@/app/rank-calculator/utils/handle-toast-updates';
 import { useCurrentPlayer } from '@/app/rank-calculator/contexts/current-player-context';
+import styles from './nav-bar.module.css';
 
 interface NavBarProps {
   currentPage?: 'dashboard' | 'player' | 'submission';
@@ -96,244 +101,206 @@ export function NavBar({
     router.push('/');
   };
 
+  const accounts = Object.values(userCalculators);
+  const isBusy = isSubmitting || isActionActive;
+
   return (
-    <nav
-      style={{
-        position: 'sticky',
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 1000,
-        background: 'rgb(var(--ig-bg) / 0.85)',
-        backdropFilter: 'blur(10px)',
-        borderBottom: '1px solid rgb(var(--ig-text-muted) / 0.1)',
-        padding: '0.75rem 2rem',
-      }}
-    >
-      <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-        <Flex justify="between" align="center">
-          {/* Left side - Logo and Navigation */}
-          <Flex align="center" gap="4">
-            {/* Logo */}
-            <Link href="/dashboard">
-              <Image
-                src="/L1.png"
-                alt="Irons Grotto Logo"
-                width={48}
-                height={48}
-                style={{ cursor: 'pointer' }}
-              />
-            </Link>
+    <nav className={styles.nav}>
+      <div className={styles.inner}>
+        <Link href="/dashboard" className={styles.brand}>
+          <Image
+            src="/L1.png"
+            alt="Irons Grotto"
+            width={30}
+            height={30}
+            className={styles.brandMark}
+          />
+          <span className={styles.brandName}>Irons&apos; Grotto</span>
+        </Link>
 
-            {/* Dashboard Button */}
-            <IronsButton
-              asChild
-              variant={currentPage === 'dashboard' ? 'primary' : 'ghost'}
-              size="2"
-            >
-              <Link href="/dashboard">Dashboard</Link>
-            </IronsButton>
-
-            {/* Rank Calculator Dropdown */}
-            <DropdownMenu.Root>
-              <DropdownMenu.Trigger>
-                <IronsButton
-                  variant={currentPage === 'player' ? 'primary' : 'ghost'}
-                  size="2"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                  }}
-                >
-                  Accounts
-                  <ChevronDownIcon />
-                </IronsButton>
-              </DropdownMenu.Trigger>
-              <DropdownMenu.Content>
-                <DropdownMenu.Item asChild>
-                  <Link href="/rank-calculator/players/add">New Account</Link>
-                </DropdownMenu.Item>
-                {Object.keys(userCalculators).length > 0 && (
-                  <>
-                    <DropdownMenu.Separator />
-                    <DropdownMenu.Label>Your Accounts</DropdownMenu.Label>
-                    {Object.values(userCalculators).map((player) => (
-                      <DropdownMenu.Item key={player.rsn} asChild>
-                        <Link
-                          href={`/rank-calculator/${encodeURIComponent(player.rsn)}`}
-                        >
-                          {player.rsn}
-                          <span
-                            style={{
-                              marginLeft: 'auto',
-                              fontSize: '0.75rem',
-                              color: 'rgba(255, 255, 255, 0.6)',
-                            }}
-                          >
-                            ({player.rank ?? 'Unranked'})
-                          </span>
-                        </Link>
-                      </DropdownMenu.Item>
-                    ))}
-                  </>
-                )}
-              </DropdownMenu.Content>
-            </DropdownMenu.Root>
-          </Flex>
-
-          {/* Right side - Actions */}
-          <Flex
-            align="center"
-            gap="3"
-            style={{ justifyContent: 'space-around' }}
+        <div className={styles.links}>
+          <Link
+            href="/dashboard"
+            className={`${styles.link} ${
+              currentPage === 'dashboard' ? styles.linkActive : ''
+            }`}
           >
-            {/* Help Button */}
-            <IronsButton asChild variant="ghost" size="2">
-              <Link
-                href="https://discord.com/channels/697877518455144468/1385071226837274808"
-                target="_blank"
+            Dashboard
+          </Link>
+
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger>
+              <button
+                type="button"
+                className={`${styles.link} ${
+                  currentPage === 'player' ? styles.linkActive : ''
+                }`}
               >
-                Help
-              </Link>
-            </IronsButton>
+                Accounts
+                <ChevronDownIcon />
+              </button>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Content>
+              {accounts.length > 0 && (
+                <>
+                  <DropdownMenu.Label>Your accounts</DropdownMenu.Label>
+                  {accounts.map((player) => (
+                    <DropdownMenu.Item key={player.rsn} asChild>
+                      <Link
+                        href={`/rank-calculator/${encodeURIComponent(player.rsn)}`}
+                      >
+                        {player.rsn}
+                        <span className={styles.menuMeta}>
+                          {player.rank ?? 'Unranked'}
+                        </span>
+                      </Link>
+                    </DropdownMenu.Item>
+                  ))}
+                  <DropdownMenu.Separator />
+                </>
+              )}
+              <DropdownMenu.Item asChild>
+                <Link href="/rank-calculator/players/add">
+                  <PlusIcon />
+                  New account
+                </Link>
+              </DropdownMenu.Item>
+            </DropdownMenu.Content>
+          </DropdownMenu.Root>
+        </div>
 
-            {/* Sign Out Button */}
-            <IronsButton variant="secondary" size="2" onClick={handleSignOut}>
-              Sign Out
-            </IronsButton>
+        <div className={styles.spacer} />
 
-            {/* Additional Buttons */}
-            {additionalButtons}
+        <div className={styles.actions}>
+          {additionalButtons}
 
-            {/* Save Actions (only on player pages) - moved to the right */}
-            {showSaveActions && (
-              <Flex>
-                <IronsButton
-                  loading={isSubmitting || isActionActive}
-                  disabled={
-                    !isDirty || !isValid || isSubmitting || isActionActive
+          {showSaveActions && (
+            <div className={styles.save}>
+              <button
+                type="button"
+                className={styles.saveMain}
+                disabled={!isDirty || !isValid || isBusy}
+                onClick={() => {
+                  if (submitForm) {
+                    void submitForm();
                   }
-                  variant="primary"
-                  size="2"
-                  style={{
-                    borderTopRightRadius: 0,
-                    borderBottomRightRadius: 0,
-                  }}
-                  onClick={() => {
-                    if (submitForm) {
-                      void submitForm();
-                    }
-                  }}
-                >
-                  Save
-                </IronsButton>
-                <DropdownMenu.Root modal={false}>
-                  <DropdownMenu.Trigger
-                    disabled={isSubmitting || isActionActive}
+                }}
+              >
+                {isBusy && <Spinner size="1" />}
+                Save
+              </button>
+              <DropdownMenu.Root modal={false}>
+                <DropdownMenu.Trigger disabled={isBusy}>
+                  <button
+                    type="button"
+                    className={styles.saveMore}
+                    disabled={isBusy}
+                    aria-label="More save actions"
                   >
-                    <IconButton
-                      className="save-dropdown-button"
-                      variant="soft"
-                      type="button"
-                      style={{
-                        borderTopLeftRadius: 0,
-                        borderBottomLeftRadius: 0,
-                        transition: 'none !important',
-                        transform: 'none !important',
-                      }}
-                    >
-                      <ChevronDownIcon
-                        style={{ transition: 'none', transform: 'none' }}
-                      />
-                    </IconButton>
-                  </DropdownMenu.Trigger>
-                  <DropdownMenu.Content color="gray" variant="soft">
-                    <DropdownMenu.Item
-                      onClick={() => {
-                        console.log(
-                          '🔵 Apply for promotion nav dropdown clicked!',
-                          {
-                            isDirty,
-                            totalPoints,
-                            rank,
-                            currentRank,
-                            playerName: currentPlayerName,
-                          },
-                        );
+                    <ChevronDownIcon />
+                  </button>
+                </DropdownMenu.Trigger>
+                <DropdownMenu.Content color="gray" variant="soft">
+                  <DropdownMenu.Item
+                    onClick={() => {
+                      if (isDirty) {
+                        toast.error('Please save your data first!');
 
-                        if (isDirty) {
-                          toast.error('Please save your data first!');
-                          return;
-                        }
+                        return;
+                      }
 
-                        if (!rank) {
-                          toast.error('No rank calculated yet!');
-                          return;
-                        }
+                      if (!rank) {
+                        toast.error('No rank calculated yet!');
 
-                        void handleToastUpdates(
-                          publishRankSubmission({
-                            totalPoints,
-                            rank,
-                          }),
-                          { success: 'Rank application submitted!' },
-                        );
-                      }}
-                    >
-                      Apply for promotion
+                        return;
+                      }
+
+                      void handleToastUpdates(
+                        publishRankSubmission({ totalPoints, rank }),
+                        { success: 'Rank application submitted!' },
+                      );
+                    }}
+                  >
+                    Apply for promotion
+                  </DropdownMenu.Item>
+                  <DropdownMenu.Item
+                    disabled={!isDirty}
+                    onClick={() => {
+                      startResetTransition(() => {
+                        reset?.();
+                      });
+                    }}
+                  >
+                    Reset form defaults
+                  </DropdownMenu.Item>
+                  {playerName && (
+                    <DropdownMenu.Item asChild>
+                      <Link
+                        href={`/rank-calculator/players/edit/${playerName.toLowerCase()}`}
+                      >
+                        Edit player
+                      </Link>
                     </DropdownMenu.Item>
-                    <DropdownMenu.Item
-                      disabled={!isDirty}
-                      onClick={() => {
-                        startResetTransition(() => {
-                          reset?.();
-                        });
-                      }}
-                    >
-                      Reset form defaults
-                    </DropdownMenu.Item>
-                    {playerName && (
-                      <DropdownMenu.Item asChild>
-                        <Link
-                          href={`/rank-calculator/players/edit/${playerName.toLowerCase()}`}
-                        >
-                          Edit player
-                        </Link>
-                      </DropdownMenu.Item>
-                    )}
-                    <DropdownMenu.Separator />
-                    <DropdownMenu.Item
-                      color="red"
-                      onSelect={() => {
-                        startDeleteDialogTransition(() => {
-                          setIsDeleteSubmissionDataDialogOpen(true);
-                        });
-                      }}
-                    >
-                      Delete data
-                    </DropdownMenu.Item>
-                  </DropdownMenu.Content>
-                </DropdownMenu.Root>
-                <DeleteSubmissionDataDialog
-                  open={isDeleteSubmissionDataDialogOpen}
-                  onOpenChange={setIsDeleteSubmissionDataDialogOpen}
-                  customDeleteAction={() => {
-                    void handleToastUpdates(
-                      deletePlayerAccount(
-                        currentPlayerName ?? playerName ?? '',
-                      ),
-                      { success: 'Player account deleted!' },
-                    );
+                  )}
+                  <DropdownMenu.Separator />
+                  <DropdownMenu.Item
+                    color="red"
+                    onSelect={() => {
+                      startDeleteDialogTransition(() => {
+                        setIsDeleteSubmissionDataDialogOpen(true);
+                      });
+                    }}
+                  >
+                    Delete data
+                  </DropdownMenu.Item>
+                </DropdownMenu.Content>
+              </DropdownMenu.Root>
+              <DeleteSubmissionDataDialog
+                open={isDeleteSubmissionDataDialogOpen}
+                onOpenChange={setIsDeleteSubmissionDataDialogOpen}
+                customDeleteAction={() => {
+                  void handleToastUpdates(
+                    deletePlayerAccount(currentPlayerName ?? playerName ?? ''),
+                    { success: 'Player account deleted!' },
+                  );
 
-                    // Redirect to dashboard regardless of result
-                    router.push('/dashboard');
-                  }}
-                />
-              </Flex>
-            )}
-          </Flex>
-        </Flex>
+                  // Redirect to dashboard regardless of result
+                  router.push('/dashboard');
+                }}
+              />
+            </div>
+          )}
+
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger>
+              <button
+                type="button"
+                className={styles.iconButton}
+                aria-label="More"
+              >
+                <DotsHorizontalIcon />
+              </button>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Content>
+              <DropdownMenu.Item asChild>
+                <Link
+                  href="https://discord.com/channels/697877518455144468/1385071226837274808"
+                  target="_blank"
+                >
+                  Help
+                </Link>
+              </DropdownMenu.Item>
+              <DropdownMenu.Separator />
+              <DropdownMenu.Item
+                onSelect={() => {
+                  void handleSignOut();
+                }}
+              >
+                Sign out
+              </DropdownMenu.Item>
+            </DropdownMenu.Content>
+          </DropdownMenu.Root>
+        </div>
       </div>
     </nav>
   );

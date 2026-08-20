@@ -1,9 +1,12 @@
-import { BaseSyntheticEvent, useState } from 'react';
-import { Grid } from '@radix-ui/themes';
-import dedent from 'dedent';
-import { Sidebar } from '../components/sidebar';
-import { RightSidebar } from '../components/right-sidebar';
+import { BaseSyntheticEvent } from 'react';
+import { CalculatorHero } from '../components/calculator-hero';
+import { ModerationStrip } from '../components/moderation-strip';
 import { ItemList } from '../components/item-list';
+import { CombatPanel } from '../components/panels/combat-panel';
+import { SkillingPanel } from '../components/panels/skilling-panel';
+import { CollectionLogAndCluesPanel } from '../components/panels/collection-log-and-clues-panel';
+import { NotableItemsPanel } from '../components/panels/notable-items-panel';
+import styles from '../components/rank-calculator.module.css';
 
 interface RankCalculatorProps {
   submitRankCalculatorAction: ((e: BaseSyntheticEvent) => void) | undefined;
@@ -12,37 +15,17 @@ interface RankCalculatorProps {
 export function RankCalculator({
   submitRankCalculatorAction,
 }: RankCalculatorProps) {
-  const [query, setQuery] = useState('');
-
   return (
-    <form onSubmit={submitRankCalculatorAction}>
-      <Grid
-        areas={{
-          initial: dedent`
-            'nav'
-            'sidebar'
-            'right-sidebar'
-            'main'
-          `,
-          md: dedent`
-            'nav nav nav'
-            'sidebar main right-sidebar'
-          `,
-        }}
-        columns={{
-          md: dedent`
-            [sidebar] minmax(200px, 1fr)
-            [main] minmax(0, 2fr)
-            [right-sidebar] minmax(200px, 1fr)
-        `,
-        }}
-        rows="1fr"
-        gapX="1"
-      >
-        <Sidebar />
-        <RightSidebar query={query} onChange={setQuery} />
-        <ItemList query={query} />
-      </Grid>
+    <form onSubmit={submitRankCalculatorAction} className={styles.page}>
+      <CalculatorHero />
+      <ModerationStrip />
+      <div className={styles.panelGrid}>
+        <CombatPanel />
+        <SkillingPanel />
+        <CollectionLogAndCluesPanel />
+        <NotableItemsPanel />
+      </div>
+      <ItemList />
     </form>
   );
 }

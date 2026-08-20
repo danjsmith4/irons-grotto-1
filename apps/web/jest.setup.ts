@@ -2,9 +2,16 @@ import '@testing-library/jest-dom';
 import { server } from './mocks/server';
 import { mockUUID } from './test-utils/mock-uuid';
 
-jest.mock('crypto', () => ({
-  randomUUID: jest.fn().mockReturnValue(mockUUID),
-}));
+// Only randomUUID is stubbed — the rest of the module must call through, or
+// anything hashing (e.g. jsum in build-notable-item-list) fails to load.
+jest.mock('crypto', () => {
+  const actual = jest.requireActual<typeof import('crypto')>('crypto');
+
+  return {
+    ...actual,
+    randomUUID: jest.fn().mockReturnValue(mockUUID),
+  };
+});
 
 if (/\*|msw/.test(process.env.DEBUG ?? '')) {
   server.events.on('request:start', ({ request }) => {
@@ -40,6 +47,13 @@ jest.mock('next/cache', () => {
         fn(...args),
   };
 });
+
+// `useRank` writes the player's points from an effect. Under Jest that reaches
+// for a real postgres connection, and the async failure lands in whichever test
+// happens to be running — a moving, unrelated failure on every run.
+jest.mock('./app/rank-calculator/actions/update-player-points-action', () => ({
+  updatePlayerPointsAction: jest.fn().mockResolvedValue(undefined),
+}));
 
 jest.mock('next-auth', () => {
   const originalModule =

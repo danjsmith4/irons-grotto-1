@@ -25,5 +25,6 @@ describe('Collection Log - End-game player', () => {
         `(${fixture.pointsRemaining})`,
       );
     },
+    /^collection log & clues$/i,
   );
 });
