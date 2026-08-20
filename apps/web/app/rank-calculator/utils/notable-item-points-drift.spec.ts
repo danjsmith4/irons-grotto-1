@@ -66,7 +66,7 @@ describe('debug zero-point items', () => {
       }
     }
 
-    // eslint-disable-next-line no-console
+     
     console.log(
       `\n===== ITEMS RENDERING "-" (${failures.length}) =====\n` +
         failures
