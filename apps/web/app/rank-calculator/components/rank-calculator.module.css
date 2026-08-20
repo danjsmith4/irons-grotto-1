@@ -707,17 +707,26 @@
   border-radius: 6px;
 }
 
+/* Title over count. Both are spans, so without an explicit column the two run
+   together inline ("Abyssal Sire0 / 5") and the count's margin is dropped. */
 .categoryIdentity {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   flex: 1;
   min-width: 0;
 }
 
 .categoryTitle {
+  max-width: 100%;
   font-size: 0.9375rem;
   font-weight: 500;
   color: rgb(var(--ig-text));
   margin: 0;
   line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .categoryCount {
