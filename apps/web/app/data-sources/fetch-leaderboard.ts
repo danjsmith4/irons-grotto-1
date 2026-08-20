@@ -2,10 +2,13 @@ import { db } from '@/lib/db';
 import { playerAcquiredItems, players } from '@/lib/db/schema';
 import { desc, eq, sql } from 'drizzle-orm';
 import { AllPetItemIds } from '../schemas/osrs';
+import type { AccountType, StaffRole } from '../schemas/staff';
 
 export interface LeaderboardPlayer {
   playerName: string;
   rank: string | null;
+  staffRole: StaffRole | null;
+  accountType: AccountType | null;
   points: number;
   hasRadiant: boolean;
   hasBlorva: boolean;
@@ -33,6 +36,8 @@ export async function fetchLeaderboard(
       .select({
         playerName: players.playerName,
         rank: players.rank,
+        staffRole: players.staffRole,
+        accountType: players.accountType,
         points: players.points,
         hasRadiant: players.hasRadiantOathplate,
         hasBlorva: players.hasBloodTorva,
@@ -66,6 +71,8 @@ export async function fetchLeaderboard(
     const leaderboardData = rawData.map((player) => ({
       playerName: player.playerName,
       rank: player.rank,
+      staffRole: player.staffRole,
+      accountType: player.accountType,
       points: player.points,
       hasRadiant: player.hasRadiant,
       hasBlorva: player.hasBlorva,

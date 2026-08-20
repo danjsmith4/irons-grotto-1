@@ -1,0 +1,36 @@
+/* Staff standing is metadata, so it reads as a quiet chip beside the name —
+   never as loud as the rank it sits next to. */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+  padding: 0.1rem 0.45rem 0.1rem 0.3rem;
+  border-radius: 999px;
+  border: 1px solid rgb(var(--ig-secondary) / 0.25);
+  background: rgb(var(--ig-secondary) / 0.08);
+  vertical-align: middle;
+}
+
+.icon {
+  display: block;
+  flex-shrink: 0;
+}
+
+.label {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: rgb(var(--ig-secondary));
+}
+
+/* Icon-only, for rows too dense to carry a word — the leaderboard. The chip
+   drops away entirely so the icon sits against the name on its own. */
+.iconOnly {
+  padding: 0;
+  border: 0;
+  background: none;
+}

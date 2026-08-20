@@ -68,6 +68,19 @@
   min-width: 0;
 }
 
+/* Game-mode chat badge + staff role, worn next to the name. */
+.identityBadges {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.25rem;
+  min-width: 0;
+}
+
+.identityBadges:empty {
+  display: none;
+}
+
 .playerName {
   font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
   font-size: clamp(1.25rem, 2.4vw, 1.6rem);
@@ -229,14 +242,6 @@
     rgb(var(--ig-teal))
   );
   transition: width 0.35s ease;
-}
-
-/* The secondary (Standard-structure) meter for staff ranks. */
-.meterSecondary .meterTrack {
-  height: 5px;
-}
-.meterSecondary .meterFill {
-  background: rgb(var(--ig-secondary) / 0.55);
 }
 
 /* -- scoreboard footer strip --------------------------------------------- */

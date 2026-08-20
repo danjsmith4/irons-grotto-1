@@ -9,70 +9,56 @@ const maxedItems = {
   'Dragon warhammer': true,
 } as const;
 
-it('reports progress between the current and next Standard rank thresholds', () => {
+it('reports progress between the current and next rank thresholds', () => {
   const pointsAwarded = 5750; // Sergeant is 4500, Cadet is 7000
   const rankData = calculateRank(
     maxedItems,
     'Grandmaster',
     pointsAwarded,
-    'Standard',
+    'ironman',
   );
 
-  const progress = calculateRankProgress(
-    pointsAwarded,
-    'Standard',
-    rankData,
-  );
+  const progress = calculateRankProgress(pointsAwarded, 'ironman', rankData);
 
   expect(progress.rank).toEqual<Rank>('Sergeant');
   expect(progress.nextRank).toEqual<Rank>('Cadet');
-  expect(progress.pointsRemaining).toBe(
-    rankThresholds.Standard.Cadet! - pointsAwarded,
-  );
+  expect(progress.pointsRemaining).toBe(rankThresholds.Cadet! - pointsAwarded);
   expect(progress.pointsAwardedPercentage).toBeCloseTo(0.5);
 });
 
-it('reports a staff structure as a single completed rank', () => {
+it('sorts a main onto the single main-account rank, whatever their points', () => {
   const pointsAwarded = 5750;
   const rankData = calculateRank(
     maxedItems,
     'Grandmaster',
     pointsAwarded,
-    'Admin',
+    'main',
   );
 
-  const progress = calculateRankProgress(pointsAwarded, 'Admin', rankData);
+  const progress = calculateRankProgress(pointsAwarded, 'main', rankData);
 
-  expect(progress.rank).toEqual<Rank>('Administrator');
+  expect(progress.rank).toEqual<Rank>('Looter');
   expect(progress.nextRank).toBeNull();
 });
 
-it('resolves the same Standard rank for a staff player as for a regular one', () => {
-  const pointsAwarded = 5750;
-
-  const staffStandardProgress = calculateRankProgress(
-    pointsAwarded,
-    'Standard',
-    calculateRank(maxedItems, 'Grandmaster', pointsAwarded, 'Standard'),
-  );
-
-  expect(staffStandardProgress.rank).toEqual<Rank>('Sergeant');
-  expect(staffStandardProgress.nextRank).toEqual<Rank>('Cadet');
-});
-
-it('carries a throttled rank through to the progress label data', () => {
-  const pointsAwarded = 5750; // enough for Sergeant, but no defence-reducing weapon
-
-  const progress = calculateRankProgress(
-    pointsAwarded,
-    'Standard',
-    calculateRank(
-      { 'Deadeye prayer scroll': true, 'Mystic vigour prayer scroll': true },
+it.each(['group_ironman', 'unranked_group_ironman', null] as const)(
+  'ranks %s on the ironman ladder, the same as any other ironman',
+  (accountType) => {
+    const pointsAwarded = 5750;
+    const rankData = calculateRank(
+      maxedItems,
       'Grandmaster',
       pointsAwarded,
-      'Standard',
-    ),
-  );
+      accountType,
+    );
 
-  expect(progress.throttleReason).toBe('items');
-});
+    const progress = calculateRankProgress(
+      pointsAwarded,
+      accountType,
+      rankData,
+    );
+
+    expect(progress.rank).toEqual<Rank>('Sergeant');
+    expect(progress.nextRank).toEqual<Rank>('Cadet');
+  },
+);

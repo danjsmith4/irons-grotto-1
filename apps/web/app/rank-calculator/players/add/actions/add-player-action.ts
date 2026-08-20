@@ -7,8 +7,10 @@ import { ActionError } from '@/app/action-error';
 import { fetchPlayerMeta } from '../../../data-sources/fetch-player-meta';
 import { fetchTemplePlayerStats } from '../../../data-sources/fetch-temple-player-stats';
 import { AddPlayerSchema } from './add-player-schema';
-import { validateIronmanStatus } from '../../../utils/validate-ironman-status';
 import { createNewPlayer, getPlayerByName } from '@/lib/db/player-operations';
+import { resolveTempleAccountType } from '@/app/schemas/temple-api';
+import { isMainAccount } from '@/app/schemas/staff';
+import { resolveDeclaredAccountType } from '../../../utils/resolve-declared-account-type';
 
 async function assertUniquePlayerRecord(userId: string, playerName: string) {
   if (!userId) {
@@ -29,7 +31,13 @@ export const addPlayerAction = authActionClient
   .schema(AddPlayerSchema)
   .action(
     async ({
-      parsedInput: { joinDate, playerName, isMobileOnly, unrankedGIMOverride },
+      parsedInput: {
+        joinDate,
+        playerName,
+        isMobileOnly,
+        accountType,
+        gimGroupName: gimGroupNameInput,
+      },
       ctx: { userId },
     }) => {
       const isUsernameUnique = await assertUniquePlayerRecord(
@@ -51,36 +59,35 @@ export const addPlayerAction = authActionClient
       const maybeFormattedPlayerName =
         playerMeta?.rsn ?? playerStats?.info.Username ?? playerName;
 
-      // Always validate the player's account type to get their current status
-      const validation = await validateIronmanStatus(maybeFormattedPlayerName);
+      // Game mode. Temple settles it whenever it reports anything but a main;
+      // a main reading is ambiguous, because Temple reports group ironmen it
+      // has never been told about exactly the same way. In that case the
+      // player has told us, and a claimed group is verified against the group
+      // hiscores rather than taken at face value.
+      const templeAccountType = playerStats
+        ? resolveTempleAccountType(
+            playerStats.info['Game mode'],
+            playerStats.info.GIM,
+          )
+        : null;
 
-      console.debug(`${playerName}'s gamemode: ${validation.isValid}`);
+      const { accountType: resolvedAccountType, gimGroupName } =
+        templeAccountType
+          ? { accountType: templeAccountType, gimGroupName: null }
+          : await resolveDeclaredAccountType(
+              maybeFormattedPlayerName,
+              accountType ?? 'main',
+              gimGroupNameInput,
+            );
 
-      if (unrankedGIMOverride) {
-        // If user claims this is an unranked GIM, but the account shows as ironman, that's incorrect
-        if (validation.isValid) {
-          returnValidationErrors(AddPlayerSchema, {
-            unrankedGIMOverride: {
-              _errors: [
-                'This account appears to be an ironman account, not a main account. Uncheck the "Unranked GIM" override or verify the correct player name.',
-              ],
-            },
-          });
-        }
-        console.debug(
-          `${playerName} validation skipped due to unranked GIM override - confirmed as main account`,
-        );
-      } else {
-        // Normal validation - account must be ironman
-        if (!validation.isValid) {
-          returnValidationErrors(AddPlayerSchema, {
-            playerName: {
-              _errors: [
-                'Only ironman accounts can be registered in this clan. Main accounts are not eligible for standard clan ranks.',
-              ],
-            },
-          });
-        }
+      if (isMainAccount(resolvedAccountType)) {
+        returnValidationErrors(AddPlayerSchema, {
+          playerName: {
+            _errors: [
+              'Only ironman accounts can be registered in this clan. Main accounts are not eligible for standard clan ranks.',
+            ],
+          },
+        });
       }
 
       try {
@@ -89,6 +96,8 @@ export const addPlayerAction = authActionClient
           joinDate: joinDate.toISOString(),
           rank: 'Unranked', // Default rank for new players
           isMobileOnly,
+          accountType: resolvedAccountType,
+          gimGroupName,
           discordUserId: userId,
         });
       } catch (error) {

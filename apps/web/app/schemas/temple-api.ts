@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { AccountType, isMainAccount } from './staff';
 
 const MemberInfo = z.object({
   player: z.string(),
@@ -61,15 +62,90 @@ export const GameMode = {
 } as const;
 
 /**
+ * Temple's `GIM` field doubles as the group size: 0 is not a group ironman,
+ * 12–15 are regular groups of 2–5, and 22–25 are hardcore groups of 2–5. Only
+ * the tens digit distinguishes the two, so that is all we read.
+ */
+export const GimMode = {
+  None: 0,
+  Regular: 1,
+  Hardcore: 2,
+} as const;
+
+function parseGimMode(gim: number) {
+  if (gim === GimMode.None) {
+    return GimMode.None;
+  }
+
+  return Math.floor(gim / 10) === GimMode.Hardcore
+    ? GimMode.Hardcore
+    : GimMode.Regular;
+}
+
+/**
+ * Resolves a Temple account into the game mode we store on the player record.
+ * Group membership wins over `Game mode`, which reports a group ironman as a
+ * plain ironman.
+ *
+ * @param gameMode - The 'Game mode' field from Temple API
+ * @param gim - The 'GIM' field from Temple API
+ */
+export function parseAccountType(gameMode: number, gim: number): AccountType {
+  switch (parseGimMode(gim)) {
+    case GimMode.Hardcore:
+      return 'hardcore_group_ironman';
+    case GimMode.Regular:
+      return 'group_ironman';
+    default:
+      break;
+  }
+
+  switch (gameMode) {
+    case GameMode.Ironman:
+      return 'ironman';
+    case GameMode.UltimateIronman:
+      return 'ultimate_ironman';
+    case GameMode.HardcoreIronman:
+      return 'hardcore_ironman';
+    default:
+      return 'main';
+  }
+}
+
+/**
+ * The account type Temple can actually be trusted for, or null when it cannot
+ * tell.
+ *
+ * Temple reports `Game mode` 0 / `GIM` 0 for a main — and for every group
+ * ironman whose group it does not know about. Its group data is opt-in ("each
+ * member of your party must track their account individually on TempleOSRS"),
+ * so a `main` reading is not evidence of a main: it is the absence of
+ * evidence, and members of ranked groups come back as mains all the time.
+ * Everything else it reports is read straight off the individual hiscore
+ * boards and is sound.
+ *
+ * So: anything but a main is authoritative, and a main means "ask the player".
+ *
+ * @param gameMode - The 'Game mode' field from Temple API
+ * @param gim - The 'GIM' field from Temple API
+ */
+export function resolveTempleAccountType(
+  gameMode: number,
+  gim: number,
+): AccountType | null {
+  const accountType = parseAccountType(gameMode, gim);
+
+  return isMainAccount(accountType) ? null : accountType;
+}
+
+/**
  * Determines if a player is an ironman based on Temple API data
  * @param gameMode - The 'Game mode' field from Temple API
  * @param gim - The 'GIM' field from Temple API
  * @returns boolean - true if player is any ironman variant, false if main
  */
 export function isPlayerIronman(gameMode: number, gim: number): boolean {
-  // Main account: game_mode === 0 AND GIM === 0
-  // Any ironman variant: NOT (game_mode === 0 AND GIM === 0)
-  return !(gameMode === 0 && gim === 0);
+  return !isMainAccount(parseAccountType(gameMode, gim));
 }
 
 export const TempleOSRSPlayerStats = z.object({

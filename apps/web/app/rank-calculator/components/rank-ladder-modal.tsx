@@ -1,20 +1,16 @@
 import { useState, useTransition } from 'react';
 import { Button, Dialog, Flex, Inset, Table } from '@radix-ui/themes';
-import { useWatch } from 'react-hook-form';
 import { Rank } from '@/config/enums';
 import Image from 'next/image';
-import { RankCalculatorSchema } from '../[player]/submit-rank-calculator-validation';
 import { getRankName } from '../utils/get-rank-name';
 import { formatNumber } from '../utils/format-number';
 import { getRankImageUrl } from '../utils/get-rank-image-url';
 import { rankThresholds } from '@/config/ranks';
 
-export function RankStructureInfoModal() {
+/** The one points ladder, and what each rank costs. */
+export function RankLadderModal() {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const rankStructure = useWatch<RankCalculatorSchema, 'rankStructure'>({
-    name: 'rankStructure',
-  });
 
   return (
     <Dialog.Root
@@ -27,11 +23,11 @@ export function RankStructureInfoModal() {
     >
       <Dialog.Trigger>
         <Button loading={isPending} size="2" variant="soft">
-          View rank structure
+          View ranks
         </Button>
       </Dialog.Trigger>
       <Dialog.Content maxWidth="400px" aria-describedby={undefined}>
-        <Dialog.Title size="3">{rankStructure}</Dialog.Title>
+        <Dialog.Title size="3">Ranks</Dialog.Title>
         <Inset side="x">
           <Table.Root size="1">
             <Table.Header>
@@ -46,25 +42,21 @@ export function RankStructureInfoModal() {
               </Table.Row>
             </Table.Header>
             <Table.Body>
-              {Object.entries(rankThresholds[rankStructure]).map(
-                ([rank, points]) => (
-                  <Table.Row key={rank}>
-                    <Table.Cell>
-                      <Image
-                        alt={`${rank} icon`}
-                        src={getRankImageUrl(rank as Rank)}
-                        height={22}
-                        width={22}
-                        unoptimized
-                      />
-                    </Table.Cell>
-                    <Table.Cell>{getRankName(rank as Rank)}</Table.Cell>
-                    <Table.Cell align="right">
-                      {formatNumber(points)}
-                    </Table.Cell>
-                  </Table.Row>
-                ),
-              )}
+              {Object.entries(rankThresholds).map(([rank, points]) => (
+                <Table.Row key={rank}>
+                  <Table.Cell>
+                    <Image
+                      alt={`${rank} icon`}
+                      src={getRankImageUrl(rank as Rank)}
+                      height={22}
+                      width={22}
+                      unoptimized
+                    />
+                  </Table.Cell>
+                  <Table.Cell>{getRankName(rank as Rank)}</Table.Cell>
+                  <Table.Cell align="right">{formatNumber(points)}</Table.Cell>
+                </Table.Row>
+              ))}
             </Table.Body>
           </Table.Root>
         </Inset>

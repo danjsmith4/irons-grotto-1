@@ -740,36 +740,6 @@
 //   expect(result.data.playerName).toEqual(player);
 // });
 
-// it('returns the rank structure from the previous submission if found', async () => {
-//   const { player } = setup();
-
-//   server.use(
-//     generateRedisMock(player, {
-//       previousSubmission: merge<
-//         unknown,
-//         Omit<RankCalculatorSchema, 'rank' | 'points'>,
-//         DeepPartial<Omit<RankCalculatorSchema, 'rank' | 'points'>>
-//       >({}, formData.midGamePlayer, {
-//         rankStructure: 'Admin',
-//       }),
-//     }),
-//   );
-//   const result = (await fetchPlayerDetails(player)) as ApiSuccess<
-//     Omit<RankCalculatorSchema, 'rank' | 'points'>
-//   >;
-
-//   expect(result.data.rankStructure).toEqual('Admin');
-// });
-
-// it('returns the default rank structure if no previous submission is found', async () => {
-//   const { player } = setup();
-//   const result = (await fetchPlayerDetails(player)) as ApiSuccess<
-//     Omit<RankCalculatorSchema, 'rank' | 'points'>
-//   >;
-
-//   expect(result.data.rankStructure).toEqual('Standard');
-// });
-
 // it('returns an empty response if no third party data is found', async () => {
 //   const { player } = setup();
 //   const result = (await fetchPlayerDetails(player)) as ApiSuccess<

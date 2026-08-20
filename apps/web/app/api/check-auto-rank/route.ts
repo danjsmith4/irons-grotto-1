@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
       currentRank,
       hasThirdPartyData,
       playerName,
-      rankStructure,
+      accountType,
       tzhaarCape,
       hasBloodTorva,
       hasRadiantOathplate,
@@ -89,15 +89,6 @@ export async function GET(request: NextRequest) {
 
     if (!hasThirdPartyData) {
       return NextResponse.json({ success: true });
-    }
-    // Only perform auto-rank checks for players with Standard rank structure
-    // Moderators and other special roles should not be auto-ranked
-    if (rankStructure !== 'Standard') {
-      return NextResponse.json({
-        success: false,
-        message:
-          'Auto-rank checks are only available for Standard rank structure players',
-      });
     }
     // Sync player data to postgres database for future relational queries
     try {
@@ -185,7 +176,7 @@ export async function GET(request: NextRequest) {
       acquiredItems,
       combatAchievementTier,
       totalPointsAwarded,
-      rankStructure,
+      accountType,
     );
 
     // Update player points in database

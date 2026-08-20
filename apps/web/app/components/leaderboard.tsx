@@ -14,6 +14,9 @@ import { getRankImageUrl } from '@/app/rank-calculator/utils/get-rank-image-url'
 import { getRankName } from '@/app/rank-calculator/utils/get-rank-name';
 import { Rank } from '@/config/enums';
 import { formatWikiImageUrl } from '../rank-calculator/utils/format-wiki-url';
+import { StaffBadge } from './staff-badge';
+import { AccountTypeBadge } from './account-type-badge';
+import type { AccountType, StaffRole } from '../schemas/staff';
 import { formatXpInMillions } from '@/app/utils/format-number';
 import { SectionHeader } from './section-header';
 import { usePlayerProfile } from './player-profile-context';
@@ -22,6 +25,8 @@ import styles from './leaderboard.module.css';
 export interface LeaderboardPlayer {
   playerName: string;
   rank: string | null;
+  staffRole: StaffRole | null;
+  accountType: AccountType | null;
   points: number;
   hasRadiant: boolean;
   hasBlorva: boolean;
@@ -347,13 +352,20 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
                     </td>
 
                     <td className={`${styles.td} ${styles.tdLeft}`}>
-                      <button
-                        type="button"
-                        className={styles.player}
-                        onClick={() => openProfile(player.playerName)}
-                      >
-                        {player.playerName}
-                      </button>
+                      <span className={styles.playerCell}>
+                        <StaffBadge role={player.staffRole} iconOnly size={13} />
+                        <AccountTypeBadge
+                          accountType={player.accountType}
+                          size={12}
+                        />
+                        <button
+                          type="button"
+                          className={styles.player}
+                          onClick={() => openProfile(player.playerName)}
+                        >
+                          {player.playerName}
+                        </button>
+                      </span>
                     </td>
 
                     <td className={`${styles.td} ${styles.num}`}>

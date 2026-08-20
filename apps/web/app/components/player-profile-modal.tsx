@@ -7,6 +7,8 @@ import { getRankImageUrl } from '@/app/rank-calculator/utils/get-rank-image-url'
 import { getRankName } from '@/app/rank-calculator/utils/get-rank-name';
 import { Rank } from '@/config/enums';
 import { formatWikiImageUrl } from '../rank-calculator/utils/format-wiki-url';
+import { StaffBadge } from './staff-badge';
+import { AccountTypeBadge } from './account-type-badge';
 import { formatXpInMillions } from '@/app/utils/format-number';
 import { formatTimeAgo } from '@/app/utils/format-time-ago';
 import { clientConstants } from '@/config/constants.client';
@@ -111,7 +113,9 @@ export function PlayerProfileModal({
               <div className={styles.headMain}>
                 <Dialog.Title className={styles.name}>
                   {profile.playerName}
+                  <AccountTypeBadge accountType={profile.accountType} />
                 </Dialog.Title>
+                <StaffBadge role={profile.staffRole} />
                 <div className={styles.rankLabel}>
                   {getRankName(profile.rank as Rank)}
                   {profile.isMaxed ? ' · Maxed' : ''}

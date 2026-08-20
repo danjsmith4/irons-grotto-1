@@ -3,8 +3,8 @@ import { RankCalculatorSchema } from '../[player]/submit-rank-calculator-validat
 import { calculateRank } from '../utils/calculators/calculate-rank';
 
 export function useRank(pointsAwarded: number) {
-  const rankStructure = useWatch<RankCalculatorSchema, 'rankStructure'>({
-    name: 'rankStructure',
+  const accountType = useWatch<RankCalculatorSchema, 'accountType'>({
+    name: 'accountType',
   });
   const acquiredItems = useWatch<RankCalculatorSchema, 'acquiredItems'>({
     name: 'acquiredItems',
@@ -16,26 +16,10 @@ export function useRank(pointsAwarded: number) {
     name: 'combatAchievementTier',
   });
 
-  const result = calculateRank(
+  return calculateRank(
     acquiredItems,
     combatAchievementTier,
     pointsAwarded,
-    rankStructure,
+    accountType,
   );
-
-  // Staff structures (Admin, Owner, ...) are a single fixed rank, which hides
-  // where the player's points actually place them. Resolve the Standard rank
-  // alongside it so that stays visible regardless of staff role.
-  const standardRankData =
-    rankStructure === 'Standard'
-      ? null
-      : calculateRank(
-          acquiredItems,
-          combatAchievementTier,
-          pointsAwarded,
-          'Standard',
-        );
-
-
-  return { ...result, standardRankData };
 }

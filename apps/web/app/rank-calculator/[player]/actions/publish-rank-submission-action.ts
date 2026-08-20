@@ -41,6 +41,7 @@ import {
 } from '@/app/schemas/items';
 import * as Sentry from '@sentry/nextjs';
 import { getRankName } from '../../utils/get-rank-name';
+import { accountTypeLabels } from '@/app/schemas/staff';
 import { getRankImageUrl } from '../../utils/get-rank-image-url';
 import { fetchPlayerDetails } from '../../data-sources/fetch-player-details/fetch-player-details';
 import { RankCalculatorSchema } from '../submit-rank-calculator-validation';
@@ -98,7 +99,7 @@ export const publishRankSubmissionAction = authActionClient
           combatAchievementTier,
           collectionLogCount,
           totalLevel,
-          rankStructure,
+          accountType,
           joinDate,
           hasTemplePlayerStats,
           hasTempleCollectionLog,
@@ -121,7 +122,13 @@ export const publishRankSubmissionAction = authActionClient
               thumbnail: { url: getRankImageUrl(rank, true) },
               fields: [
                 { name: 'Rank', value: getRankName(rank), inline: true },
-                { name: 'Rank structure', value: rankStructure, inline: true },
+                {
+                  name: 'Account type',
+                  value: accountType
+                    ? accountTypeLabels[accountType]
+                    : 'Unresolved',
+                  inline: true,
+                },
                 {
                   name: 'Total points',
                   value: formatNumber(totalPoints),
@@ -269,18 +276,7 @@ export const publishRankSubmissionAction = authActionClient
             : null,
       } satisfies RankSubmissionDiff;
 
-      // NEVER auto-approve non-Standard rank structures
-      if (rankStructure !== 'Standard') {
-        console.log(
-          '🚫 Auto-approval blocked: Non-Standard rank structure:',
-          rankStructure,
-        );
-        console.log('✅ publishRankSubmissionAction completed successfully');
-        return { success: true };
-      }
-
       const isAutoApprovalAvailable =
-        rankStructure === 'Standard' &&
         hasTempleCollectionLog &&
         !isTempleCollectionLogOutdated &&
         hasWikiSyncData &&
@@ -288,8 +284,7 @@ export const publishRankSubmissionAction = authActionClient
         isEmpty(pickBy(submissionDiff, (val) => !isEmpty(val)));
 
       console.log('🔍 Auto-approval check:', {
-        rankStructure,
-        isStandardRank: rankStructure === 'Standard',
+        accountType,
         hasTempleCollectionLog,
         isTempleCollectionLogOutdated,
         isTempleCollectionLogCurrent: !isTempleCollectionLogOutdated,

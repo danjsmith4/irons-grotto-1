@@ -1,28 +1,19 @@
 'use client';
 
-import { useWatch } from 'react-hook-form';
 import { Rank } from '@/config/enums';
 import { useRankPace } from '../hooks/use-rank-pace';
 import { getRankName } from '../utils/get-rank-name';
 import { formatDurationCompact } from '../utils/format-duration-compact';
-import { RankCalculatorSchema } from '../[player]/submit-rank-calculator-validation';
 import styles from './rank-calculator.module.css';
 
 /**
  * "At Captain — 5mo". Gives a submission some sense of how long the player has
  * been sitting where they are.
- *
- * Standard structures only: staff ranks aren't earned on points and aren't
- * held for a comparable length of time, so time served says nothing useful
- * about them.
  */
 export function RankPace({ rank }: { rank: Rank }) {
-  const rankStructure = useWatch<RankCalculatorSchema, 'rankStructure'>({
-    name: 'rankStructure',
-  });
   const pace = useRankPace(rank);
 
-  if (rankStructure !== 'Standard' || !pace) {
+  if (!pace) {
     return null;
   }
 

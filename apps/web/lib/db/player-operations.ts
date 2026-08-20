@@ -14,6 +14,7 @@ import {
 import { getCategoryFromItemName } from './item-mapping-utils';
 import type { PlayerDetailsResponse } from '@/app/rank-calculator/data-sources/fetch-player-details/fetch-player-details';
 import { TempleOSRSCollectionLogItem } from '@/app/schemas/temple-api';
+import type { AccountType } from '@/app/schemas/staff';
 
 /**
  * Validates that the user performing the action matches the discord ID associated with the player
@@ -168,6 +169,8 @@ export interface CreatePlayerData {
   collectionLogBonusPoints?: number;
   notableItemsBonusPoints?: number;
   isMobileOnly?: boolean;
+  accountType?: AccountType;
+  gimGroupName?: string | null;
 }
 
 export interface UpdatePlayerData {
@@ -198,6 +201,8 @@ export interface UpdatePlayerData {
   discordUserId?: string;
   isMobileOnly?: boolean;
   points?: number;
+  accountType?: AccountType;
+  gimGroupName?: string | null;
   updatedAt?: Date;
 }
 
@@ -377,6 +382,26 @@ export async function updatePlayerPoints(
   discordUserId?: string,
 ): Promise<Player | null> {
   return await updatePlayer(playerName, { points }, discordUserId);
+}
+
+/**
+ * Records a player's game mode.
+ *
+ * Written both when TempleOSRS resolves it and when the player answers the
+ * prompt — a null `account_type` is what makes the calculator ask, so this is
+ * what stops it asking again.
+ */
+export async function updatePlayerAccountType(
+  playerName: string,
+  accountType: AccountType,
+  gimGroupName: string | null = null,
+  discordUserId?: string,
+): Promise<Player | null> {
+  return await updatePlayer(
+    playerName,
+    { accountType, gimGroupName },
+    discordUserId,
+  );
 }
 
 /**

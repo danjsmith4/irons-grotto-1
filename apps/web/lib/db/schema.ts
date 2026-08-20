@@ -1,4 +1,5 @@
 import {
+  pgEnum,
   pgTable,
   text,
   timestamp,
@@ -17,6 +18,28 @@ import { relations } from 'drizzle-orm';
 
 // uuid-ossp extension is required for gen_random_uuid()
 // Make sure to enable it in your database with: CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+/**
+ * Staff standing, and the account's game mode. Both are metadata *about* a
+ * player rather than a rank they earn — see `app/schemas/staff.ts`, which
+ * mirrors these values for the app layer.
+ */
+export const staffRoleEnum = pgEnum('staff_role', [
+  'moderator',
+  'admin',
+  'deputy_owner',
+  'owner',
+]);
+
+export const accountTypeEnum = pgEnum('account_type', [
+  'main',
+  'ironman',
+  'hardcore_ironman',
+  'ultimate_ironman',
+  'group_ironman',
+  'hardcore_group_ironman',
+  'unranked_group_ironman',
+]);
 
 // Players table - main player information
 export const players = pgTable(
@@ -75,6 +98,24 @@ export const players = pgTable(
 
     // Player preferences
     isMobileOnly: boolean('is_mobile_only').notNull().default(false),
+
+    // Clan standing. Null for the vast majority of members; a staff role only
+    // decorates a player, it never replaces the points-based rank in `rank`.
+    staffRole: staffRoleEnum('staff_role'),
+
+    // Mains are only ever sorted into the single main-account rank, so this
+    // decides which ladder `rank` is resolved against.
+    //
+    // NULL means unresolved, and is what makes the calculator ask the player.
+    // TempleOSRS can only settle this when it reports something other than a
+    // main — it reports a main both for actual mains and for group ironmen it
+    // has never heard of (see `resolveTempleAccountType`).
+    accountType: accountTypeEnum('account_type'),
+
+    // The group a group ironman was verified against, kept so the claim can be
+    // re-checked against the hiscores later. Group names share the 12-character
+    // limit with player names.
+    gimGroupName: varchar('gim_group_name', { length: 12 }),
 
     // Soft-delete flag driven by the daily inactivity reconcile. Inactive
     // players (no XP gain on TempleOSRS beyond the threshold, or no longer in
