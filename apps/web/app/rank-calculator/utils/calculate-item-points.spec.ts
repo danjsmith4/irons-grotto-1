@@ -101,12 +101,12 @@ function expectedPoints(requiredItems: NonEmptyArray<TestRequiredItem>) {
         collectionLogItemBossNameMap[clogName] ??
         rewardItemBossNameMap[dropSource] ??
         dropSource;
-      const bossEhb = ehbRates[bossName];
+      const bossEhb = ehbRates[bossName as keyof typeof ehbRates];
       const dropRateModifier = ignoreDropRateModifier
         ? 1
         : (dropRateModifiers[dropSource] ?? 1);
       const pointModifier = pointModifiers[clogName] ?? 1;
-      const groupSize = groupSizes[bossName] ?? 1;
+      const groupSize = groupSizes[bossName as keyof typeof ehbRates] ?? 1;
 
       const points =
         (1 / ((itemDropRate * dropRateModifier) / groupSize) / bossEhb) *
