@@ -207,17 +207,28 @@ export function AddPlayerForm({ members }: AddPlayerFormProps) {
                   ))}
                 </RadioGroup.Root>
                 {accountType === 'group_ironman' && (
-                  <TextField.Root
-                    maxLength={12}
-                    placeholder="Group name"
-                    aria-label="Group name"
-                    value={form.watch('gimGroupName') ?? ''}
-                    onChange={(event) => {
-                      form.setValue('gimGroupName', event.target.value, {
-                        shouldDirty: true,
-                      });
-                    }}
-                  />
+                  <>
+                    <TextField.Root
+                      maxLength={12}
+                      placeholder="Group name"
+                      aria-label="Group name"
+                      value={form.watch('gimGroupName') ?? ''}
+                      onChange={(event) => {
+                        form.setValue('gimGroupName', event.target.value, {
+                          shouldDirty: true,
+                        });
+                      }}
+                    />
+                    <ErrorMessage
+                      errors={errors}
+                      name="gimGroupName"
+                      render={({ message }) => (
+                        <Text as="p" color="red" size="1">
+                          {message}
+                        </Text>
+                      )}
+                    />
+                  </>
                 )}
               </Flex>
             )}

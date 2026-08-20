@@ -71,14 +71,32 @@ export const addPlayerAction = authActionClient
           )
         : null;
 
-      const { accountType: resolvedAccountType, gimGroupName } =
-        templeAccountType
-          ? { accountType: templeAccountType, gimGroupName: null }
-          : await resolveDeclaredAccountType(
-              maybeFormattedPlayerName,
-              accountType ?? 'main',
-              gimGroupNameInput,
-            );
+      const declared = templeAccountType
+        ? ({
+            status: 'resolved',
+            accountType: templeAccountType,
+            gimGroupName: null,
+          } as const)
+        : await resolveDeclaredAccountType(
+            maybeFormattedPlayerName,
+            accountType ?? 'main',
+            gimGroupNameInput,
+          );
+
+      // A group we cannot find is never quietly downgraded to unranked — the
+      // player is told, and decides whether it was a typo or a genuinely
+      // unranked group.
+      if (declared.status === 'group-not-found') {
+        returnValidationErrors(AddPlayerSchema, {
+          gimGroupName: {
+            _errors: [
+              `We couldn't find your group. No group called "${gimGroupNameInput}" lists ${maybeFormattedPlayerName} on the group hiscores. Check the spelling, or pick "Unranked group ironman" — unranked groups never appear there.`,
+            ],
+          },
+        });
+      }
+
+      const { accountType: resolvedAccountType, gimGroupName } = declared;
 
       if (isMainAccount(resolvedAccountType)) {
         returnValidationErrors(AddPlayerSchema, {

@@ -6,10 +6,19 @@ import { AccountType, AccountTypeChoice } from '@/app/schemas/staff';
 import { fetchGimGroup } from '../data-sources/fetch-gim-group';
 import { isGroupMember } from './gim-group';
 
-export interface ResolvedDeclaredAccountType {
-  accountType: AccountType;
-  gimGroupName: string | null;
-}
+export type ResolvedDeclaredAccountType =
+  | {
+      status: 'resolved';
+      accountType: AccountType;
+      gimGroupName: string | null;
+    }
+  /**
+   * The named group is not on the group hiscores, or does not list this
+   * player. Never silently treated as unranked: a typo and a genuinely
+   * unranked group look identical from here, and only the player can say
+   * which it was.
+   */
+  | { status: 'group-not-found' };
 
 /**
  * Starts TempleOSRS tracking every member of a group.
@@ -40,7 +49,8 @@ async function trackGroupOnTemple(members: string[]) {
  * A claimed group ironman is *verified*, not taken on trust: the group has to
  * exist on the hiscores and list the player as a member, and the board it is
  * found on decides regular vs hardcore. Only unranked groups — which are
- * published nowhere — come down to the player's word.
+ * published nowhere — come down to the player's word, and they have to say so
+ * explicitly rather than arriving there by a failed lookup.
  */
 export async function resolveDeclaredAccountType(
   playerName: string,
@@ -48,21 +58,19 @@ export async function resolveDeclaredAccountType(
   groupName?: string,
 ): Promise<ResolvedDeclaredAccountType> {
   if (choice !== 'group_ironman') {
-    return { accountType: choice, gimGroupName: null };
+    return { status: 'resolved', accountType: choice, gimGroupName: null };
   }
 
   const group = groupName ? await fetchGimGroup(groupName) : null;
 
-  // A group that is not on the hiscores is an unranked group — that is the
-  // definition of unranked. A typo lands here too, and looks the same; both
-  // are ironmen either way, so nothing about their rank turns on it.
   if (!group || !isGroupMember(group, playerName)) {
-    return { accountType: 'unranked_group_ironman', gimGroupName: null };
+    return { status: 'group-not-found' };
   }
 
   await trackGroupOnTemple(group.members);
 
   return {
+    status: 'resolved',
     accountType: group.isHardcore ? 'hardcore_group_ironman' : 'group_ironman',
     gimGroupName: group.name,
   };
