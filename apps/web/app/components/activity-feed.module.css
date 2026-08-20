@@ -97,7 +97,7 @@
   color: rgb(var(--ig-text-muted) / 0.5);
 }
 
-/* Trailing metadata (time + count) */
+/* Trailing metadata */
 .trailing {
   flex-shrink: 0;
   display: flex;
@@ -110,15 +110,6 @@
   font-size: 11px;
   color: rgb(var(--ig-text-muted));
   white-space: nowrap;
-}
-.count {
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 11px;
-  font-weight: 600;
-  color: rgb(var(--ig-secondary));
-  background: rgb(var(--ig-secondary) / 0.12);
-  border-radius: 999px;
-  padding: 0.05rem 0.4rem;
 }
 
 /* Rank-up "old -> new" */
