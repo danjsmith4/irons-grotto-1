@@ -32,6 +32,20 @@ Adding a new boss/drop is a well-defined workflow — use the `add-osrs-content`
 - **`apps/web/jest.env.ts` is required** by `jest.config.ts` (setupFiles) but is untracked/absent on fresh checkouts — Jest won't start without it. It loads `.env.local` via dotenv (Next skips `.env.local` when `NODE_ENV=test`, hence the manual load).
 - Server config (`config/constants.server.ts`) parses many env vars at import; `mocks/handlers.ts` imports it, so tests need those vars present in `.env.local`.
 
+## Shipping a change
+
+When the work is done, don't stop at the working tree — branch, push, open a PR, and put it on screen:
+
+```sh
+git checkout -b mm/<short-slug> origin/main   # never commit straight to main
+git commit -am "<summary>"
+git push -u origin HEAD
+gh pr create --base main --title "<title>" --body "<what changed, why, how it was tested>"
+open "$(gh pr view --json url --jq .url)"     # macOS: opens the PR in the default browser
+```
+
+`gh` is installed via Homebrew and authenticated as `mattlm0831`. The PR body should say what was **not** verified as well as what was — e.g. anything behind the Discord auth gate can't be checked headlessly.
+
 ## Drift canary
 `app/rank-calculator/utils/notable-item-points-drift.spec.ts` hits the **live wiki** and lists every notable item that currently renders `-`. Run it to see what's broken after wiki drift. (Networked — not a hermetic unit test.) `schemas/wiki.spec.ts` is the hermetic guard for the casing normalisation.
 
