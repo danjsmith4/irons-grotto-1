@@ -22,6 +22,20 @@ export interface PlayerInfoResponse {
   data: PlayerInfo;
 }
 
+/**
+ * `player_info.php` — the cheap half of `player_stats.php`, carrying the game
+ * mode without the skills, bosses and collection log we do not want when all
+ * we are doing is resolving an account type.
+ */
+export const TempleOSRSPlayerInfo = z.object({
+  data: z.object({
+    'Game mode': z.number(),
+    GIM: z.number(),
+  }),
+});
+
+export type TempleOSRSPlayerInfo = z.infer<typeof TempleOSRSPlayerInfo>;
+
 export const GroupMemberInfoResponse = z.object({
   data: z.object({
     memberlist: z.preprocess(

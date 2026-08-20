@@ -135,6 +135,8 @@ There is **one** points ladder (`rankThresholds` in `config/ranks.ts`). The only
 
 So a `main` reading is the *absence* of an answer, and the player is asked.
 
+**Batch population.** `GET /api/update-all-players` syncs every player's game mode via `syncPlayerAccountType` before its usual heavy refresh — one cheap `player_info.php` call each, on the loop's existing 6s rate-limit delay. It only ever *fills in* a type: it never writes `main` on Temple's say-so, and never overwrites an answer a player has already given. The response reports `accountTypesResolved` and `playersNeedingAccountType`, the latter being exactly who the prompt will catch. Run it after migrating so most players never see the dialog.
+
 **The prompt.** `components/account-type-dialog.tsx` renders unskippable on calculator load whenever `accountType` is null — except in the readonly moderator view, which is gated on `formState.disabled` (that form belongs to whoever is reviewing, not the account's owner). Signup asks the same three-way question inline, and only when needed: `add-player-form.tsx` probes `fetchAccountTypeAction` as the name is typed and stays quiet when Temple resolves the account.
 
 **A claimed group is verified, not trusted.** `resolveDeclaredAccountType` looks the group up on both group boards (`fetchGimGroup`), requires the player to be on its member list, and takes regular-vs-hardcore from *which board matched*. It then registers every member on Temple via `add_datapoint.php`, so Temple can resolve that group by itself next time. A miss — typo or genuinely unranked, indistinguishable — stores `unranked_group_ironman`, which is an ironman either way, so no rank turns on it. Only unranked GIM rests on the player's word, because it is published nowhere.
