@@ -214,7 +214,7 @@ export function CalculatorHero() {
           <RankPace rank={rank} />
           <PlayerMeta />
           <div className={styles.metaPush} />
-          <RankLadderModal />
+          <RankLadderModal currentRank={rank} />
         </div>
       </header>
 

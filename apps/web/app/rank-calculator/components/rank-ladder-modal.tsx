@@ -1,14 +1,15 @@
 import { useState, useTransition } from 'react';
-import { Button, Dialog, Flex, Inset, Table } from '@radix-ui/themes';
-import { Rank } from '@/config/enums';
+import { Button, Dialog } from '@radix-ui/themes';
 import Image from 'next/image';
+import { Rank } from '@/config/enums';
+import { rankThresholds } from '@/config/ranks';
 import { getRankName } from '../utils/get-rank-name';
 import { formatNumber } from '../utils/format-number';
 import { getRankImageUrl } from '../utils/get-rank-image-url';
-import { rankThresholds } from '@/config/ranks';
+import styles from './rank-calculator.module.css';
 
 /** The one points ladder, and what each rank costs. */
-export function RankLadderModal() {
+export function RankLadderModal({ currentRank }: { currentRank?: Rank }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -26,47 +27,52 @@ export function RankLadderModal() {
           View ranks
         </Button>
       </Dialog.Trigger>
-      <Dialog.Content maxWidth="400px" aria-describedby={undefined}>
-        <Dialog.Title size="3">Ranks</Dialog.Title>
-        <Inset side="x">
-          <Table.Root size="1">
-            <Table.Header>
-              <Table.Row>
-                <Table.ColumnHeaderCell width="22px">
-                  Icon
-                </Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Rank</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell align="right">
-                  Points
-                </Table.ColumnHeaderCell>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {Object.entries(rankThresholds).map(([rank, points]) => (
-                <Table.Row key={rank}>
-                  <Table.Cell>
-                    <Image
-                      alt={`${rank} icon`}
-                      src={getRankImageUrl(rank as Rank)}
-                      height={22}
-                      width={22}
-                      unoptimized
-                    />
-                  </Table.Cell>
-                  <Table.Cell>{getRankName(rank as Rank)}</Table.Cell>
-                  <Table.Cell align="right">{formatNumber(points)}</Table.Cell>
-                </Table.Row>
-              ))}
-            </Table.Body>
-          </Table.Root>
-        </Inset>
-        <Flex gap="3" mt="4" justify="end">
+      <Dialog.Content
+        maxWidth="360px"
+        className={styles.modal}
+        aria-describedby={undefined}
+      >
+        <div className={styles.modalHeader}>
+          <Dialog.Title className={styles.modalTitle}>Ranks</Dialog.Title>
+        </div>
+        <div className={styles.modalBody}>
+          <div className={`${styles.ladderRow} ${styles.ladderHead}`}>
+            <span />
+            <span>Rank</span>
+            <span>Points</span>
+          </div>
+          {Object.entries(rankThresholds).map(([rank, points]) => (
+            <div
+              key={rank}
+              className={`${styles.ladderRow} ${
+                rank === currentRank ? styles.ladderCurrent : ''
+              }`}
+              aria-current={rank === currentRank ? 'true' : undefined}
+            >
+              <Image
+                alt=""
+                aria-hidden
+                src={getRankImageUrl(rank as Rank)}
+                height={18}
+                width={18}
+                unoptimized
+              />
+              <span className={styles.ladderRank}>
+                {getRankName(rank as Rank)}
+              </span>
+              <span className={styles.ladderPoints}>
+                {formatNumber(points)}
+              </span>
+            </div>
+          ))}
+        </div>
+        <div className={styles.modalFooter}>
           <Dialog.Close>
             <Button variant="soft" color="gray">
               Close
             </Button>
           </Dialog.Close>
-        </Flex>
+        </div>
       </Dialog.Content>
     </Dialog.Root>
   );

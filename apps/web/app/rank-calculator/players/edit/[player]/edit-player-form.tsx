@@ -4,8 +4,8 @@ import {
   Box,
   Button,
   Callout,
+  Dialog,
   Flex,
-  Heading,
   Spinner,
   Text,
 } from '@radix-ui/themes';
@@ -27,6 +27,7 @@ import { editPlayerAction } from './actions/edit-player-action';
 import { fetchPlayerJoinDateAction } from '../../actions/fetch-player-join-date-action';
 import { EditPlayerSchema } from './actions/edit-player-schema';
 import { Checkbox } from '../../../components/checkbox';
+import styles from '../../../components/rank-calculator.module.css';
 
 interface EditPlayerFormProps {
   members: string[];
@@ -89,116 +90,111 @@ export function EditPlayerForm({ members, playerRecord }: EditPlayerFormProps) {
 
   return (
     <FormProvider {...form}>
-      <form onSubmit={handleSubmitWithAction}>
-        <Flex
-          height="100vh"
-          align="center"
-          justify="center"
-          gap="6"
-          direction="column"
-          width="450px"
-          my="0"
-          mx="auto"
-        >
-          {playerRecord.isNameInvalid && (
-            <Callout.Root variant="soft" color="red">
-              <Callout.Icon>
-                <CircleBackslashIcon />
-              </Callout.Icon>
-              <Callout.Text>
-                Your player name has become invalid (this is usually due to a
-                name change).
-              </Callout.Text>
-              <Callout.Text>
-                Please update it to regain access to the calculator.
-              </Callout.Text>
-            </Callout.Root>
-          )}
-          <Heading size="5">Editing {playerRecord.rsn}</Heading>
-          <Flex direction="column" gap="3" width="330px">
-            <Flex direction="column" gap="2">
-              <PlayerNameInput
-                members={members}
-                onChange={debouncedExecuteFetchPlayerJoinDate}
-              />
-            </Flex>
-            <Flex direction="column" gap="2">
-              <Label weight="bold">
-                <Text as="p" mb="2">
-                  Join date
-                </Text>
-                <Box asChild width="100%">
-                  <DatePicker
-                    disabled={isFetchPlayerJoinDateExecuting}
-                    name="joinDate"
-                    required
-                    placeholderText="dd/mm/yyyy"
-                    size="3"
-                    customInput={
-                      <Input
+      {/* A route rather than a dialog trigger — the calculator redirects here
+          when a player's name stops resolving — so it opens on mount and
+          dismissing navigates back, the same as the Back button. */}
+      <Dialog.Root
+        open
+        onOpenChange={() => {
+          router.push('/dashboard');
+        }}
+      >
+        <Dialog.Content maxWidth="460px" className={styles.modal}>
+          <form onSubmit={handleSubmitWithAction}>
+            <div className={styles.modalHeader}>
+              <Dialog.Title className={styles.modalTitle}>
+                Editing {playerRecord.rsn}
+              </Dialog.Title>
+            </div>
+            <div className={styles.modalBody}>
+              {playerRecord.isNameInvalid && (
+                <Callout.Root variant="soft" color="red" size="1" mb="3">
+                  <Callout.Icon>
+                    <CircleBackslashIcon />
+                  </Callout.Icon>
+                  <Callout.Text>
+                    Your player name has become invalid (this is usually due to
+                    a name change). Please update it to regain access to the
+                    calculator.
+                  </Callout.Text>
+                </Callout.Root>
+              )}
+              <Flex direction="column" gap="3">
+                <Flex direction="column" gap="2">
+                  <PlayerNameInput
+                    members={members}
+                    onChange={debouncedExecuteFetchPlayerJoinDate}
+                  />
+                </Flex>
+                <Flex direction="column" gap="2">
+                  <Label weight="bold">
+                    <Text as="p" mb="2">
+                      Join date
+                    </Text>
+                    <Box asChild width="100%">
+                      <DatePicker
+                        disabled={isFetchPlayerJoinDateExecuting}
+                        name="joinDate"
+                        required
+                        placeholderText="dd/mm/yyyy"
                         size="3"
-                        hasError={!!errors.joinDate}
-                        leftIcon={<CalendarIcon />}
-                        rightIcon={
-                          isFetchPlayerJoinDateExecuting ? (
-                            <Spinner />
-                          ) : undefined
+                        customInput={
+                          <Input
+                            size="3"
+                            hasError={!!errors.joinDate}
+                            leftIcon={<CalendarIcon />}
+                            rightIcon={
+                              isFetchPlayerJoinDateExecuting ? (
+                                <Spinner />
+                              ) : undefined
+                            }
+                          />
                         }
                       />
-                    }
+                    </Box>
+                  </Label>
+                  <ErrorMessage
+                    errors={errors}
+                    name="joinDate"
+                    render={({ message }) => (
+                      <Text as="p" color="red">
+                        {message}
+                      </Text>
+                    )}
                   />
-                </Box>
-              </Label>
-              <ErrorMessage
-                errors={errors}
-                name="joinDate"
-                render={({ message }) => (
-                  <Text as="p" color="red">
-                    {message}
-                  </Text>
-                )}
-              />
-            </Flex>
-            <Flex direction="row" gap="2" align="center" asChild>
-              <Label weight="bold">
-                <Checkbox
-                  checked={form.watch('isMobileOnly')}
-                  name="isMobileOnly"
-                />
-                <Text as="span">Mobile only player</Text>
-              </Label>
-            </Flex>
-            <Flex gap="2" mt="2">
-              <Flex flexGrow="1">
-                <Box asChild width="100%">
-                  <Button
-                    type="button"
-                    color="gray"
-                    size="3"
-                    onClick={() => {
-                      router.push('/dashboard');
-                    }}
-                    variant="soft"
-                  >
-                    Back
-                  </Button>
-                </Box>
+                </Flex>
+                <Flex direction="row" gap="2" align="center" asChild>
+                  <Label weight="bold">
+                    <Checkbox
+                      checked={form.watch('isMobileOnly')}
+                      name="isMobileOnly"
+                    />
+                    <Text as="span">Mobile only player</Text>
+                  </Label>
+                </Flex>
               </Flex>
-              <Flex flexGrow="1">
-                <Box asChild width="100%">
-                  <Button
-                    disabled={!isDirty || isSubmitting}
-                    loading={isSubmitting}
-                    size="3"
-                  >
-                    Save
-                  </Button>
-                </Box>
-              </Flex>
-            </Flex>
-          </Flex>
-        </Flex>
-      </form>
+            </div>
+            <div className={styles.modalFooter}>
+              <Button
+                type="button"
+                color="gray"
+                variant="soft"
+                onClick={() => {
+                  router.push('/dashboard');
+                }}
+              >
+                Back
+              </Button>
+              <Button
+                disabled={!isDirty || isSubmitting}
+                loading={isSubmitting}
+              >
+                Save
+              </Button>
+            </div>
+          </form>
+        </Dialog.Content>
+      </Dialog.Root>
     </FormProvider>
   );
 }
