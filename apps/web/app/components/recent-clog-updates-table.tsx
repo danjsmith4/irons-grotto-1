@@ -12,7 +12,6 @@ interface ClogUpdateData {
   playerName: string;
   itemName: string;
   itemId: number;
-  count: number;
   dateFirstLogged: Date;
 }
 
@@ -73,9 +72,6 @@ export function RecentClogUpdatesTable({
               <span className={styles.time}>
                 {formatTimeAgo(update.dateFirstLogged)}
               </span>
-              {update.count > 1 && (
-                <span className={styles.count}>&times;{update.count}</span>
-              )}
             </div>
           </div>
         ))}

@@ -10,7 +10,6 @@ export async function fetchRecentClogUpdates() {
         playerName: playerAcquiredItems.playerName,
         itemName: playerAcquiredItems.itemName,
         itemId: playerAcquiredItems.itemId,
-        count: playerAcquiredItems.count,
         dateFirstLogged: playerAcquiredItems.dateFirstLogged,
       })
       .from(playerAcquiredItems)
