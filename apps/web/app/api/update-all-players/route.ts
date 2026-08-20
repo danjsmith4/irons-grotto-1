@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { players } from '@/lib/db/schema';
 import { fetchPlayerDetails } from '@/app/rank-calculator/data-sources/fetch-player-details/fetch-player-details';
+import { syncPlayerAccountType } from '@/app/rank-calculator/utils/sync-player-account-type';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,6 +11,7 @@ async function getAllPlayers() {
     .select({
       playerName: players.playerName,
       discordUserId: players.discordUserId,
+      accountType: players.accountType,
     })
     .from(players);
 
@@ -40,6 +42,11 @@ export async function GET() {
     // reach discord for — surfaced so a batch run never hides either silently.
     const playersMissingFromDiscord: string[] = [];
     const playersWithStaleDiscordRoles: string[] = [];
+    // Players whose game mode nothing can settle — TempleOSRS cannot tell a
+    // group ironman it has not been told about from a main. These are exactly
+    // the players the calculator will ask on their next visit.
+    const playersNeedingAccountType: string[] = [];
+    let accountTypesResolved = 0;
 
     // Process each player with rate limiting
     for (let i = 0; i < allPlayers.length; i++) {
@@ -51,6 +58,20 @@ export async function GET() {
           await new Promise((resolve) =>
             setTimeout(resolve, dataPointRateLimitSeconds),
           );
+        }
+
+        // Game mode first, and independently of the heavy refresh below: it is
+        // one cheap request, and populating it in a batch is what keeps the
+        // account-type prompt off most players' screens.
+        const accountTypeSync = await syncPlayerAccountType(
+          player.playerName,
+          player.accountType,
+        );
+
+        if (accountTypeSync.outcome === 'unresolved') {
+          playersNeedingAccountType.push(player.playerName);
+        } else if (accountTypeSync.outcome === 'updated') {
+          accountTypesResolved++;
         }
 
         // Fetch fresh player details (mergeSavedData = false for complete refresh)
@@ -75,6 +96,11 @@ export async function GET() {
             playerName: player.playerName,
             success: true,
             message: 'Updated successfully',
+            accountType: accountTypeSync.accountType,
+            ...(accountTypeSync.outcome === 'unresolved' && {
+              accountTypeWarning:
+                'Game mode could not be resolved — this player will be asked on their next calculator visit',
+            }),
             ...(discordMembership === 'not-a-member' && {
               warning: `Discord user ${player.discordUserId} is no longer in the guild — diary bonus points have been cleared`,
             }),
@@ -101,6 +127,12 @@ export async function GET() {
       }
     }
 
+    if (playersNeedingAccountType.length > 0) {
+      console.warn(
+        `Game mode could not be resolved for: ${playersNeedingAccountType.join(', ')}`,
+      );
+    }
+
     if (playersMissingFromDiscord.length > 0) {
       console.warn(
         `Players no longer in the discord guild: ${playersMissingFromDiscord.join(', ')}`,
@@ -118,6 +150,8 @@ export async function GET() {
       message: `Batch update completed: ${successCount} successful, ${errorCount} failed`,
       playersUpdated: successCount,
       playersTotal: allPlayers.length,
+      accountTypesResolved,
+      playersNeedingAccountType,
       playersMissingFromDiscord,
       playersWithStaleDiscordRoles,
       results,

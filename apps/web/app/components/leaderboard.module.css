@@ -237,3 +237,22 @@
 .search input::placeholder {
   color: rgb(var(--ig-text-muted) / 0.7);
 }
+
+/* Name cell: staff role and game-mode badges sit to the left of the name,
+   rather than earning columns of their own. */
+.playerCell {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+/* Holds the account-type badge's width whether or not there is one to show, so
+   every name in the column starts at the same x. */
+.badgeSlot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 12px;
+}

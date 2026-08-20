@@ -1,9 +1,9 @@
 import { Rank } from '@/config/enums';
-import { RankStructure } from '@/app/schemas/rank-calculator';
+import { AccountType } from '@/app/schemas/staff';
 import {
   rankRequiredCombatAchievements,
   rankRequiredItems,
-  rankThresholds,
+  rankThresholdsFor,
 } from '@/config/ranks';
 import type { RankCalculatorSchema } from '../../[player]/submit-rank-calculator-validation';
 import { CombatAchievementTier } from '@/app/schemas/osrs';
@@ -18,9 +18,9 @@ export function calculateRank(
   acquiredItems: RankCalculatorSchema['acquiredItems'],
   combatAchievementTier: CombatAchievementTier,
   pointsAwarded: number,
-  rankStructure: RankStructure,
+  accountType: AccountType | null,
 ): RankData {
-  const rankData = Object.entries(rankThresholds[rankStructure]) as [
+  const rankData = Object.entries(rankThresholdsFor(accountType)) as [
     Rank,
     number,
   ][];

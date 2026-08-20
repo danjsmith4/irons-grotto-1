@@ -1,6 +1,16 @@
 'use client';
 
-import { Box, Button, Flex, Heading, Spinner, Text } from '@radix-ui/themes';
+import {
+  Box,
+  Button,
+  Flex,
+  Heading,
+  RadioGroup,
+  Spinner,
+  Text,
+  TextField,
+} from '@radix-ui/themes';
+import { useState } from 'react';
 import { FormProvider } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { ErrorMessage } from '@hookform/error-message';
@@ -16,7 +26,12 @@ import { PlayerNameInput } from './components/player-name-input';
 import { addPlayerAction } from './actions/add-player-action';
 import { fetchPlayerJoinDateAction } from '../actions/fetch-player-join-date-action';
 import { AddPlayerSchema } from './actions/add-player-schema';
+import { fetchAccountTypeAction } from './actions/fetch-account-type-action';
 import { Checkbox } from '../../components/checkbox';
+import {
+  AccountTypeChoice,
+  accountTypeChoiceLabels,
+} from '@/app/schemas/staff';
 
 interface AddPlayerFormProps {
   members: string[];
@@ -54,10 +69,33 @@ export function AddPlayerForm({ members }: AddPlayerFormProps) {
     },
   });
 
+  // Most accounts resolve from TempleOSRS, so the account-type question only
+  // appears for the ones that cannot — group ironmen look exactly like mains
+  // on every public API.
+  const [needsAccountType, setNeedsAccountType] = useState(false);
+  const { execute: executeFetchAccountType } = useAction(
+    fetchAccountTypeAction,
+    {
+      onSettled({ result }) {
+        const isUnresolved = !result.data?.accountType;
+
+        setNeedsAccountType(isUnresolved);
+        form.setValue('accountType', isUnresolved ? 'main' : undefined);
+      },
+    },
+  );
+
   const debouncedExecuteFetchPlayerJoinDate = debounce(
     executeFetchPlayerJoinDate,
     600,
   );
+
+  const debouncedExecuteFetchAccountType = debounce(
+    executeFetchAccountType,
+    600,
+  );
+
+  const accountType = form.watch('accountType');
 
   return (
     <FormProvider {...form}>
@@ -95,7 +133,10 @@ export function AddPlayerForm({ members }: AddPlayerFormProps) {
             <Flex direction="column" gap="2">
               <PlayerNameInput
                 members={members}
-                onChange={debouncedExecuteFetchPlayerJoinDate}
+                onChange={(input) => {
+                  debouncedExecuteFetchPlayerJoinDate(input);
+                  debouncedExecuteFetchAccountType({ playerName: input });
+                }}
               />
             </Flex>
             <Flex direction="column" gap="2">
@@ -144,15 +185,53 @@ export function AddPlayerForm({ members }: AddPlayerFormProps) {
                 <Text as="span">Mobile only player</Text>
               </Label>
             </Flex>
-            <Flex direction="row" gap="2" align="center" asChild>
-              <Label weight="bold">
-                <Checkbox
-                  checked={form.watch('unrankedGIMOverride')}
-                  name="unrankedGIMOverride"
-                />
-                <Text as="span">Unranked GIM (override ironman check)</Text>
-              </Label>
-            </Flex>
+            {needsAccountType && (
+              <Flex direction="column" gap="2">
+                <Label weight="bold">Account type</Label>
+                <Text as="p" size="1" color="gray">
+                  We could not work this out automatically — group ironmen are
+                  not listed individually on the hiscores.
+                </Text>
+                <RadioGroup.Root
+                  value={accountType ?? 'main'}
+                  onValueChange={(value) => {
+                    form.setValue('accountType', value as AccountTypeChoice, {
+                      shouldDirty: true,
+                    });
+                  }}
+                >
+                  {AccountTypeChoice.options.map((option) => (
+                    <RadioGroup.Item key={option} value={option}>
+                      {accountTypeChoiceLabels[option]}
+                    </RadioGroup.Item>
+                  ))}
+                </RadioGroup.Root>
+                {accountType === 'group_ironman' && (
+                  <>
+                    <TextField.Root
+                      maxLength={12}
+                      placeholder="Group name"
+                      aria-label="Group name"
+                      value={form.watch('gimGroupName') ?? ''}
+                      onChange={(event) => {
+                        form.setValue('gimGroupName', event.target.value, {
+                          shouldDirty: true,
+                        });
+                      }}
+                    />
+                    <ErrorMessage
+                      errors={errors}
+                      name="gimGroupName"
+                      render={({ message }) => (
+                        <Text as="p" color="red" size="1">
+                          {message}
+                        </Text>
+                      )}
+                    />
+                  </>
+                )}
+              </Flex>
+            )}
             <Flex gap="2" mt="2">
               <Flex flexGrow="1">
                 <Box asChild width="100%">

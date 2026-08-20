@@ -9,7 +9,7 @@ import {
   TzHaarCape,
 } from '@/app/schemas/osrs';
 import { PlayerName } from '@/app/schemas/player';
-import { RankStructure } from '@/app/schemas/rank-calculator';
+import { AccountType, StaffRole } from '@/app/schemas/staff';
 import { Rank } from '@/config/enums';
 import { pickBy } from 'lodash';
 import { isAchievementDiaryCapeAchieved } from '../utils/is-achievement-diary-cape-achieved';
@@ -28,7 +28,11 @@ export const RankCalculatorSchema = z.object({
   totalLevel: z.coerce.number().min(minimumTotalLevel).max(maximumTotalLevel),
   totalXp: z.coerce.number().nonnegative().default(1154),
   playerName: PlayerName,
-  rankStructure: RankStructure,
+  // Both are read-only player metadata carried through the form so the hero
+  // and the readonly moderator view read them from the same place. Null
+  // account type means unresolved, and is what raises the prompt.
+  accountType: AccountType.nullable().default(null),
+  staffRole: StaffRole.nullable().default(null),
   rank: Rank,
   points: z.coerce.number().nonnegative(),
   proofLink: z.union([z.string().url().nullish(), z.literal('')]),

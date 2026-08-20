@@ -4,8 +4,7 @@ import { useAction } from 'next-safe-action/hooks';
 import { useRankCalculator } from '@/app/rank-calculator/hooks/point-calculator/use-rank-calculator';
 import { useParams } from 'next/navigation';
 import { getRankName } from '@/app/rank-calculator/utils/get-rank-name';
-import { useFormState, useWatch } from 'react-hook-form';
-import { RankCalculatorSchema } from '@/app/rank-calculator/[player]/submit-rank-calculator-validation';
+import { useFormState } from 'react-hook-form';
 import { handleToastUpdates } from '@/app/rank-calculator/utils/handle-toast-updates';
 import { approveSubmissionAction } from '../approve-submission-action';
 
@@ -22,10 +21,6 @@ export function ApproveSubmissionButton({
   const [isDialogTransitioning, startTransition] = useTransition();
   const { rank } = useRankCalculator();
   const { submissionId } = useParams<{ submissionId: string }>();
-  const rankStructure = useWatch<RankCalculatorSchema, 'rankStructure'>({
-    name: 'rankStructure',
-  });
-  const isStandardRankStructure = rankStructure === 'Standard';
   const { errors } = useFormState();
 
   const {
@@ -63,18 +58,10 @@ export function ApproveSubmissionButton({
               <br />
             </>
           )}
-          {isStandardRankStructure && (
-            <Text as="div">
-              This application will be approved and {playerName} will
-              automatically be assigned the {getRankName(rank)} rank on Discord.
-            </Text>
-          )}
-          {!isStandardRankStructure && (
-            <Text as="div">
-              This application will be approved. Discord ranks must be manually
-              assigned for non-standard rank structures.
-            </Text>
-          )}
+          <Text as="div">
+            This application will be approved and {playerName} will
+            automatically be assigned the {getRankName(rank)} rank on Discord.
+          </Text>
           <br />
           <Text>No in-game ranks will be changed.</Text>
         </AlertDialog.Description>

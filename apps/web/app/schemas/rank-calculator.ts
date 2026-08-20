@@ -6,17 +6,6 @@ import {
   TzHaarCape,
 } from './osrs';
 
-export const RankStructure = z.enum([
-  'Standard',
-  'Main',
-  'Admin',
-  'Moderator',
-  'Deputy Owner',
-  'Owner',
-]);
-
-export type RankStructure = z.infer<typeof RankStructure>;
-
 export const AchievementDiaryMap = z.record(DiaryLocation, DiaryTier);
 
 export type AchievementDiaryMap = z.infer<typeof AchievementDiaryMap>;

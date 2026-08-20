@@ -10,7 +10,7 @@ import { Rank } from '@/config/enums';
 import { fetchPlayerMeta } from '../../../../data-sources/fetch-player-meta';
 import { fetchTemplePlayerStats } from '../../../../data-sources/fetch-temple-player-stats';
 import { assertUniquePlayerRecord } from '../../../validation/assert-unique-player-record';
-import { validateIronmanStatus } from '../../../../utils/validate-ironman-status';
+import { resolveTempleAccountType } from '@/app/schemas/temple-api';
 import { EditPlayerSchema } from './edit-player-schema';
 import { updatePlayer } from '@/lib/db/player-operations';
 import { db } from '@/lib/db';
@@ -62,21 +62,19 @@ export const editPlayerAction = authActionClient
         maybeFormattedPlayerName.toLowerCase() !==
         previousPlayerName.toLowerCase();
 
-      if (hasPlayerNameChanged) {
-        const validation = await validateIronmanStatus(
-          maybeFormattedPlayerName,
-        );
-
-        if (!validation.isValid) {
-          returnValidationErrors(EditPlayerSchema, {
-            playerName: {
-              _errors: [
-                'Only ironman accounts can be registered in this clan. Main accounts are not eligible for standard clan ranks.',
-              ],
-            },
-          });
-        }
-      }
+      // A rename points the record at a different account, so its game mode is
+      // re-resolved. Temple reporting a main is not grounds to reject — it
+      // reports group ironmen it has never been told about the same way — so
+      // an unresolvable account is cleared to null instead, and the calculator
+      // asks its owner.
+      const renamedAccountType = hasPlayerNameChanged
+        ? ((playerStats &&
+            resolveTempleAccountType(
+              playerStats.info['Game mode'],
+              playerStats.info.GIM,
+            )) ??
+          null)
+        : undefined;
 
       const pipeline = redis.multi();
 
@@ -90,6 +88,8 @@ export const editPlayerAction = authActionClient
               playerName: maybeFormattedPlayerName,
               rank: currentRank,
               isMobileOnly,
+              accountType: renamedAccountType,
+              gimGroupName: renamedAccountType ? undefined : null,
               updatedAt: new Date(),
             })
             .where(eq(players.playerName, previousPlayerName));

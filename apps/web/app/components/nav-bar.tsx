@@ -233,15 +233,6 @@ export function NavBar({
                   >
                     Reset form defaults
                   </DropdownMenu.Item>
-                  {playerName && (
-                    <DropdownMenu.Item asChild>
-                      <Link
-                        href={`/rank-calculator/players/edit/${playerName.toLowerCase()}`}
-                      >
-                        Edit player
-                      </Link>
-                    </DropdownMenu.Item>
-                  )}
                   <DropdownMenu.Separator />
                   <DropdownMenu.Item
                     color="red"

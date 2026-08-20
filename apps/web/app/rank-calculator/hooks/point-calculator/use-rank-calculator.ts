@@ -7,27 +7,20 @@ import {
   RankProgress,
 } from '../../utils/calculators/calculate-rank-progress';
 
-export type RankCalculatorData = RankProgress & {
-  /**
-   * Progress through the Standard rank structure, for players on a staff
-   * structure. Null when Standard is already the selected structure.
-   */
-  standardRankProgress: RankProgress | null;
-};
+export type RankCalculatorData = RankProgress;
 
 export function useRankCalculator() {
-  const rankStructure = useWatch<RankCalculatorSchema, 'rankStructure'>({
-    name: 'rankStructure',
+  const accountType = useWatch<RankCalculatorSchema, 'accountType'>({
+    name: 'accountType',
   });
 
   const pointsAwarded = useTotalPoints();
 
-  const { standardRankData, ...rankData } = useRank(pointsAwarded);
+  const rankData = useRank(pointsAwarded);
 
-  return {
-    ...calculateRankProgress(pointsAwarded, rankStructure, rankData),
-    standardRankProgress: standardRankData
-      ? calculateRankProgress(pointsAwarded, 'Standard', standardRankData)
-      : null,
-  } satisfies RankCalculatorData;
+  return calculateRankProgress(
+    pointsAwarded,
+    accountType,
+    rankData,
+  ) satisfies RankCalculatorData;
 }

@@ -33,8 +33,15 @@ import {
   fetchUserDiscordRoles,
 } from '../fetch-user-discord-roles';
 import { calculateCombatDiaryTierBonusPoints } from '../../utils/calculators/calculate-custom-diary-tier-multipliers';
-import { processPlayerData, getPlayerByName } from '@/lib/db/player-operations';
-import { TempleOSRSCollectionLogItem } from '@/app/schemas/temple-api';
+import {
+  processPlayerData,
+  getPlayerByName,
+  updatePlayerAccountType,
+} from '@/lib/db/player-operations';
+import {
+  resolveTempleAccountType,
+  TempleOSRSCollectionLogItem,
+} from '@/app/schemas/temple-api';
 
 export interface PlayerDetailsResponse
   extends Omit<RankCalculatorSchema, 'rank' | 'points'> {
@@ -79,7 +86,8 @@ export const emptyResponse = {
   totalLevel: 0,
   totalXp: 0,
   playerName: '',
-  rankStructure: 'Standard',
+  accountType: null,
+  staffRole: null,
   proofLink: undefined,
   hasTemplePlayerStats: false,
   hasTempleCollectionLog: false,
@@ -318,6 +326,27 @@ export async function fetchPlayerDetails(
         collectionLogBonusPoints: playerRecord.collectionLogBonusPoints,
       };
 
+    // Game mode. Temple settles it whenever it reports anything but a main;
+    // a main reading is ambiguous (it reports group ironmen it has never heard
+    // of the same way), so we fall back to whatever the player has already
+    // told us and leave it null when nobody has. Null is what makes the
+    // calculator ask.
+    const templeAccountType = templePlayerStats
+      ? resolveTempleAccountType(
+          templePlayerStats.info['Game mode'],
+          templePlayerStats.info.GIM,
+        )
+      : null;
+    const accountType = templeAccountType ?? playerRecord.accountType;
+
+    if (templeAccountType && templeAccountType !== playerRecord.accountType) {
+      await updatePlayerAccountType(rsn, templeAccountType).catch(
+        (error) => {
+          Sentry.captureException(error);
+        },
+      );
+    }
+
     const result = {
       success: true as const,
       error: null,
@@ -345,7 +374,8 @@ export async function fetchPlayerDetails(
         collectionLogTotal,
         joinDate: new Date(joinDate),
         playerName: rsn,
-        rankStructure: savedData?.rankStructure ?? 'Standard',
+        accountType,
+        staffRole: playerRecord.staffRole,
         proofLink,
         currentRank: currentRank as Rank,
         tzhaarCape: mergeTzhaarCapes(tzhaarCape, savedData?.tzhaarCape),

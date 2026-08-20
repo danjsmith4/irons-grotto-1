@@ -1,7 +1,6 @@
 import { ActionError } from '@/app/action-error';
 import type { CombatAchievementTier } from '@/app/schemas/osrs';
 import type {
-  RankStructure,
   RankSubmissionDiff,
   RankSubmissionStatus,
 } from '@/app/schemas/rank-calculator';
@@ -67,12 +66,10 @@ export async function approveSubmission({
 
   const submissionData = await redis.json.get<{
     '$.playerName': [string];
-    '$.rankStructure': [RankStructure];
     '$.combatAchievementTier': [CombatAchievementTier];
     '$.hasBloodTorva': [boolean];
   }>(
     rankSubmissionKey(submissionId),
-    '$.rankStructure',
     '$.playerName',
     '$.combatAchievementTier',
     '$.hasBloodTorva',
@@ -84,7 +81,6 @@ export async function approveSubmission({
 
   const {
     '$.playerName': [playerName],
-    '$.rankStructure': [rankStructure],
     '$.combatAchievementTier': [combatAchievementTier],
     '$.hasBloodTorva': [isBloodTorvaChecked],
   } = submissionData;
@@ -130,50 +126,42 @@ export async function approveSubmission({
     applicableAchievementDiscordRoles,
   ).some(Boolean);
 
-  if (rankStructure === 'Standard') {
-    await discordBotClient.put(
-      Routes.channelMessageOwnReaction(
-        serverConstants.discord.channelId,
-        messageId,
-        encodeURIComponent('☑️'),
-      ),
-    );
-    await assignRankDiscordRole(rank, submitterId);
-
-    const newAchievementRoles = requiresAchievementRoles
-      ? await assignAchievementDiscordRoles(
-          submitterId,
-          applicableAchievementDiscordRoles,
-        )
-      : [];
-
-    await sendDiscordMessage(
-      {
-        content: dedent`
-          <@${submitterId}>
-
-          Your application has been ${
-            isAutomatic
-              ? 'automatically approved'
-              : `approved by <@${approverId}>`
-          } and you have been assigned the following role(s) on Discord:
-
-          ${[getRankName(rank), ...newAchievementRoles.filter(Boolean)]
-            .map((role) => `- ${role}`)
-            .join('\n')}
-
-          Please reach out to any member of staff to update your in-game rank!
-        `,
-      },
+  await discordBotClient.put(
+    Routes.channelMessageOwnReaction(
+      serverConstants.discord.channelId,
       messageId,
-    );
-  } else {
-    // Non-Standard rank structures require manual handling
-    // Do not send approval messages or assign roles automatically
-    throw new ActionError(
-      'Non-Standard rank structures must be handled manually by staff',
-    );
-  }
+      encodeURIComponent('☑️'),
+    ),
+  );
+  await assignRankDiscordRole(rank, submitterId);
+
+  const newAchievementRoles = requiresAchievementRoles
+    ? await assignAchievementDiscordRoles(
+        submitterId,
+        applicableAchievementDiscordRoles,
+      )
+    : [];
+
+  await sendDiscordMessage(
+    {
+      content: dedent`
+        <@${submitterId}>
+
+        Your application has been ${
+          isAutomatic
+            ? 'automatically approved'
+            : `approved by <@${approverId}>`
+        } and you have been assigned the following role(s) on Discord:
+
+        ${[getRankName(rank), ...newAchievementRoles.filter(Boolean)]
+          .map((role) => `- ${role}`)
+          .join('\n')}
+
+        Please reach out to any member of staff to update your in-game rank!
+      `,
+    },
+    messageId,
+  );
 
   const playerRecord = await getPlayerByName(playerName, submitterId);
 

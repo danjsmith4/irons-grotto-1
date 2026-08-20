@@ -7,11 +7,14 @@ import {
 } from '@/lib/db/schema';
 import { and, desc, eq, sql } from 'drizzle-orm';
 import { AllPetItemIds } from '../schemas/osrs';
+import type { AccountType, StaffRole } from '../schemas/staff';
 import { rankThresholds } from '@/config/ranks';
 
 export interface PlayerProfile {
   playerName: string;
   rank: string;
+  staffRole: StaffRole | null;
+  accountType: AccountType | null;
   points: number;
   joinDate: string;
   ehb: number;
@@ -57,7 +60,7 @@ export interface PlayerProfile {
 }
 
 function computeRankProgress(points: number) {
-  const entries = Object.entries(rankThresholds.Standard)
+  const entries = Object.entries(rankThresholds)
     .map(([rank, threshold]) => ({ rank, threshold: threshold ?? 0 }))
     .sort((a, b) => a.threshold - b.threshold);
 
@@ -151,6 +154,8 @@ export async function fetchPlayerProfile(
       data: {
         playerName: player.playerName,
         rank: player.rank,
+        staffRole: player.staffRole,
+        accountType: player.accountType,
         points: Math.round(player.points),
         joinDate: player.joinDate,
         ehb: player.ehb,

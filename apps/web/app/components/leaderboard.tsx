@@ -14,6 +14,9 @@ import { getRankImageUrl } from '@/app/rank-calculator/utils/get-rank-image-url'
 import { getRankName } from '@/app/rank-calculator/utils/get-rank-name';
 import { Rank } from '@/config/enums';
 import { formatWikiImageUrl } from '../rank-calculator/utils/format-wiki-url';
+import { StaffBadge } from './staff-badge';
+import { AccountTypeBadge } from './account-type-badge';
+import type { AccountType, StaffRole } from '../schemas/staff';
 import { formatXpInMillions } from '@/app/utils/format-number';
 import { SectionHeader } from './section-header';
 import { usePlayerProfile } from './player-profile-context';
@@ -22,6 +25,8 @@ import styles from './leaderboard.module.css';
 export interface LeaderboardPlayer {
   playerName: string;
   rank: string | null;
+  staffRole: StaffRole | null;
+  accountType: AccountType | null;
   points: number;
   hasRadiant: boolean;
   hasBlorva: boolean;
@@ -347,13 +352,30 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
                     </td>
 
                     <td className={`${styles.td} ${styles.tdLeft}`}>
-                      <button
-                        type="button"
-                        className={styles.player}
-                        onClick={() => openProfile(player.playerName)}
-                      >
-                        {player.playerName}
-                      </button>
+                      <span className={styles.playerCell}>
+                        {/* A fixed slot, so the badge's presence never moves
+                            the name. An unresolved account has nothing to show
+                            and a main has no chat badge in game, and neither
+                            should cost the column its shared left edge. */}
+                        <span className={styles.badgeSlot}>
+                          <AccountTypeBadge
+                            accountType={player.accountType}
+                            size={12}
+                          />
+                        </span>
+                        <button
+                          type="button"
+                          className={styles.player}
+                          onClick={() => openProfile(player.playerName)}
+                        >
+                          {player.playerName}
+                        </button>
+                        {/* Trails the name rather than leading it: only a
+                            handful of members are staff, and a badge in front
+                            pushed just those few names out of the column's
+                            shared left edge. */}
+                        <StaffBadge role={player.staffRole} iconOnly size={13} />
+                      </span>
                     </td>
 
                     <td className={`${styles.td} ${styles.num}`}>

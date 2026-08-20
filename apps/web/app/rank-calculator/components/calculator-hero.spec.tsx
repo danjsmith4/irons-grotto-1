@@ -88,12 +88,5 @@ generateScaledPlayerTests(
         expect.stringContaining(imageProps.src),
       );
     });
-
-    it('renders the selected rank structure', () => {
-      expect(
-        screen.getByRole('combobox', { name: /^selected rank structure$/i })
-          .textContent,
-      ).toBe(formData.rankStructure);
-    });
   },
 );

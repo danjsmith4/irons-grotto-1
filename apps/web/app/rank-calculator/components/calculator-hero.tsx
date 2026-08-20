@@ -2,15 +2,17 @@ import { useEffect, useId, useState } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { Button, Dialog, Flex } from '@radix-ui/themes';
 import { ArrowRightIcon } from '@radix-ui/react-icons';
-import { RankStructure } from '@/app/schemas/rank-calculator';
 import { useAction } from 'next-safe-action/hooks';
 import Image from 'next/image';
-import { Select } from './select';
 import { PlayerMeta } from './player-meta';
 import { RankPace } from './rank-pace';
-import { RankStructureInfoModal } from './rank-structure-info-modal';
+import { RankLadderModal } from './rank-ladder-modal';
+import { AccountTypeDialog } from './account-type-dialog';
+import { StaffBadge } from '@/app/components/staff-badge';
+import { AccountTypeBadge } from '@/app/components/account-type-badge';
 import { useRankCalculator } from '../hooks/point-calculator/use-rank-calculator';
 import { getRankName } from '../utils/get-rank-name';
+import { isRankUp } from '../utils/is-rank-up';
 import { getPointsRemainingLabel } from '../utils/get-points-remaining-label';
 import { formatNumber } from '../utils/format-number';
 import { formatPercentage } from '../utils/format-percentage';
@@ -39,33 +41,49 @@ export function CalculatorHero() {
     nextRank,
     rank,
     throttleReason,
-    standardRankProgress,
   } = useRankCalculator();
-  const { register, setValue, getValues } = useFormContext();
+  const { register, setValue, getValues, formState } = useFormContext();
   const { playerName, rank: currentRank } = useCurrentPlayer();
   // The displayed name comes from the submission itself; the context name is
   // what the publish action is bound to.
   const submissionPlayerName = useWatch<RankCalculatorSchema, 'playerName'>({
     name: 'playerName',
   });
-  const [showRankUpDialog, setShowRankUpDialog] = useState(
-    currentRank && currentRank !== rank,
-  );
+  const accountType = useWatch<RankCalculatorSchema, 'accountType'>({
+    name: 'accountType',
+  });
+  const staffRole = useWatch<RankCalculatorSchema, 'staffRole'>({
+    name: 'staffRole',
+  });
+  // Whether the game mode still has to be settled. Nothing else in the hero
+  // may interrupt until it is: the rank below is read off whichever ladder the
+  // account type selects.
+  const needsAccountType = !accountType && !formState.disabled;
+  const [showRankUpDialog, setShowRankUpDialog] = useState(false);
+  const [hasCheckedForRankUp, setHasCheckedForRankUp] = useState(false);
   const standing = useClanStanding();
   const totalId = useId();
   const remainingId = useId();
-  const standardRemainingId = useId();
   const rankName = getRankName(rank);
   const nextRankName = nextRank ? getRankName(nextRank) : 'Max rank';
-  const standardRankName = standardRankProgress
-    ? getRankName(standardRankProgress.rank)
-    : null;
-  const standardNextRankName = standardRankProgress?.nextRank
-    ? getRankName(standardRankProgress.nextRank)
-    : 'Max rank';
   const { executeAsync: publishRankSubmission } = useAction(
     publishRankSubmissionAction.bind(null, currentRank, playerName),
   );
+
+  // Announced once, on load, rather than derived — so an edit that crosses a
+  // threshold does not pop a dialog mid-session. The check waits for the
+  // account type, otherwise a player who turns out to be a main is
+  // congratulated on an ironman rank they were never on. `isRankUp` is what
+  // keeps staff out of it: their stored rank is an in-game staff rank, on no
+  // ladder, so a bare inequality announced a promotion every single load.
+  useEffect(() => {
+    if (hasCheckedForRankUp || needsAccountType) {
+      return;
+    }
+
+    setHasCheckedForRankUp(true);
+    setShowRankUpDialog(isRankUp(currentRank, rank, accountType ?? null));
+  }, [hasCheckedForRankUp, needsAccountType, currentRank, rank, accountType]);
 
   useEffect(() => {
     if (rank !== getValues('rank')) {
@@ -98,6 +116,12 @@ export function CalculatorHero() {
 
   return (
     <>
+      {/* Null account type means nothing could resolve it — ask, and block
+          until answered, because it decides which ladder this sheet scores
+          against. Never in the readonly moderator view: that form is disabled,
+          and the question belongs to the account's owner, not whoever is
+          reviewing an old submission of theirs. */}
+      {needsAccountType && <AccountTypeDialog playerName={playerName} />}
       <input
         {...register('rank', { value: rank })}
         defaultValue={rank}
@@ -123,6 +147,10 @@ export function CalculatorHero() {
             <h1 className={styles.playerName} aria-label="Player name">
               {decodeURIComponent(submissionPlayerName)}
             </h1>
+            <div className={styles.identityBadges}>
+              <AccountTypeBadge accountType={accountType} size={16} />
+              <StaffBadge role={staffRole} />
+            </div>
             <p className={styles.rankTrack}>
               <span aria-label="Current rank">{rankName}</span>
               <ArrowRightIcon aria-hidden className={styles.rankArrow} />
@@ -185,47 +213,11 @@ export function CalculatorHero() {
           </div>
         </div>
 
-        {standardRankProgress && (
-          <div className={`${styles.meter} ${styles.meterSecondary}`}>
-            <div className={styles.meterMeta}>
-              <span id={standardRemainingId}>
-                Standard rank progress — {standardRankName}
-                {' → '}
-                {standardNextRankName}
-              </span>
-              <span aria-labelledby={standardRemainingId}>
-                {getPointsRemainingLabel(
-                  standardRankProgress.pointsRemaining,
-                  standardRankProgress.throttleReason,
-                )}
-              </span>
-            </div>
-            <div className={styles.meterTrack}>
-              <div
-                className={styles.meterFill}
-                style={{
-                  width: `${Math.min(
-                    100,
-                    standardRankProgress.pointsAwardedPercentage * 100,
-                  )}%`,
-                }}
-              />
-            </div>
-          </div>
-        )}
-
         <div className={styles.scoreFoot}>
           <RankPace rank={rank} />
           <PlayerMeta />
-          <div className={`${styles.metaItem} ${styles.metaPush}`}>
-            <span className={styles.metaLabel}>Structure</span>
-            <Select
-              aria-label="Selected rank structure"
-              name="rankStructure"
-              options={RankStructure.options}
-            />
-          </div>
-          <RankStructureInfoModal />
+          <div className={styles.metaPush} />
+          <RankLadderModal currentRank={rank} />
         </div>
       </header>
 
