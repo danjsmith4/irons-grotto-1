@@ -227,6 +227,41 @@ export const playerRankUpsRelations = relations(playerRankUps, ({ one }) => ({
   }),
 }));
 
+/**
+ * Every change to `players.staff_role`, and who made it.
+ *
+ * A staff role is the only thing on this site that grants elevated access, and
+ * the admin dashboard hands it out from inside the app rather than from the
+ * database, so each grant and revoke is written down. The actor is recorded by
+ * Discord id as well as by player name because the ladder is checked against
+ * the signed-in Discord account, and that is the identity that actually
+ * authorised the change.
+ */
+export const staffRoleChanges = pgTable(
+  'staff_role_changes',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
+    playerName: varchar('player_name', { length: 12 }).notNull(),
+    oldRole: staffRoleEnum('old_role'),
+    newRole: staffRoleEnum('new_role'),
+    changedByPlayerName: varchar('changed_by_player_name', { length: 12 }),
+    changedByDiscordUserId: varchar('changed_by_discord_user_id', {
+      length: 20,
+    }).notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => ({
+    playerNameIdx: index('staff_role_changes_player_name_idx').on(
+      table.playerName,
+    ),
+  }),
+);
+
+export type StaffRoleChange = typeof staffRoleChanges.$inferSelect;
+export type NewStaffRoleChange = typeof staffRoleChanges.$inferInsert;
+
 // Singleton bookkeeping for scheduled-ish jobs that are triggered by page
 // traffic rather than a server cron (there is no long-running server). Each
 // job keeps one row keyed by a stable id and records when it last ran, so a

@@ -150,3 +150,34 @@ Badges: `app/components/account-type-badge.tsx` renders the in-game chat badge f
 Staff standing is **metadata on a player, not a rank**: `players.staff_role` (enum, nullable — moderator / admin / deputy_owner / owner). Staff are ranked on points like everyone else. `app/components/staff-badge.tsx` renders the role using the matching in-game clan rank's icon and name (`staffRoleRanks`), and appears in the calculator hero, the player-profile modal and the leaderboard — in the leaderboard as an icon **trailing** the name (`iconOnly`), never a new column and never in front of the name — only a handful of members are staff, so a leading badge pushed just those few names off the column's shared left edge. The account-type badge does still lead the name, because nearly every member has one.
 
 This replaced the old `RankStructure` concept (a user-selectable Standard/Main/Admin/Moderator/Owner dropdown that switched which rank table applied). Don't reintroduce it.
+
+## Admin dashboard (`/admin`) — the only place staff roles are granted
+
+A staff role is the one thing on this site that grants **elevated access**, so it is never requested through the rank calculator (points ranks are; staff standing isn't on the points ladder at all). It is granted from `/admin` by someone who already outranks you.
+
+**The whole permission model is `app/utils/staff-permissions.ts`** — one file, fully spec'd in `staff-permissions.spec.ts`. Don't scatter role comparisons elsewhere; import from there.
+
+- `staffRoleOrder` — moderator(1) < admin(2) < deputy_owner(3) < owner(4).
+- `elevatedStaffRoles` = **admin, deputy_owner, owner**. These carry site permissions and are the only roles the dashboard hands out. **Moderator is deliberately outside the set** — it is clan-chat standing, not access — and keeping it out is what makes the agreed rule come out right: an admin has no elevated role beneath their own, so **an admin can promote nobody**, a deputy owner can promote admins, and an owner can promote admins and deputy owners.
+- `grantableStaffRoles(actor)` = elevated roles **strictly below** the actor. Nobody can grant their own role, so **owner is never assignable from the UI** — the top of the ladder stays an out-of-band decision (set `players.staff_role` directly).
+- `canManageStaffRole` additionally refuses **self-service**: you cannot act on a member whose row shares your Discord id, or the whole ladder has a blind spot at the top.
+- Revoking (`nextRole: null`) uses the same outranking rule. A role-granting screen with no undo is a trap, so revoke is included even though the brief said "promote".
+
+**Layering.** `app/admin/page.tsx` (server) → `fetchAdminDashboard` → `StaffRoles` (client). The access check lives in the **data source**, not just the page, so nothing gets the roster by importing around it. `middleware.ts` gates `/admin` on being signed in only — the staff ladder is invisible to a Discord session, so the page redirects non-elevated users to `/dashboard` rather than erroring (its existence isn't something they need to know about).
+
+**The client is never trusted.** `setStaffRoleAction` re-reads the actor's own role from the database against their Discord session, and `setPlayerStaffRole` checks the ladder a **second time inside its transaction** against the target's role *now* — the dashboard checked against a copy that may be minutes old, and two deputies acting at once must not walk each other up. The client only says what it wants, never who it is.
+
+**Audit.** `staff_role_changes` (migration `0018`) records every grant and revoke with both the actor's player name and their Discord id — the Discord account is the identity that actually authorised it. Rendered as the dashboard's "Recent changes" panel via `getStaffRoleChanges`.
+
+**Nav.** The Admin link is shown by `useViewerStaffRole` (→ `GET /api/staff-role`) rather than prop-drilled, because `NavBar` is rendered from three unrelated trees. It's cosmetic — the page re-checks.
+
+### Discord is mirrored, not asked
+
+A grant or revoke moves the member's **real Discord permissions** in the same breath. `staffRoleDiscordRoles` (`config/discord-roles.ts`) maps each staff role to the server role that carries them, and the permission gradient lines up with the ladder exactly: Owner has ADMINISTRATOR, Deputy Owner has everything short of it, Staff has MANAGE_ROLES/MANAGE_MESSAGES/kick/ban, Moderator has kick.
+
+- **`admin` is the Discord role named "Staff"** — the server has no role called "Administrator". It sits between Moderator and Deputy Owner in both position and permissions, which is the admin tier. In-app the same role is *titled* Administrator (`staffRoleRanks.admin`), because that's the in-game clan rank whose icon it borrows. Don't "fix" this mismatch by renaming either side.
+- Staff carries **MANAGE_ROLES**, which is what `userCanModerateSubmission` checks — so granting admin also grants the ability to approve rank submissions.
+- `planStaffDiscordRoleChange` (pure, spec'd) is the rule: Discord ends up saying **exactly** what `players.staff_role` says. Every *other* staff role is stripped, so moderator → admin is a swap, not an addition, and a revoke leaves none of the four. Points-rank roles are never touched. `syncStaffDiscordRole` just carries the plan out.
+- **The bot can reach these roles** only because its highest role (`Robots`, position 54) sits above Owner (52) and its own role carries MANAGE_ROLES. Drop either below Owner in server settings and every call starts failing with `50013`.
+
+**Failure is reported, not rolled back.** The DB write is authoritative and has already landed when Discord is called, so an outage can't undo a promotion — the action returns `discord: 'synced' | 'not-in-server' | 'failed'` and the toast says which. Since re-assigning a role a member already holds is refused (it would be an audit row recording no change), a failed sync would otherwise be unrecoverable from the app: hence **"Re-sync Discord roles"** in the Manage menu (`syncStaffDiscordRoleAction`), which pushes the stored role again, writes no audit row, and needs the same outranking permission.
