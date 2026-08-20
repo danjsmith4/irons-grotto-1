@@ -59,8 +59,9 @@ export const accountTypeLabels = {
 
 /**
  * The in-game chat badge for each mode, as named on the OSRS Wiki. A main has
- * no badge in game, so it has none here either — a player with no badge reads
- * as a main, and a player whose type is null shows nothing at all.
+ * no chat badge in game, so it is absent here; `AccountTypeBadge` falls back to
+ * the main-account rank's icon so that every resolved account still has a mark.
+ * Only a null type renders nothing.
  */
 export const accountTypeChatBadges = {
   ironman: 'Ironman chat badge',
