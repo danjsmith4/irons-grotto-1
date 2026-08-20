@@ -115,7 +115,7 @@ export function NavBar({
             height={30}
             className={styles.brandMark}
           />
-          <span className={styles.brandName}>Irons&apos; Grotto</span>
+          <span className={styles.brandName}>Irons Grotto</span>
         </Link>
 
         <div className={styles.links}>
