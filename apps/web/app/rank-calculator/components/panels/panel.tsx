@@ -2,6 +2,7 @@
 
 import { PropsWithChildren, ReactNode, useState } from 'react';
 import { Button, Dialog } from '@radix-ui/themes';
+import { ChevronRightIcon } from '@radix-ui/react-icons';
 import styles from '../rank-calculator.module.css';
 
 interface PanelProps {
@@ -71,6 +72,8 @@ export function Panel({
               }}
             >
               <span className={styles.panelTitle}>{title}</span>
+              {/* Affordance only — the tile's accessible name stays the title. */}
+              <ChevronRightIcon className={styles.tileChevron} aria-hidden />
             </button>
           </h3>
           <span className={styles.panelTotal} aria-label={totalLabel}>

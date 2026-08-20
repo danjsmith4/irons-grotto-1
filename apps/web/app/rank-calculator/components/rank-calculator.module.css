@@ -369,6 +369,9 @@
   cursor: pointer;
   min-width: 0;
   max-width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
 }
 
 .tileTrigger::after {
@@ -382,6 +385,35 @@
   outline: none;
 }
 
+/* The only hint that a tile opens something. Faint at rest so the row still
+   reads as a label, accent + nudged right once the tile is hovered/focused. */
+.tileChevron {
+  flex-shrink: 0;
+  width: 11px;
+  height: 11px;
+  color: rgb(var(--ig-text-muted) / 0.5);
+  transition:
+    color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.tile:hover .tileChevron,
+.tile:has(.tileTrigger:focus-visible) .tileChevron {
+  color: rgb(var(--ig-secondary));
+  transform: translateX(2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tileChevron {
+    transition: none;
+  }
+
+  .tile:hover .tileChevron,
+  .tile:has(.tileTrigger:focus-visible) .tileChevron {
+    transform: none;
+  }
+}
+
 .panelIcon {
   display: flex;
   align-items: center;
@@ -391,6 +423,7 @@
 
 .panelTitle {
   display: block;
+  min-width: 0;
   font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 11px;
   font-weight: 500;
