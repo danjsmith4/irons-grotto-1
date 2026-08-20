@@ -54,9 +54,12 @@ export function CalculatorHero() {
   const staffRole = useWatch<RankCalculatorSchema, 'staffRole'>({
     name: 'staffRole',
   });
-  const [showRankUpDialog, setShowRankUpDialog] = useState(
-    currentRank && currentRank !== rank,
-  );
+  // Whether the game mode still has to be settled. Nothing else in the hero
+  // may interrupt until it is: the rank below is read off whichever ladder the
+  // account type selects.
+  const needsAccountType = !accountType && !formState.disabled;
+  const [showRankUpDialog, setShowRankUpDialog] = useState(false);
+  const [hasCheckedForRankUp, setHasCheckedForRankUp] = useState(false);
   const standing = useClanStanding();
   const totalId = useId();
   const remainingId = useId();
@@ -65,6 +68,19 @@ export function CalculatorHero() {
   const { executeAsync: publishRankSubmission } = useAction(
     publishRankSubmissionAction.bind(null, currentRank, playerName),
   );
+
+  // Announced once, on load, rather than derived — so an edit that crosses a
+  // threshold does not pop a dialog mid-session. The check waits for the
+  // account type, otherwise a player who turns out to be a main is
+  // congratulated on an ironman rank they were never on.
+  useEffect(() => {
+    if (hasCheckedForRankUp || needsAccountType) {
+      return;
+    }
+
+    setHasCheckedForRankUp(true);
+    setShowRankUpDialog(Boolean(currentRank) && currentRank !== rank);
+  }, [hasCheckedForRankUp, needsAccountType, currentRank, rank]);
 
   useEffect(() => {
     if (rank !== getValues('rank')) {
@@ -102,9 +118,7 @@ export function CalculatorHero() {
           against. Never in the readonly moderator view: that form is disabled,
           and the question belongs to the account's owner, not whoever is
           reviewing an old submission of theirs. */}
-      {!accountType && !formState.disabled && (
-        <AccountTypeDialog playerName={playerName} />
-      )}
+      {needsAccountType && <AccountTypeDialog playerName={playerName} />}
       <input
         {...register('rank', { value: rank })}
         defaultValue={rank}
