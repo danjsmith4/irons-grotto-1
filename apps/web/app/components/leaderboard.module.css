@@ -246,3 +246,13 @@
   gap: 0.3rem;
   min-width: 0;
 }
+
+/* Holds the account-type badge's width whether or not there is one to show, so
+   every name in the column starts at the same x. */
+.badgeSlot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 12px;
+}

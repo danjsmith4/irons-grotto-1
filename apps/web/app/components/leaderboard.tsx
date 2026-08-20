@@ -353,10 +353,16 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
 
                     <td className={`${styles.td} ${styles.tdLeft}`}>
                       <span className={styles.playerCell}>
-                        <AccountTypeBadge
-                          accountType={player.accountType}
-                          size={12}
-                        />
+                        {/* A fixed slot, so the badge's presence never moves
+                            the name. An unresolved account has nothing to show
+                            and a main has no chat badge in game, and neither
+                            should cost the column its shared left edge. */}
+                        <span className={styles.badgeSlot}>
+                          <AccountTypeBadge
+                            accountType={player.accountType}
+                            size={12}
+                          />
+                        </span>
                         <button
                           type="button"
                           className={styles.player}
