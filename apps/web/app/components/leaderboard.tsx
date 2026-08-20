@@ -353,7 +353,6 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
 
                     <td className={`${styles.td} ${styles.tdLeft}`}>
                       <span className={styles.playerCell}>
-                        <StaffBadge role={player.staffRole} iconOnly size={13} />
                         <AccountTypeBadge
                           accountType={player.accountType}
                           size={12}
@@ -365,6 +364,11 @@ export function Leaderboard({ initialPlayers }: LeaderboardProps) {
                         >
                           {player.playerName}
                         </button>
+                        {/* Trails the name rather than leading it: only a
+                            handful of members are staff, and a badge in front
+                            pushed just those few names out of the column's
+                            shared left edge. */}
+                        <StaffBadge role={player.staffRole} iconOnly size={13} />
                       </span>
                     </td>
 

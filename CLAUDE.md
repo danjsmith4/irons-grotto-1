@@ -147,6 +147,6 @@ Badges: `app/components/account-type-badge.tsx` renders the in-game chat badge f
 
 ## Staff roles
 
-Staff standing is **metadata on a player, not a rank**: `players.staff_role` (enum, nullable — moderator / admin / deputy_owner / owner). Staff are ranked on points like everyone else. `app/components/staff-badge.tsx` renders the role using the matching in-game clan rank's icon and name (`staffRoleRanks`), and appears in the calculator hero, the player-profile modal and the leaderboard — in the leaderboard as an icon to the left of the name (`iconOnly`), never a new column.
+Staff standing is **metadata on a player, not a rank**: `players.staff_role` (enum, nullable — moderator / admin / deputy_owner / owner). Staff are ranked on points like everyone else. `app/components/staff-badge.tsx` renders the role using the matching in-game clan rank's icon and name (`staffRoleRanks`), and appears in the calculator hero, the player-profile modal and the leaderboard — in the leaderboard as an icon **trailing** the name (`iconOnly`), never a new column and never in front of the name — only a handful of members are staff, so a leading badge pushed just those few names off the column's shared left edge. The account-type badge does still lead the name, because nearly every member has one.
 
 This replaced the old `RankStructure` concept (a user-selectable Standard/Main/Admin/Moderator/Owner dropdown that switched which rank table applied). Don't reintroduce it.
