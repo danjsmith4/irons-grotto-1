@@ -1,4 +1,5 @@
 import { CombatDiaryTier, ClogDiaryTier } from '@/app/schemas/custom-diaries';
+import type { StaffRole } from '@/app/schemas/staff';
 import { StandardRank } from './ranks';
 
 export const rankDiscordRoles = {
@@ -20,6 +21,36 @@ export const rankDiscordRoles = {
 export const mainAccountDiscordRoles = {
   Looter: '1390351909059297360',
 } as const;
+
+/**
+ * The Discord role each staff role grants. These are the roles that actually
+ * carry moderation permissions in the server, so `players.staff_role` and this
+ * map together are what "elevated" means — the dashboard writes the former and
+ * mirrors it onto the latter.
+ *
+ * The permission gradient in the server matches the ladder exactly:
+ *
+ * - Owner        — ADMINISTRATOR, plus everything below
+ * - Deputy Owner — MANAGE_GUILD / MANAGE_CHANNELS / MANAGE_ROLES / kick / ban
+ * - Staff        — MANAGE_ROLES / MANAGE_MESSAGES / kick / ban
+ * - Moderator    — kick
+ *
+ * **`admin` is the Discord role named "Staff"**, not "Administrator" — the
+ * server has no role by that name. It sits between Moderator and Deputy Owner
+ * in both position and permissions, which is exactly the admin tier. In the
+ * app the same role is titled Administrator (`staffRoleRanks.admin`), because
+ * that is the in-game clan rank whose icon it borrows.
+ *
+ * Note that Staff carries MANAGE_ROLES, which is what
+ * `userCanModerateSubmission` checks — so granting admin also grants the
+ * ability to approve rank submissions.
+ */
+export const staffRoleDiscordRoles = {
+  moderator: '697877518493155387',
+  admin: '829386451624001539',
+  deputy_owner: '697877518513864784',
+  owner: '697877518513864786',
+} satisfies Record<StaffRole, string>;
 
 export const discordGuestRole = '1402713524861669498';
 

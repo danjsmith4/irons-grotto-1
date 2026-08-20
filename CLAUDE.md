@@ -171,4 +171,13 @@ A staff role is the one thing on this site that grants **elevated access**, so i
 
 **Nav.** The Admin link is shown by `useViewerStaffRole` (→ `GET /api/staff-role`) rather than prop-drilled, because `NavBar` is rendered from three unrelated trees. It's cosmetic — the page re-checks.
 
-**Not wired up:** granting a staff role does **not** touch Discord roles. `config/discord-roles.ts` has no role ids for the staff ranks; add them there and mirror `assignRankDiscordRole` if that's wanted.
+### Discord is mirrored, not asked
+
+A grant or revoke moves the member's **real Discord permissions** in the same breath. `staffRoleDiscordRoles` (`config/discord-roles.ts`) maps each staff role to the server role that carries them, and the permission gradient lines up with the ladder exactly: Owner has ADMINISTRATOR, Deputy Owner has everything short of it, Staff has MANAGE_ROLES/MANAGE_MESSAGES/kick/ban, Moderator has kick.
+
+- **`admin` is the Discord role named "Staff"** — the server has no role called "Administrator". It sits between Moderator and Deputy Owner in both position and permissions, which is the admin tier. In-app the same role is *titled* Administrator (`staffRoleRanks.admin`), because that's the in-game clan rank whose icon it borrows. Don't "fix" this mismatch by renaming either side.
+- Staff carries **MANAGE_ROLES**, which is what `userCanModerateSubmission` checks — so granting admin also grants the ability to approve rank submissions.
+- `planStaffDiscordRoleChange` (pure, spec'd) is the rule: Discord ends up saying **exactly** what `players.staff_role` says. Every *other* staff role is stripped, so moderator → admin is a swap, not an addition, and a revoke leaves none of the four. Points-rank roles are never touched. `syncStaffDiscordRole` just carries the plan out.
+- **The bot can reach these roles** only because its highest role (`Robots`, position 54) sits above Owner (52) and its own role carries MANAGE_ROLES. Drop either below Owner in server settings and every call starts failing with `50013`.
+
+**Failure is reported, not rolled back.** The DB write is authoritative and has already landed when Discord is called, so an outage can't undo a promotion — the action returns `discord: 'synced' | 'not-in-server' | 'failed'` and the toast says which. Since re-assigning a role a member already holds is refused (it would be an audit row recording no change), a failed sync would otherwise be unrecoverable from the app: hence **"Re-sync Discord roles"** in the Manage menu (`syncStaffDiscordRoleAction`), which pushes the stored role again, writes no audit row, and needs the same outranking permission.

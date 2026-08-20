@@ -4,6 +4,7 @@ import { players, staffRoleChanges } from './schema';
 import type { StaffRole } from '@/app/schemas/staff';
 import {
   canAssignStaffRole,
+  canManageStaffRole,
   staffRoleOrder,
 } from '@/app/utils/staff-permissions';
 
@@ -106,7 +107,13 @@ interface SetPlayerStaffRoleInput {
 }
 
 export type SetPlayerStaffRoleResult =
-  | { status: 'updated'; playerName: string; oldRole: StaffRole | null }
+  | {
+      status: 'updated';
+      playerName: string;
+      oldRole: StaffRole | null;
+      /** Who to mirror the change onto in Discord. */
+      discordUserId: string;
+    }
   | { status: 'player-not-found' }
   | { status: 'forbidden' };
 
@@ -173,8 +180,56 @@ export async function setPlayerStaffRole({
       status: 'updated' as const,
       playerName: target.playerName,
       oldRole: target.staffRole,
+      discordUserId: target.discordUserId,
     };
   });
+}
+
+export type ManageableMember =
+  | {
+      status: 'found';
+      playerName: string;
+      staffRole: StaffRole | null;
+      discordUserId: string;
+    }
+  | { status: 'player-not-found' }
+  | { status: 'forbidden' };
+
+/**
+ * Looks a member up for an action that reads their role rather than writing it
+ * — the Discord re-sync — applying the same outranking rule as a write.
+ */
+export async function getManageableMember(
+  playerName: string,
+  actorRole: StaffRole | null,
+  actorDiscordUserId: string,
+): Promise<ManageableMember> {
+  const [target] = await db
+    .select({
+      playerName: players.playerName,
+      staffRole: players.staffRole,
+      discordUserId: players.discordUserId,
+    })
+    .from(players)
+    .where(
+      and(
+        sql`lower(${players.playerName}) = lower(${playerName})`,
+        eq(players.isActive, true),
+      ),
+    )
+    .limit(1);
+
+  if (!target) {
+    return { status: 'player-not-found' };
+  }
+
+  const allowed = canManageStaffRole({
+    actorRole,
+    targetRole: target.staffRole,
+    isSelf: target.discordUserId === actorDiscordUserId,
+  });
+
+  return allowed ? { status: 'found', ...target } : { status: 'forbidden' };
 }
 
 export interface StaffRoleChangeEntry {

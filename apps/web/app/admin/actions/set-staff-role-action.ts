@@ -10,6 +10,7 @@ import {
   setPlayerStaffRole,
 } from '@/lib/db/staff-operations';
 import { canAccessAdminDashboard } from '@/app/utils/staff-permissions';
+import { syncStaffDiscordRole } from '../utils/sync-staff-discord-role';
 
 const SetStaffRoleSchema = z.object({
   playerName: z.string().trim().min(1).max(12),
@@ -55,6 +56,11 @@ export const setStaffRoleAction = authActionClient
       );
     }
 
+    // The database is the source of truth and the write has already landed, so
+    // a Discord outage must not roll the promotion back — it is reported to
+    // the actor instead, who can re-sync from the same menu once it clears.
+    const discord = await syncStaffDiscordRole(result.discordUserId, role);
+
     revalidatePath('/admin');
     revalidatePath('/dashboard');
 
@@ -62,5 +68,6 @@ export const setStaffRoleAction = authActionClient
       playerName: result.playerName,
       oldRole: result.oldRole,
       newRole: role,
+      discord: discord.status,
     };
   });

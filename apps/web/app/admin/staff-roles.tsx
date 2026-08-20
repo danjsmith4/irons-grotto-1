@@ -29,6 +29,7 @@ import type {
   StaffRoleChangeEntry,
 } from '@/lib/db/staff-operations';
 import { setStaffRoleAction } from './actions/set-staff-role-action';
+import { syncStaffDiscordRoleAction } from './actions/sync-staff-discord-role-action';
 import styles from './admin.module.css';
 
 interface StaffRolesProps {
@@ -70,11 +71,21 @@ export function StaffRoles({
         return;
       }
 
-      toast.success(
-        data.newRole
-          ? `${data.playerName} is now ${roleLabel(data.newRole)}`
-          : `${data.playerName} is no longer ${roleLabel(data.oldRole)}`,
-      );
+      const summary = data.newRole
+        ? `${data.playerName} is now ${roleLabel(data.newRole)}`
+        : `${data.playerName} is no longer ${roleLabel(data.oldRole)}`;
+
+      // The role itself is saved either way — Discord is a mirror of it, and
+      // saying so is more useful than a bare success.
+      if (data.discord === 'failed') {
+        toast.warning(
+          `${summary}, but their Discord roles could not be updated. Re-sync from the Manage menu.`,
+        );
+      } else if (data.discord === 'not-in-server') {
+        toast.warning(`${summary}. They are not in the Discord server.`);
+      } else {
+        toast.success(`${summary}, in game and in Discord.`);
+      }
 
       setPending(null);
       router.refresh();
@@ -83,6 +94,28 @@ export function StaffRoles({
       toast.error(error.serverError ?? 'Could not change that role.');
     },
   });
+
+  const { execute: syncDiscord, isExecuting: isSyncing } = useAction(
+    syncStaffDiscordRoleAction,
+    {
+      onSuccess({ data }) {
+        if (!data) {
+          return;
+        }
+
+        if (data.discord === 'not-in-server') {
+          toast.warning(`${data.playerName} is not in the Discord server.`);
+
+          return;
+        }
+
+        toast.success(`${data.playerName}’s Discord roles are up to date.`);
+      },
+      onError({ error }) {
+        toast.error(error.serverError ?? 'Could not sync Discord.');
+      },
+    },
+  );
 
   const grantable = useMemo(
     () => grantableStaffRoles(viewerRole),
@@ -127,7 +160,7 @@ export function StaffRoles({
       : [];
     const canRevoke = canManage && member.staffRole !== null;
 
-    if (!options.length && !canRevoke) {
+    if (!canManage) {
       return (
         <span className={styles.noAction}>
           {member.isSelf ? 'You' : 'Outranks you'}
@@ -142,6 +175,7 @@ export function StaffRoles({
             type="button"
             className={styles.manageButton}
             aria-label={`Manage ${member.playerName}`}
+            disabled={isSyncing}
           >
             Manage
             <ChevronDownIcon />
@@ -159,16 +193,23 @@ export function StaffRoles({
               {roleLabel(role)}
             </DropdownMenu.Item>
           ))}
+          {(options.length > 0 || canRevoke) && <DropdownMenu.Separator />}
+          {/*
+            Assigning a role already held is refused, so a Discord call that
+            failed at the time needs its own way back.
+          */}
+          <DropdownMenu.Item
+            onSelect={() => syncDiscord({ playerName: member.playerName })}
+          >
+            Re-sync Discord roles
+          </DropdownMenu.Item>
           {canRevoke && (
-            <>
-              {options.length > 0 && <DropdownMenu.Separator />}
-              <DropdownMenu.Item
-                color="red"
-                onSelect={() => setPending({ member, nextRole: null })}
-              >
-                Remove {roleLabel(member.staffRole)}
-              </DropdownMenu.Item>
-            </>
+            <DropdownMenu.Item
+              color="red"
+              onSelect={() => setPending({ member, nextRole: null })}
+            >
+              Remove {roleLabel(member.staffRole)}
+            </DropdownMenu.Item>
           )}
         </DropdownMenu.Content>
       </DropdownMenu.Root>
@@ -339,14 +380,16 @@ export function StaffRoles({
             {pending?.nextRole ? (
               <>
                 <strong>{pending.member.playerName}</strong> will become{' '}
-                <strong>{roleLabel(pending.nextRole)}</strong> and gain the
-                elevated access that comes with it.
+                <strong>{roleLabel(pending.nextRole)}</strong>, here and in
+                Discord. The matching Discord role is granted straight away,
+                along with the server permissions it carries.
               </>
             ) : (
               <>
                 <strong>{pending?.member.playerName}</strong> will lose{' '}
-                <strong>{roleLabel(pending?.member.staffRole ?? null)}</strong>{' '}
-                and the access that comes with it.
+                <strong>{roleLabel(pending?.member.staffRole ?? null)}</strong>,
+                here and in Discord. Their Discord role and its server
+                permissions are removed straight away.
               </>
             )}
           </Dialog.Description>
