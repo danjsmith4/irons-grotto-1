@@ -12,6 +12,7 @@ import { StaffBadge } from '@/app/components/staff-badge';
 import { AccountTypeBadge } from '@/app/components/account-type-badge';
 import { useRankCalculator } from '../hooks/point-calculator/use-rank-calculator';
 import { getRankName } from '../utils/get-rank-name';
+import { isRankUp } from '../utils/is-rank-up';
 import { getPointsRemainingLabel } from '../utils/get-points-remaining-label';
 import { formatNumber } from '../utils/format-number';
 import { formatPercentage } from '../utils/format-percentage';
@@ -72,15 +73,17 @@ export function CalculatorHero() {
   // Announced once, on load, rather than derived — so an edit that crosses a
   // threshold does not pop a dialog mid-session. The check waits for the
   // account type, otherwise a player who turns out to be a main is
-  // congratulated on an ironman rank they were never on.
+  // congratulated on an ironman rank they were never on. `isRankUp` is what
+  // keeps staff out of it: their stored rank is an in-game staff rank, on no
+  // ladder, so a bare inequality announced a promotion every single load.
   useEffect(() => {
     if (hasCheckedForRankUp || needsAccountType) {
       return;
     }
 
     setHasCheckedForRankUp(true);
-    setShowRankUpDialog(Boolean(currentRank) && currentRank !== rank);
-  }, [hasCheckedForRankUp, needsAccountType, currentRank, rank]);
+    setShowRankUpDialog(isRankUp(currentRank, rank, accountType ?? null));
+  }, [hasCheckedForRankUp, needsAccountType, currentRank, rank, accountType]);
 
   useEffect(() => {
     if (rank !== getValues('rank')) {

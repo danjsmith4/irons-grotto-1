@@ -17,6 +17,9 @@ import { CurrentPlayerProvider } from '../contexts/current-player-context';
 import { NavBar } from '@/app/components/nav-bar';
 import { Player } from '@/app/schemas/player';
 
+/** How long the RuneLite-plugin warnings stay up before dismissing themselves. */
+const pluginWarningDuration = 3000;
+
 interface FormWrapperProps {
   formData: Omit<RankCalculatorSchema, 'rank' | 'points'>;
   currentRank?: Rank;
@@ -75,25 +78,42 @@ export function FormWrapper({
     }
   });
 
+  // Each warning carries a stable `toastId` so it can only ever be on screen
+  // once: the effect runs more than once per visit (React re-mounts it in
+  // development, and any re-mount of the form does the same), which stacked a
+  // second identical copy of every warning.
+  //
+  // They also clear themselves. They used to sit there until dismissed by hand,
+  // which is a lot of chrome for advice that does not change — the container's
+  // close button and `pauseOnHover` are still there for anyone mid-read.
   useEffect(() => {
     if (warnings.templeCollectionLogOutdated) {
       toast.warning(
         'Please sync your collection log via the TempleOSRS RuneLite plugin!',
-        { autoClose: false },
+        {
+          autoClose: pluginWarningDuration,
+          toastId: 'temple-collection-log-outdated',
+        },
       );
     }
 
     if (warnings.templeCollectionLogNotFound) {
       toast.warning(
         'Please install the TempleOSRS RuneLite plugin to enable automatic notable item tracking!',
-        { autoClose: false },
+        {
+          autoClose: pluginWarningDuration,
+          toastId: 'temple-collection-log-not-found',
+        },
       );
     }
 
     if (warnings.wikiSyncNotFound) {
       toast.warning(
         'Please install the WikiSync RuneLite plugin to enable automatic tracking of CAs and diaries!',
-        { autoClose: false },
+        {
+          autoClose: pluginWarningDuration,
+          toastId: 'wiki-sync-not-found',
+        },
       );
     }
   }, [
