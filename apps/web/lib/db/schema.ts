@@ -57,7 +57,6 @@ export const accomplishmentTypeEnum = pgEnum('accomplishment_type', [
   'blood_torva',
   'radiant_oathplate',
   'toa_cursed_phalanx',
-  'pet',
 ]);
 
 export const accountTypeEnum = pgEnum('account_type', [
@@ -151,16 +150,6 @@ export const players = pgTable(
     // the Temple group) are hidden from the leaderboard but their row is kept
     // so they can be restored automatically if they become active again.
     isActive: boolean('is_active').notNull().default(true),
-
-    // When this player's accomplishments were first detected.
-    //
-    // The detector reports everything a player *currently* qualifies for, so
-    // the first pass over an existing member would announce a decade of
-    // achievements at once. That first pass is instead recorded as backfill
-    // (`player_accomplishments.is_backfilled`) and kept out of the feed; this
-    // column is what tells the two passes apart, and it must be per-player
-    // because members keep joining with a full account behind them.
-    accomplishmentsBackfilledAt: timestamp('accomplishments_backfilled_at'),
 
     // Metadata
     createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -363,19 +352,6 @@ export const playerAccomplishments = pgTable(
 
     /** The threshold reached, for milestones. Null for one-off feats. */
     value: real('value'),
-
-    /**
-     * Overrides the type's configured icon where the accomplishment names its
-     * own item — a pet is its own picture. Null means use the type's icon.
-     */
-    iconItemName: text('icon_item_name'),
-
-    /**
-     * True for everything found in the player's very first detection pass:
-     * real, but not news. Kept out of the feed, and the reason the feed does
-     * not explode the first time this runs over an established clan.
-     */
-    isBackfilled: boolean('is_backfilled').notNull().default(false),
 
     achievedAt: timestamp('achieved_at').notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),

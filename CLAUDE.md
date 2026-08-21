@@ -70,7 +70,7 @@ This is read by **clan members**, not developers. They do not know what a data s
 
 | Instead of | Write |
 |---|---|
-| Added `player_accomplishments` table + stateless detection hooked into `processPlayerData` | A new Accomplishments feed on the homepage shows milestones as members hit them — pets, inferno capes, collection log milestones and more. |
+| Added `player_accomplishments` table + stateless detection hooked into `processPlayerData` | A new Accomplishments feed on the homepage shows milestones as members hit them — inferno capes, collection log milestones and more. |
 | Fixed unawaited `db.transaction` in `approve-submission.ts` | Rank approvals now apply reliably every time. |
 | Bumped Drizzle, regenerated migrations, added indexes | Infrastructure upgrades to keep things running smoothly. |
 | Collapsed the Redis/Postgres split behind a single write path | Your calculator now saves changes automatically as you make them. |
@@ -163,11 +163,15 @@ The third activity feed, alongside rank ups and collection log — the notable t
 
 A player crossing several thresholds at once earns **all** of them (1,100 clog slots → 100/250/500/750/1000), and Grandmaster CAs earn Master too. That is deliberate and follows from statelessness.
 
-⚠️ **The first pass over a player is backfill.** Members join with a whole account behind them, so the first detection would otherwise dump a decade of history into the feed at once. `players.accomplishments_backfilled_at` marks that a player has had their first pass; everything found in it is written with `is_backfilled = true` and **`fetch-recent-accomplishments` filters those out**. The timestamp is set even when nothing was detected — otherwise a brand-new account would stay in backfill mode forever and its first real accomplishment would be swallowed.
+⚠️ **The feed is capped per sync, not filtered by age.** Detection stamps everything found in one run with a single timestamp, so a member tracked for the first time — or syncing Temple after a long gap — lands a burst of rows sharing one `achieved_at`. `fetchRecentAccomplishments` shows at most `maxAccomplishmentsPerSync` (5) from any one `(player, achieved_at)` group.
+
+This is deliberately the **same rule** `recent-clogs-scroller.tsx` already applies to a bulk collection-log sync (`MAX_ITEMS_PER_SYNC`), keyed the same way. An earlier design hid a player's whole first pass behind an `is_backfilled` flag instead; that was dropped because those accomplishments are real and worth seeing (a new member's inferno cape), and because it did nothing for the case that isn't a first pass at all — an existing member syncing after a year away.
 
 **When it runs.** `processPlayerData` calls it after the player record is written (it reads that record, not a live API), so the batch `GET /api/update-all-players` and every calculator save both cover it — no new endpoint. The call is wrapped in its own try/catch: a member's stats landing is the point, and noticing what they add up to can wait for the next run.
 
-**Icons come from the type**, resolved as OSRS Wiki image names through `formatWikiImageUrl` exactly like clog items (`ItemImageWithFallback` degrades to an avatar if the wiki renames one). The one exception is `icon_item_name`, which a row sets when the accomplishment names its own item — a pet is its own picture.
+**Icons come from the type**, resolved as OSRS Wiki image names through `formatWikiImageUrl` exactly like clog items (`ItemImageWithFallback` degrades to an avatar if the wiki renames one). There is no per-row icon override — the type is the whole presentation decision.
+
+**Pets are not accomplishments.** Every pet is a collection log slot, so it already appears in the collection-log feed alongside every other drop; announcing it again in a second feed on the same page adds nothing. Spec'd in `detect-accomplishments.spec.ts` so it doesn't get re-added by accident.
 
 **Accomplishments follow the player.** `deletePlayer` deletes them and the rename path in `edit-player-action.ts` moves them; miss the rename and the next pass treats the player as brand new and re-earns the lot.
 

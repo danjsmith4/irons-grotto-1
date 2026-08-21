@@ -36,3 +36,17 @@ export const cursedPhalanxItemName = 'Cursed phalanx';
 
 /** How many accomplishments the homepage and dashboard feeds show. */
 export const accomplishmentFeedSize = 10;
+
+/**
+ * How many accomplishments from a single detection run may appear in the feed.
+ *
+ * Detection stamps everything it finds in one pass with the same timestamp, so
+ * a member being tracked for the first time — or syncing Temple after a long
+ * gap — lands a burst of rows sharing one `achieved_at`. Without a cap, that
+ * one member fills the feed.
+ *
+ * Matches `MAX_ITEMS_PER_SYNC` in `recent-clogs-scroller.tsx`, which solves the
+ * identical problem for a bulk collection-log sync. Kept as a separate constant
+ * rather than shared, because the two feeds are free to tune independently.
+ */
+export const maxAccomplishmentsPerSync = 5;

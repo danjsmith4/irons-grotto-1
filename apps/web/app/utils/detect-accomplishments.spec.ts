@@ -136,29 +136,27 @@ describe('detectAccomplishments', () => {
   });
 
   describe('items', () => {
-    const petSnakeling = {
-      itemId: 12921,
-      itemName: 'Pet snakeling',
-      dateFirstLogged: new Date('2024-03-01T00:00:00.000Z'),
-    };
-
-    it('awards a pet, and lets it carry its own icon', () => {
-      const [pet] = detectAccomplishments({
-        ...emptySnapshot,
-        acquiredItems: [petSnakeling],
-      });
-
-      expect(pet).toEqual({
-        type: 'pet',
-        key: 'pet:12921',
-        label: 'Pet snakeling',
-        value: null,
-        iconItemName: 'Pet snakeling',
-        achievedAt: petSnakeling.dateFirstLogged,
-      });
+    /**
+     * Pets are deliberately *not* accomplishments. Every pet is a collection
+     * log slot, so it already appears in the collection-log feed alongside
+     * every other drop — announcing it twice, in two feeds on the same page,
+     * says nothing extra.
+     */
+    it('ignores a pet, which the collection log feed already covers', () => {
+      expect(
+        keysOf({
+          acquiredItems: [
+            {
+              itemId: 12921,
+              itemName: 'Pet snakeling',
+              dateFirstLogged: new Date('2024-03-01T00:00:00.000Z'),
+            },
+          ],
+        }),
+      ).toEqual([]);
     });
 
-    it('ignores an item that is not a pet', () => {
+    it('ignores an ordinary collection log item', () => {
       expect(
         keysOf({
           acquiredItems: [
@@ -223,11 +221,6 @@ describe('detectAccomplishments', () => {
       hasAchievementDiaryCape: true,
       eliteDiaryLocations: ['Morytania', 'Karamja'],
       acquiredItems: [
-        {
-          itemId: 12921,
-          itemName: 'Pet snakeling',
-          dateFirstLogged: new Date(),
-        },
         {
           itemId: 27377,
           itemName: 'Cursed phalanx',
