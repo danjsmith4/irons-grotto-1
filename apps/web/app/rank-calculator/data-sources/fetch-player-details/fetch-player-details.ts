@@ -1,12 +1,10 @@
 import 'core-js/actual/set/intersection';
 import 'core-js/actual/set/is-subset-of';
 import { itemList } from '@/data/item-list';
-import { userDraftRankSubmissionKey } from '@/config/redis';
 import { stripEntityName } from '@/app/rank-calculator/utils/strip-entity-name';
 import { ApiResponse } from '@/types/api';
 import * as Sentry from '@sentry/nextjs';
 import { Rank } from '@/config/enums';
-import { redis } from '@/redis';
 import { clientConstants } from '@/config/constants.client';
 import { redirect } from 'next/navigation';
 import {
@@ -65,6 +63,27 @@ export interface PlayerDetailsResponse extends Omit<
    * record rather than freshly calculated.
    */
   discordMembership?: DiscordRolesResult['status'];
+  /**
+   * What the data sources say **on their own**, before any stored claim is
+   * merged in.
+   *
+   * The values above are blended — a player's claim wins where it outruns what
+   * a source can currently see — and that is right for display and for points.
+   * But the submission diff exists precisely to show a moderator where a claim
+   * outruns its evidence, and comparing a blend against itself can only ever
+   * report agreement.
+   */
+  sourceValues?: {
+    achievementDiaries: RankCalculatorSchema['achievementDiaries'] | null;
+    acquiredItems: string[];
+    combatAchievementTier: RankCalculatorSchema['combatAchievementTier'] | null;
+    collectionLogCount: number;
+    totalLevel: number;
+    tzhaarCape: RankCalculatorSchema['tzhaarCape'];
+    hasBloodTorva: boolean;
+    hasDizanasQuiver: boolean;
+    hasAchievementDiaryCape: boolean;
+  };
 }
 
 export const emptyResponse = {
@@ -123,7 +142,6 @@ export const emptyResponse = {
 export async function fetchPlayerDetails(
   player: string,
   userId: string,
-  mergeSavedData = true,
 ): Promise<ApiResponse<PlayerDetailsResponse>> {
   const playerRecord = await getPlayerByName(player, userId);
 
@@ -154,11 +172,16 @@ export async function fetchPlayerDetails(
   }
 
   try {
-    const savedData = mergeSavedData
-      ? await redis.json.get<RankCalculatorSchema>(
-          userDraftRankSubmissionKey(userId, player),
-        )
-      : undefined;
+    // The Redis draft is gone, and with it the `mergeSavedData` parameter that
+    // chose between it and the record. The player's own answers now live in
+    // their record (scalars, diaries) and in `player_item_overrides` (notable
+    // items), written by autosave — `currentDbValues` below and the stored
+    // overrides read further down are what `savedData` used to be.
+    //
+    // The `savedData?.` reads that remain are dead branches kept only to avoid
+    // rewriting fifteen merge expressions in a change that is already large;
+    // each one now falls through to the record.
+    const savedData = undefined as RankCalculatorSchema | undefined;
 
     // The stored record is the floor for anything a source might fail to
     // report. An unreachable source says *nothing*, which is not the same as
@@ -471,6 +494,23 @@ export async function fetchPlayerDetails(
         rawCollectionLogItems: templeCollectionLog
           ? templeCollectionLog.items
           : [],
+        // Unblended, for the submission diff. Every one of these is the raw
+        // local computed above, before the merge expressions folded the
+        // player's own claim into it.
+        sourceValues: {
+          achievementDiaries,
+          acquiredItems,
+          combatAchievementTier,
+          collectionLogCount: Math.max(
+            templeCollectionLogCount ?? 0,
+            hiscoresCollectionLogCount ?? 0,
+          ),
+          totalLevel: totalLevel ?? 0,
+          tzhaarCape,
+          hasBloodTorva,
+          hasDizanasQuiver,
+          hasAchievementDiaryCape,
+        },
       },
     };
 

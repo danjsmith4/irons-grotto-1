@@ -4,8 +4,6 @@ import { z } from 'zod';
 import { authActionClient } from '@/app/safe-action';
 import { PlayerName } from '@/app/schemas/player';
 import { updatePlayerEditableFields } from '@/lib/db/player-operations';
-import { userDraftRankSubmissionKey } from '@/config/redis';
-import { redis } from '@/redis';
 import { RankCalculatorSchema } from '../submit-rank-calculator-validation';
 
 /**
@@ -51,28 +49,6 @@ export const updatePlayerStateAction = authActionClient
       ctx: { userId },
     }) => {
       await updatePlayerEditableFields(playerName, parsedInput, userId);
-
-      // The Redis draft is no longer read by the calculator — Postgres above is
-      // authoritative — but a rank submission is still a literal `COPY` of it,
-      // so letting it go stale would make members submit sheets that don't
-      // match what they can see.
-      //
-      // Temporary, and the whole reason it is a shim rather than a design: the
-      // next change snapshots submissions from the player record instead, at
-      // which point the draft has no readers left and the key goes.
-      try {
-        const draftKey = userDraftRankSubmissionKey(userId, playerName);
-        const draft = await redis.json.get<Record<string, unknown>>(draftKey);
-
-        if (draft) {
-          await redis.json.set(draftKey, '$', { ...draft, ...parsedInput });
-        }
-      } catch (error) {
-        console.error(
-          `Failed to mirror autosave into the draft for ${playerName}:`,
-          error,
-        );
-      }
 
       return { success: true };
     },
