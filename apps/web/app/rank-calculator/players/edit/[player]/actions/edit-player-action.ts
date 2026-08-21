@@ -1,8 +1,6 @@
 'use server';
 
 import { z } from 'zod';
-import { userRankSubmissionsKey } from '@/config/redis';
-import { redis } from '@/redis';
 import { authActionClient } from '@/app/safe-action';
 import { returnValidationErrors } from 'next-safe-action';
 import { PlayerName } from '@/app/schemas/player';
@@ -73,8 +71,6 @@ export const editPlayerAction = authActionClient
           )
         : undefined;
 
-      const pipeline = redis.multi();
-
       if (hasPlayerNameChanged) {
         // Update player name in database transaction - all related tables
         await db.transaction(async (tx) => {
@@ -107,21 +103,6 @@ export const editPlayerAction = authActionClient
             .set({ playerName: maybeFormattedPlayerName })
             .where(eq(playerRankUps.playerName, previousPlayerName));
         });
-
-        // Handle Redis rank submissions key rename
-        const rankSubmissionsKeyExists = await redis.exists(
-          userRankSubmissionsKey(userId, previousPlayerName.toLowerCase()),
-        );
-
-        if (rankSubmissionsKeyExists) {
-          pipeline.renamenx(
-            userRankSubmissionsKey(userId, previousPlayerName.toLowerCase()),
-            userRankSubmissionsKey(
-              userId,
-              maybeFormattedPlayerName.toLowerCase(),
-            ),
-          );
-        }
       } else {
         // No name change, just update the player record
         await updatePlayer(previousPlayerName, {
@@ -130,8 +111,6 @@ export const editPlayerAction = authActionClient
           updatedAt: new Date(),
         });
       }
-
-      await pipeline.exec();
 
       // Return the final player name (potentially updated)
       return { playerName: maybeFormattedPlayerName };

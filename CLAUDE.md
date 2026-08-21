@@ -29,7 +29,7 @@ Adding a new boss/drop is a well-defined workflow — use the `add-osrs-content`
 - Dev: `cd apps/web && yarn dev` (runs `next dev --experimental-https`, so https://localhost:3000, self-signed cert — expect a browser warning). Next 16 / Turbopack. Needs `apps/web/.env.local`. `GET /api/heartbeat` → 200 is the health check.
 - **The calculator is auth-gated.** `middleware.ts` uses Discord auth (`@/auth`); any unauthenticated request to `/rank-calculator/*` gets a 307 redirect to `/`. So the item table (and pet/point rendering) **cannot be validated headlessly / via curl** — it requires a browser Discord login. For programmatic validation of point calc, use the drift canary / hermetic specs instead. (The homepage, leaderboard and player profiles ARE public, so those can be validated headlessly.)
 - Tests: **Jest** (not vitest). `cd apps/web && yarn test [pattern]`. `next/jest` resolves the `@/*` alias and global types (`NonEmptyArray`, `OptionalKeys`).
-- **`apps/web/jest.env.ts` is required** by `jest.config.ts` (setupFiles) but is untracked/absent on fresh checkouts — Jest won't start without it. It loads `.env.local` via dotenv (Next skips `.env.local` when `NODE_ENV=test`, hence the manual load).
+- **`apps/web/jest.env.ts`** is required by `jest.config.ts` (setupFiles) and **is tracked** — it loads `.env.local` via dotenv, because Next skips `.env.local` when `NODE_ENV=test`. (It used to be untracked, which is why older notes say to create it by hand; it has been committed since `00a3b60`.)
 - Server config (`config/constants.server.ts`) parses many env vars at import; `mocks/handlers.ts` imports it, so tests need those vars present in `.env.local`.
 
 ## Shipping a change
@@ -54,7 +54,6 @@ open "$(gh pr view --json url --jq .url)"     # macOS: opens the PR in the defau
 - `jest.setup.ts` mocks `next/cache` so `unstable_cache`-wrapped data-sources (`fetchItemDropRates`) run under Jest.
 
 ## Known pre-existing test gaps (unrelated to features)
-- `apps/web/jest.env.ts` is required by `jest.config.ts` but untracked — create it (loads `.env.local`) or tests won't start.
 - Much of the wider Jest suite has drifted while unrunnable (e.g. `calculate-scaling.spec.ts` asserts `0.1` but the fn returns `1`). These are stale expectations independent of any single feature — refresh with domain judgement when touching those areas.
 
 ## Theming / colors — read before touching any color

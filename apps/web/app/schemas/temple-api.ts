@@ -152,16 +152,6 @@ export function resolveTempleAccountType(
   return isMainAccount(accountType) ? null : accountType;
 }
 
-/**
- * Determines if a player is an ironman based on Temple API data
- * @param gameMode - The 'Game mode' field from Temple API
- * @param gim - The 'GIM' field from Temple API
- * @returns boolean - true if player is any ironman variant, false if main
- */
-export function isPlayerIronman(gameMode: number, gim: number): boolean {
-  return !isMainAccount(parseAccountType(gameMode, gim));
-}
-
 export const TempleOSRSPlayerStats = z.object({
   data: z.object({
     info: z.object({
