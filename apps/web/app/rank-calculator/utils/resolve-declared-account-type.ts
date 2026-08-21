@@ -1,9 +1,8 @@
 'use server';
 
-import * as Sentry from '@sentry/nextjs';
-import { clientConstants } from '@/config/constants.client';
 import { AccountType, AccountTypeChoice } from '@/app/schemas/staff';
 import { fetchGimGroup } from '../data-sources/fetch-gim-group';
+import { registerOnTemple } from '../data-sources/ensure-tracked-on-temple';
 import { isGroupMember } from './gim-group';
 
 export type ResolvedDeclaredAccountType =
@@ -30,17 +29,7 @@ export type ResolvedDeclaredAccountType =
  * against the hiscores, so a Temple failure changes nothing.
  */
 async function trackGroupOnTemple(members: string[]) {
-  await Promise.all(
-    members.map(async (member) => {
-      try {
-        await fetch(
-          `${clientConstants.temple.baseUrl}/php/add_datapoint.php?player=${encodeURIComponent(member)}`,
-        );
-      } catch (error) {
-        Sentry.captureException(error);
-      }
-    }),
-  );
+  await Promise.all(members.map(registerOnTemple));
 }
 
 /**

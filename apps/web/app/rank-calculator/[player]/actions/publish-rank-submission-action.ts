@@ -24,6 +24,7 @@ import {
 import { discordBotClient } from '@/discord';
 import { ChannelType, Routes } from 'discord-api-types/v10';
 import { Rank } from '@/config/enums';
+import { canApplyForRank } from '@/config/ranks';
 import { PlayerName } from '@/app/schemas/player';
 import { ActionError } from '@/app/action-error';
 import { isEmpty, pickBy } from 'lodash';
@@ -111,6 +112,16 @@ export const publishRankSubmissionAction = authActionClient
           hasAchievementDiaryCape,
         },
       } = playerDetails;
+
+      // Mains are welcome to keep a sheet, but approving an application
+      // assigns a real in-game and Discord clan rank off the ironman ladder,
+      // which they are not on. Checked here rather than only in the UI: the
+      // client is not what decides who gets a rank.
+      if (!canApplyForRank(accountType)) {
+        throw new ActionError(
+          'Main accounts cannot apply for clan ranks. Your calculator stays available for tracking your own progress.',
+        );
+      }
 
       const { channelId, reviewRoleId } = serverConstants.discord;
       const submissionId = randomUUID();

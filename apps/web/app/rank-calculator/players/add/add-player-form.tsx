@@ -10,7 +10,7 @@ import {
   Text,
   TextField,
 } from '@radix-ui/themes';
-import { useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { FormProvider } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { ErrorMessage } from '@hookform/error-message';
@@ -27,6 +27,7 @@ import { addPlayerAction } from './actions/add-player-action';
 import { fetchPlayerJoinDateAction } from '../actions/fetch-player-join-date-action';
 import { AddPlayerSchema } from './actions/add-player-schema';
 import { fetchAccountTypeAction } from './actions/fetch-account-type-action';
+import { addToTempleAction } from './actions/add-to-temple-action';
 import { Checkbox } from '../../components/checkbox';
 import {
   AccountTypeChoice,
@@ -69,30 +70,82 @@ export function AddPlayerForm({ members }: AddPlayerFormProps) {
     },
   });
 
-  // Most accounts resolve from TempleOSRS, so the account-type question only
-  // appears for the ones that cannot — group ironmen look exactly like mains
-  // on every public API.
+  // Most accounts resolve from TempleOSRS or the ironman hiscores, so the
+  // account-type question only appears for the ones that cannot — group
+  // ironmen look exactly like mains on every public API.
   const [needsAccountType, setNeedsAccountType] = useState(false);
+
+  // Being absent from TempleOSRS is a separate problem from an unknown game
+  // mode: it means nobody has ever asked Temple to track the account. We fix
+  // it rather than hiding it, and say so while it happens.
+  const [templeState, setTempleState] = useState<
+    'idle' | 'adding' | 'added' | 'unavailable'
+  >('idle');
+
+  // The probe runs per name, so a reply for an earlier, shorter name can land
+  // after the one for the finished name. Only the newest may answer.
+  const latestProbedName = useRef('');
+
+  const isStale = (input: unknown) =>
+    (input as { playerName?: string } | undefined)?.playerName !==
+    latestProbedName.current;
+
+  function applyAccountType(accountTypeResult: string | null | undefined) {
+    const isResolved = Boolean(accountTypeResult);
+
+    setNeedsAccountType(!isResolved);
+    // Left unselected rather than defaulted to "main". Mains can register now,
+    // so a pre-ticked option would quietly classify anyone who skipped past
+    // the question — and being recorded as a main is not a small thing: it
+    // pins the account to `mainAccountRank` and off the leaderboard. Saving
+    // without answering stores null, and the calculator asks properly.
+    form.setValue('accountType', undefined);
+  }
+
+  const { execute: executeAddToTemple } = useAction(addToTempleAction, {
+    onSettled({ result, input }) {
+      if (isStale(input)) {
+        return;
+      }
+
+      setTempleState(result.data?.isTracked ? 'added' : 'unavailable');
+      applyAccountType(result.data?.accountType);
+    },
+  });
+
   const { execute: executeFetchAccountType } = useAction(
     fetchAccountTypeAction,
     {
-      onSettled({ result }) {
-        const isUnresolved = !result.data?.accountType;
+      onSettled({ result, input }) {
+        if (isStale(input)) {
+          return;
+        }
 
-        setNeedsAccountType(isUnresolved);
-        form.setValue('accountType', isUnresolved ? 'main' : undefined);
+        applyAccountType(result.data?.accountType);
+
+        // Get them tracked either way — every stat the calculator scores comes
+        // from Temple, quite apart from what this says about their game mode.
+        if (result.data && !result.data.isTrackedOnTemple) {
+          setTempleState('adding');
+          executeAddToTemple({ playerName: latestProbedName.current });
+
+          return;
+        }
+
+        setTempleState('idle');
       },
     },
   );
 
-  const debouncedExecuteFetchPlayerJoinDate = debounce(
-    executeFetchPlayerJoinDate,
-    600,
-  );
-
-  const debouncedExecuteFetchAccountType = debounce(
-    executeFetchAccountType,
-    600,
+  // `debounce` has to outlive a render to debounce anything. Built inline it
+  // produced a fresh timer per keystroke, so every keystroke fired a request.
+  const debouncedProbePlayerName = useMemo(
+    () =>
+      debounce((input: string) => {
+        executeFetchPlayerJoinDate(input);
+        executeFetchAccountType({ playerName: input });
+      }, 600),
+    [executeFetchPlayerJoinDate, executeFetchAccountType],
   );
 
   const accountType = form.watch('accountType');
@@ -134,8 +187,9 @@ export function AddPlayerForm({ members }: AddPlayerFormProps) {
               <PlayerNameInput
                 members={members}
                 onChange={(input) => {
-                  debouncedExecuteFetchPlayerJoinDate(input);
-                  debouncedExecuteFetchAccountType({ playerName: input });
+                  latestProbedName.current = input;
+                  setTempleState('idle');
+                  debouncedProbePlayerName(input);
                 }}
               />
             </Flex>
@@ -185,6 +239,26 @@ export function AddPlayerForm({ members }: AddPlayerFormProps) {
                 <Text as="span">Mobile only player</Text>
               </Label>
             </Flex>
+            {templeState === 'adding' && (
+              <Flex direction="row" gap="2" align="center">
+                <Spinner />
+                <Text as="p" size="1" color="gray">
+                  You&apos;re not tracked on TempleOSRS yet — adding you now and
+                  checking again.
+                </Text>
+              </Flex>
+            )}
+            {templeState === 'added' && (
+              <Text as="p" size="1" color="gray">
+                Added to TempleOSRS. Your stats will fill in there shortly.
+              </Text>
+            )}
+            {templeState === 'unavailable' && (
+              <Text as="p" size="1" color="gray">
+                We couldn&apos;t add you to TempleOSRS just now. You can still
+                sign up — this only affects how soon your stats appear.
+              </Text>
+            )}
             {needsAccountType && (
               <Flex direction="column" gap="2">
                 <Label weight="bold">Account type</Label>
@@ -193,7 +267,7 @@ export function AddPlayerForm({ members }: AddPlayerFormProps) {
                   not listed individually on the hiscores.
                 </Text>
                 <RadioGroup.Root
-                  value={accountType ?? 'main'}
+                  value={accountType ?? ''}
                   onValueChange={(value) => {
                     form.setValue('accountType', value as AccountTypeChoice, {
                       shouldDirty: true,

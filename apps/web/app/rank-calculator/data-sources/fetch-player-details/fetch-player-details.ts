@@ -165,7 +165,7 @@ export async function fetchPlayerDetails(
     const [wikiSyncData, templePlayerStats, templeCollectionLog, discordRoles] =
       await Promise.all([
         getWikiSyncData(player),
-        fetchTemplePlayerStats(player, true),
+        fetchTemplePlayerStats(player),
         fetchTemplePlayerCollectionLog(player),
         fetchUserDiscordRoles(userId),
       ]);

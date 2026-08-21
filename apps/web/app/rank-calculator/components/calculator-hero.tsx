@@ -13,6 +13,7 @@ import { AccountTypeBadge } from '@/app/components/account-type-badge';
 import { useRankCalculator } from '../hooks/point-calculator/use-rank-calculator';
 import { getRankName } from '../utils/get-rank-name';
 import { isRankUp } from '../utils/is-rank-up';
+import { canApplyForRank } from '@/config/ranks';
 import { getPointsRemainingLabel } from '../utils/get-points-remaining-label';
 import { formatNumber } from '../utils/format-number';
 import { formatPercentage } from '../utils/format-percentage';
@@ -82,7 +83,10 @@ export function CalculatorHero() {
     }
 
     setHasCheckedForRankUp(true);
-    setShowRankUpDialog(isRankUp(currentRank, rank, accountType ?? null));
+    setShowRankUpDialog(
+      canApplyForRank(accountType) &&
+        isRankUp(currentRank, rank, accountType ?? null),
+    );
   }, [hasCheckedForRankUp, needsAccountType, currentRank, rank, accountType]);
 
   useEffect(() => {

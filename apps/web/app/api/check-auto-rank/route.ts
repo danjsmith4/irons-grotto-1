@@ -24,6 +24,7 @@ import { calculateTotalLevelPoints } from '@/app/rank-calculator/utils/calculato
 import { calculateTotalPoints } from '@/app/rank-calculator/utils/calculators/calculate-total-points';
 import { getRankName } from '@/app/rank-calculator/utils/get-rank-name';
 import { isRankUp } from '@/app/rank-calculator/utils/is-rank-up';
+import { canApplyForRank } from '@/config/ranks';
 import { sendDiscordMessage } from '@/app/rank-calculator/utils/send-discord-message';
 import { clientConstants } from '@/config/constants.client';
 import { rankUpMessagesKey } from '@/config/redis';
@@ -186,10 +187,12 @@ export async function GET(request: NextRequest) {
     });
 
     // Same rule as the calculator's rank-up dialog: only a genuine promotion up
-    // the ladder this account is scored against. A staff member's stored rank
-    // is an in-game staff rank, which is on no ladder, so a bare inequality
-    // nudged them about a rank they may already hold.
-    if (isRankUp(currentRank, rank, accountType)) {
+    // the ladder this account is scored against, and only for an account that
+    // could apply for it — nudging a main towards an application the publish
+    // action will refuse is worse than saying nothing. A staff member's stored
+    // rank is an in-game staff rank, which is on no ladder, so a bare
+    // inequality nudged them about a rank they may already hold.
+    if (canApplyForRank(accountType) && isRankUp(currentRank, rank, accountType)) {
       const hashKey = `${discordId}:${player.toLowerCase()}`;
       const previousMessageRank = await redis.hget(rankUpMessagesKey, hashKey);
 

@@ -70,6 +70,23 @@ export function rankThresholdsFor(accountType: AccountType | null) {
 }
 
 /**
+ * Whether an account can apply for a clan rank.
+ *
+ * Mains are welcome in the calculator — it is a personal progress tracker and
+ * there is no reason to withhold it from anyone. What they cannot do is apply
+ * for a rank, because approving one assigns a real in-game and Discord clan
+ * rank, and those belong to the ironman ladder that mains are not on. Their
+ * ladder is the single `mainAccountRank`, which is held rather than earned, so
+ * there is nothing to apply *for*.
+ *
+ * An unresolved (null) type can apply, for the same reason it gets the ironman
+ * ladder: this is an ironman clan and nobody is treated as a main on a guess.
+ */
+export function canApplyForRank(accountType: AccountType | null | undefined) {
+  return !isMainAccount(accountType);
+}
+
+/**
  * Maps the required items needed to achieve each rank.
  * The items correspond to the form field on the page.
  */

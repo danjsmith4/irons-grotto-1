@@ -1,6 +1,7 @@
 import { db } from '@/lib/db';
 import { playerAcquiredItems, players } from '@/lib/db/schema';
-import { desc, eq, sql } from 'drizzle-orm';
+import { rankedMember } from '@/lib/db/player-filters';
+import { desc, sql } from 'drizzle-orm';
 import { AllPetItemIds } from '../schemas/osrs';
 import type { AccountType, StaffRole } from '../schemas/staff';
 
@@ -62,8 +63,9 @@ export async function fetchLeaderboard(
         playerAcquiredItems,
         sql`${players.playerName} = ${playerAcquiredItems.playerName} AND ${playerAcquiredItems.itemName} = 'Cursed phalanx'`,
       )
-      // Hide players soft-deleted by the daily inactivity reconcile.
-      .where(eq(players.isActive, true))
+      // Hide players soft-deleted by the daily inactivity reconcile, and
+      // main accounts, which are members but are not on the rank ladder.
+      .where(rankedMember)
       .orderBy(desc(players.points))
       .limit(limit)
       .offset(offset);
