@@ -8,7 +8,7 @@ import { returnValidationErrors } from 'next-safe-action';
 import { PlayerName } from '@/app/schemas/player';
 import { Rank } from '@/config/enums';
 import { fetchPlayerMeta } from '../../../../data-sources/fetch-player-meta';
-import { fetchTemplePlayerStats } from '../../../../data-sources/fetch-temple-player-stats';
+import { fetchTemplePlayerInfo } from '../../../../data-sources/fetch-temple-player-info';
 import { assertUniquePlayerRecord } from '../../../validation/assert-unique-player-record';
 import { resolveTempleAccountType } from '@/app/schemas/temple-api';
 import { EditPlayerSchema } from './edit-player-schema';
@@ -49,13 +49,12 @@ export const editPlayerAction = authActionClient
         }
       }
 
-      const [playerMeta, playerStats] = await Promise.all([
+      const [playerMeta, templeInfo] = await Promise.all([
         fetchPlayerMeta(playerName),
-        fetchTemplePlayerStats(playerName, false),
+        fetchTemplePlayerInfo(playerName),
       ]);
 
-      const maybeFormattedPlayerName =
-        playerMeta?.rsn ?? playerStats?.info.Username ?? playerName;
+      const maybeFormattedPlayerName = playerMeta?.rsn ?? playerName;
 
       // If the player name has changed, validate that the new player is an ironman
       const hasPlayerNameChanged =
@@ -68,10 +67,10 @@ export const editPlayerAction = authActionClient
       // an unresolvable account is cleared to null instead, and the calculator
       // asks its owner.
       const renamedAccountType = hasPlayerNameChanged
-        ? ((playerStats &&
+        ? ((templeInfo &&
             resolveTempleAccountType(
-              playerStats.info['Game mode'],
-              playerStats.info.GIM,
+              templeInfo['Game mode'],
+              templeInfo.GIM,
             )) ??
           null)
         : undefined;

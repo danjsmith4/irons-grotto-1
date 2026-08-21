@@ -169,7 +169,8 @@ export interface CreatePlayerData {
   collectionLogBonusPoints?: number;
   notableItemsBonusPoints?: number;
   isMobileOnly?: boolean;
-  accountType?: AccountType;
+  /** Null is a value here, not a gap: it means the game mode is unresolved. */
+  accountType?: AccountType | null;
   gimGroupName?: string | null;
 }
 

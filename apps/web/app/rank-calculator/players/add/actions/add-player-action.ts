@@ -5,7 +5,7 @@ import { returnValidationErrors } from 'next-safe-action';
 import * as Sentry from '@sentry/nextjs';
 import { ActionError } from '@/app/action-error';
 import { fetchPlayerMeta } from '../../../data-sources/fetch-player-meta';
-import { fetchTemplePlayerStats } from '../../../data-sources/fetch-temple-player-stats';
+import { fetchTemplePlayerInfo } from '../../../data-sources/fetch-temple-player-info';
 import { AddPlayerSchema } from './add-player-schema';
 import { createNewPlayer, getPlayerByName } from '@/lib/db/player-operations';
 import { resolveTempleAccountType } from '@/app/schemas/temple-api';
@@ -51,37 +51,43 @@ export const addPlayerAction = authActionClient
         });
       }
 
-      const [playerMeta, playerStats] = await Promise.all([
+      const [playerMeta, templeInfo] = await Promise.all([
         fetchPlayerMeta(playerName),
-        fetchTemplePlayerStats(playerName, false),
+        fetchTemplePlayerInfo(playerName),
       ]);
 
-      const maybeFormattedPlayerName =
-        playerMeta?.rsn ?? playerStats?.info.Username ?? playerName;
+      const maybeFormattedPlayerName = playerMeta?.rsn ?? playerName;
 
       // Game mode. Temple settles it whenever it reports anything but a main;
       // a main reading is ambiguous, because Temple reports group ironmen it
       // has never been told about exactly the same way. In that case the
       // player has told us, and a claimed group is verified against the group
       // hiscores rather than taken at face value.
-      const templeAccountType = playerStats
-        ? resolveTempleAccountType(
-            playerStats.info['Game mode'],
-            playerStats.info.GIM,
-          )
+      const templeAccountType = templeInfo
+        ? resolveTempleAccountType(templeInfo['Game mode'], templeInfo.GIM)
         : null;
 
+      // Nothing to resolve from and nothing declared means the question was
+      // never put to the player — the form only asks when Temple comes up
+      // short. That is stored as null, which is what makes the calculator ask
+      // on first load. It is emphatically not a declaration of a main.
       const declared = templeAccountType
         ? ({
             status: 'resolved',
             accountType: templeAccountType,
             gimGroupName: null,
           } as const)
-        : await resolveDeclaredAccountType(
-            maybeFormattedPlayerName,
-            accountType ?? 'main',
-            gimGroupNameInput,
-          );
+        : accountType
+          ? await resolveDeclaredAccountType(
+              maybeFormattedPlayerName,
+              accountType,
+              gimGroupNameInput,
+            )
+          : ({
+              status: 'resolved',
+              accountType: null,
+              gimGroupName: null,
+            } as const);
 
       // A group we cannot find is never quietly downgraded to unranked — the
       // player is told, and decides whether it was a typo or a genuinely
@@ -98,6 +104,7 @@ export const addPlayerAction = authActionClient
 
       const { accountType: resolvedAccountType, gimGroupName } = declared;
 
+      // Only an explicit declaration of a main turns someone away.
       if (isMainAccount(resolvedAccountType)) {
         returnValidationErrors(AddPlayerSchema, {
           playerName: {
