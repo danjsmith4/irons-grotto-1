@@ -161,49 +161,23 @@ export default async function DashboardPage() {
             </p>
           </div>
 
-          {/* Accomplishments — the headline feed, full width above the
-              narrower rank-up and collection-log columns. Hidden entirely
-              until there is something to show; see the note on the homepage. */}
-          {recentAccomplishments.length > 0 && (
-            <div
-              style={{
-                maxWidth: '1200px',
-                margin: '0 auto 2rem',
-              }}
-            >
+          {/* The three activity feeds, side by side on a wide screen. See the
+              note on the homepage — same grid, same reasoning. */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+              gap: '2rem',
+              width: '100%',
+            }}
+          >
+            <RecentRankUpsTable rankUps={recentRankUps ?? []} />
+            {recentAccomplishments.length > 0 && (
               <RecentAccomplishmentsTable
                 accomplishments={recentAccomplishments}
               />
-            </div>
-          )}
-
-          <div
-            style={{
-              display: 'flex',
-              gap: '2rem',
-              flexDirection: 'row',
-              justifyContent: 'center',
-              flexWrap: 'wrap',
-            }}
-          >
-            <div
-              style={{
-                flex: '1 1 400px',
-                minWidth: '400px',
-                maxWidth: '500px',
-              }}
-            >
-              <RecentRankUpsTable rankUps={recentRankUps ?? []} />
-            </div>
-            <div
-              style={{
-                flex: '1 1 400px',
-                minWidth: '400px',
-                maxWidth: '500px',
-              }}
-            >
-              <RecentClogUpdatesTable clogUpdates={recentClogUpdates ?? []} />
-            </div>
+            )}
+            <RecentClogUpdatesTable clogUpdates={recentClogUpdates ?? []} />
           </div>
         </div>
       </div>

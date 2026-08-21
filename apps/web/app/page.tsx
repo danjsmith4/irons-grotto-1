@@ -204,56 +204,31 @@ export default async function HomePage() {
                 <Leaderboard initialPlayers={leaderboard} />
               </div>
 
-              {/* Accomplishments — the headline feed, full width above the
-                  narrower rank-up and collection-log columns.
+              {/* The three activity feeds, side by side on a wide screen.
+                  auto-fit collapses them to two, then one, without any
+                  breakpoint arithmetic — and `align-items: stretch` (the grid
+                  default) keeps the cards the same height, which the fixed
+                  `max-height` on `.list` already assumes.
 
-                  Hidden entirely until there is something to show. Unlike the
-                  other two feeds this one starts empty by design: a player's
-                  first detection pass is recorded as backfill and kept out of
-                  the feed, so an empty-state card would sit on the homepage
-                  for weeks after launch announcing that nothing has happened.
-                  Guarded here rather than inside the component because the
-                  parent is a flex column with a gap — an element that renders
-                  nothing still leaves a hole. */}
-              {recentAccomplishments.length > 0 && (
-                <div style={{ width: '100%', maxWidth: '1250px' }}>
+                  Accomplishments is conditional: with nothing to show it would
+                  otherwise leave an empty grid cell, and a column of whitespace
+                  reads worse than two columns. */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+                  gap: '2rem',
+                  width: '100%',
+                  maxWidth: '1250px',
+                }}
+              >
+                <RecentRankUpsTable rankUps={recentRankUps ?? []} />
+                {recentAccomplishments.length > 0 && (
                   <RecentAccomplishmentsTable
                     accomplishments={recentAccomplishments}
                   />
-                </div>
-              )}
-
-              {/* Recent activity tables */}
-              <div
-                style={{
-                  display: 'flex',
-                  gap: '2rem',
-                  flexDirection: 'row',
-                  justifyContent: 'center',
-                  flexWrap: 'wrap',
-                  width: '100%',
-                }}
-              >
-                <div
-                  style={{
-                    flex: '1 1 400px',
-                    minWidth: '400px',
-                    maxWidth: '500px',
-                  }}
-                >
-                  <RecentRankUpsTable rankUps={recentRankUps ?? []} />
-                </div>
-                <div
-                  style={{
-                    flex: '1 1 400px',
-                    minWidth: '400px',
-                    maxWidth: '500px',
-                  }}
-                >
-                  <RecentClogUpdatesTable
-                    clogUpdates={recentClogUpdates ?? []}
-                  />
-                </div>
+                )}
+                <RecentClogUpdatesTable clogUpdates={recentClogUpdates ?? []} />
               </div>
 
               {/* Rarest collection-log items across the clan */}
