@@ -48,12 +48,11 @@ jest.mock('next/cache', () => {
   };
 });
 
-// `useRank` writes the player's points from an effect. Under Jest that reaches
-// for a real postgres connection, and the async failure lands in whichever test
-// happens to be running — a moving, unrelated failure on every run.
-jest.mock('./app/rank-calculator/actions/update-player-points-action', () => ({
-  updatePlayerPointsAction: jest.fn().mockResolvedValue(undefined),
-}));
+// The mock that used to sit here stubbed `updatePlayerPointsAction`, because
+// the calculator wrote the player's points from an effect and that reached for
+// a real postgres connection under Jest. Points are now recalculated
+// server-side in `processPlayerData`, so nothing in a component tree writes
+// them and there is nothing left to stub.
 
 jest.mock('next-auth', () => {
   const originalModule =

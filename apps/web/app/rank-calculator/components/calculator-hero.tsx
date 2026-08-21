@@ -26,7 +26,6 @@ import { useCurrentPlayer } from '../contexts/current-player-context';
 import { RankCalculatorSchema } from '../[player]/submit-rank-calculator-validation';
 import { handleToastUpdates } from '../utils/handle-toast-updates';
 import { publishRankSubmissionAction } from '../[player]/actions/publish-rank-submission-action';
-import { updatePlayerPointsAction } from '../actions/update-player-points-action';
 import styles from './rank-calculator.module.css';
 
 /**
@@ -103,20 +102,10 @@ export function CalculatorHero() {
     });
   }, [pointsAwarded, setValue]);
 
-  // The scoreboard is the page's single owner of the running total, so the
-  // write lives here. It used to sit inside `useRank`, which meant every
-  // consumer of `useRankCalculator` (hero, nav bar, navigation actions) fired
-  // its own duplicate write on each recalculation.
-  useEffect(() => {
-    if (pointsAwarded > 0 && playerName) {
-      updatePlayerPointsAction(playerName, pointsAwarded).catch((error) => {
-        console.error(
-          `Failed to update points for player ${playerName}:`,
-          error,
-        );
-      });
-    }
-  }, [playerName, pointsAwarded]);
+  // The running total here is for display only. Points are recalculated and
+  // stored server-side in `processPlayerData`, from the record itself — this
+  // component used to POST its own number to an unauthenticated action, which
+  // made the leaderboard whatever the client last said it was.
 
   return (
     <>

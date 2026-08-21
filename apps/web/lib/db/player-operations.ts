@@ -12,6 +12,7 @@ import {
   type PlayerAchievementDiary,
 } from './schema';
 import { getCategoryFromItemName } from './item-mapping-utils';
+import { calculatePlayerPoints } from '@/app/rank-calculator/utils/calculate-player-points';
 import type { PlayerDetailsResponse } from '@/app/rank-calculator/data-sources/fetch-player-details/fetch-player-details';
 import { TempleOSRSCollectionLogItem } from '@/app/schemas/temple-api';
 import type { AccountType } from '@/app/schemas/staff';
@@ -810,16 +811,29 @@ export async function processPlayerData(
     .limit(1);
 
   try {
-    if (existingPlayer) {
-      // Player exists - update with new data (ownership validated in updatePlayerWithFullData)
-      const updatedPlayer = await updatePlayerWithFullData(
-        playerData,
-        discordUserId,
+    const player = existingPlayer
+      ? // Player exists - update with new data (ownership validated in updatePlayerWithFullData)
+        (await updatePlayerWithFullData(playerData, discordUserId))!
+      : // Player doesn't exist - create new record (no ownership validation needed for new players)
+        await createPlayerWithFullData(playerData, discordUserId);
+
+    // Points are a function of the record, so they are computed from it rather
+    // than accepted from a caller. This is the only place they are written.
+    //
+    // On failure, leave the stored value alone. `calculatePlayerPoints` needs
+    // live wiki drop rates, and a stale total is a cosmetic lag on the
+    // leaderboard where a zero would be a visible catastrophe.
+    try {
+      const { totalPoints } = await calculatePlayerPoints(playerData);
+
+      return (await updatePlayerPoints(playerName, totalPoints)) ?? player;
+    } catch (error) {
+      console.error(
+        `Failed to recalculate points for ${playerName}, keeping the stored total:`,
+        error,
       );
-      return updatedPlayer!;
-    } else {
-      // Player doesn't exist - create new record (no ownership validation needed for new players)
-      return await createPlayerWithFullData(playerData, discordUserId);
+
+      return player;
     }
   } catch (error) {
     console.error(`Failed to process player data for ${playerName}:`, error);
