@@ -29,10 +29,13 @@ interface NavBarProps {
   currentPage?: 'dashboard' | 'player' | 'submission' | 'admin';
   playerName?: string;
   showSaveActions?: boolean;
-  onSave?: () => void;
-  isSaving?: boolean;
-  canSave?: boolean;
   isActionActive?: boolean;
+  /**
+   * Forces any pending autosave out before a submission snapshots the sheet.
+   * Replaces the old `onSave` / `canSave` / `isSaving` trio, which existed
+   * only to drive a Save button.
+   */
+  beforeSubmit?: () => Promise<void>;
   userCalculators?: Record<
     string,
     {
@@ -41,7 +44,6 @@ interface NavBarProps {
       joinDate: Date;
     }
   >;
-  submitForm?: () => Promise<void> | void;
   additionalButtons?: React.ReactNode;
 }
 
@@ -49,12 +51,9 @@ export function NavBar({
   currentPage = 'dashboard',
   playerName,
   showSaveActions = false,
-  onSave: _onSave,
-  isSaving: _isSaving = false,
-  canSave: _canSave = false,
   isActionActive = false,
+  beforeSubmit,
   userCalculators = {},
-  submitForm,
   additionalButtons,
 }: NavBarProps) {
   const router = useRouter();
@@ -80,7 +79,6 @@ export function NavBar({
 
   // Extract values with safe defaults
   const reset = formContext?.reset;
-  const isValid = formState?.isValid ?? false;
   const isDirty = formState?.isDirty ?? false;
   const isSubmitting = formState?.isSubmitting ?? false;
   const totalPoints = rankCalculator?.pointsAwarded ?? 0;
@@ -195,29 +193,20 @@ export function NavBar({
         <div className={styles.actions}>
           {additionalButtons}
 
+          {/* There is no Save button. Changes persist as they are made — see
+              `useAutosave`. What is left here are the actions that are not
+              "store my edits": applying for a rank, resetting, deleting. */}
           {showSaveActions && (
             <div className={styles.save}>
-              <button
-                type="button"
-                className={styles.saveMain}
-                disabled={!isDirty || !isValid || isBusy}
-                onClick={() => {
-                  if (submitForm) {
-                    void submitForm();
-                  }
-                }}
-              >
-                {isBusy && <Spinner size="1" />}
-                Save
-              </button>
               <DropdownMenu.Root modal={false}>
                 <DropdownMenu.Trigger disabled={isBusy}>
                   <button
                     type="button"
                     className={styles.saveMore}
                     disabled={isBusy}
-                    aria-label="More save actions"
+                    aria-label="Calculator actions"
                   >
+                    {isBusy && <Spinner size="1" />}
                     <ChevronDownIcon />
                   </button>
                 </DropdownMenu.Trigger>
@@ -234,20 +223,20 @@ export function NavBar({
                         return;
                       }
 
-                      if (isDirty) {
-                        toast.error('Please save your data first!');
-
-                        return;
-                      }
-
                       if (!rank) {
                         toast.error('No rank calculated yet!');
 
                         return;
                       }
 
+                      // Whatever is on screen has to be stored before the
+                      // submission snapshots it. This replaces the dirty
+                      // check: the question was never "is the form dirty",
+                      // it was "is what I am about to submit what they see".
                       void handleToastUpdates(
-                        publishRankSubmission({ totalPoints, rank }),
+                        beforeSubmit?.().then(() =>
+                          publishRankSubmission({ totalPoints, rank }),
+                        ) ?? publishRankSubmission({ totalPoints, rank }),
                         { success: 'Rank application submitted!' },
                       );
                     }}

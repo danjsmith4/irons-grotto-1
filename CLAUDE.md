@@ -189,6 +189,20 @@ Mains are included — this is not the ladder. There is **no EHC milestone**: no
 
 Icons come from **file conventions**, not `metadata.icons`: `app/favicon.ico`, `app/icon.png`, `app/apple-icon.png` (all generated from `public/L1.png`). These files **take precedence over any `icons` field in `layout.tsx` metadata** — if the favicon is wrong, it's because a stale `app/favicon.ico` exists, not the metadata. To change icons, replace those files (regenerate from the logo with `sharp`); don't add `metadata.icons`.
 
+## There is no "save"
+
+The calculator persists edits as they are made. There is no Save button, no "Saved ✓", no success toast — an edit applying and staying applied is the expected case and does not need reporting. **Do not reintroduce a save affordance**, including a passive one: an indicator that says "saved" implies a step that no longer exists.
+
+- `hooks/use-autosave.ts` — watches the form, debounces 800ms (so ticking twenty items lands as one request), flushes on tab hide and before a rank submission. `buildPlayerPatch` is pure and spec'd separately.
+- `[player]/actions/update-player-state-action.ts` — takes a **partial** patch. Its schema is a `pick` of `RankCalculatorSchema`: stats, `rank` and `points` are absent by construction, so the browser cannot assert them. The old `saveDraftRankSubmissionAction` took the whole form, which is why every page load rewrote every field.
+- `updatePlayerEditableFields` (`lib/db/player-operations.ts`) — the write. Only supplied keys are touched.
+
+The **only** UI is on failure: a toast when a write does not land, because that is the one thing the player could not otherwise know.
+
+"Apply for promotion" no longer checks `isDirty` or tells anyone to save first. It awaits a flush — the question was never "is the form dirty", it was "is what I am about to submit what they can see".
+
+⚠️ **The Redis draft is still written, and is a shim.** Nothing reads it for the calculator any more; Postgres is authoritative. But a rank submission is still a literal Redis `COPY` of the draft, so `updatePlayerStateAction` mirrors each patch into it to stop members submitting sheets that don't match their screen. When submissions snapshot from the player record instead, the draft has no readers left and `userDraftRankSubmissionKey` goes.
+
 ## Rank-calculator approvals
 
 `approveSubmission` assigns Discord roles and messages the submitter for every approval. There is one rank ladder, so there is no longer a structure to branch on (`rankDiscordRoles` covers every `StandardRank`).

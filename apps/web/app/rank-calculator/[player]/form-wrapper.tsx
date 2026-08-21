@@ -1,18 +1,20 @@
 'use client';
 
-import { FormProvider } from 'react-hook-form';
-import { useHookFormAction } from '@next-safe-action/adapter-react-hook-form/hooks';
+import { FormProvider, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Rank } from '@/config/enums';
 import { toast } from 'react-toastify';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { RankCalculator } from './rank-calculator';
 import {
   RankCalculatorSchema,
   RankCalculatorValidator,
 } from './submit-rank-calculator-validation';
-import { saveDraftRankSubmissionAction } from './actions/save-draft-rank-submission-action';
-import { handleToastUpdates } from '../utils/handle-toast-updates';
+import {
+  PlayerEditableFields,
+  updatePlayerStateAction,
+} from './actions/update-player-state-action';
+import { useAutosave } from '../hooks/use-autosave';
 import { CurrentPlayerProvider } from '../contexts/current-player-context';
 import { NavBar } from '@/app/components/nav-bar';
 import { Player } from '@/app/schemas/player';
@@ -39,44 +41,41 @@ export function FormWrapper({
   userCalculators,
   warnings,
 }: FormWrapperProps) {
-  const {
-    form,
-    action: {
-      executeAsync: saveDraftRankSubmission,
-      isExecuting,
-      isTransitioning,
+  const form = useForm<Omit<RankCalculatorSchema, 'rank' | 'points'>>({
+    resolver: zodResolver(RankCalculatorValidator),
+    defaultValues: formData,
+    criteriaMode: 'all',
+    mode: 'onBlur',
+  });
+
+  const save = useCallback(
+    async (patch: PlayerEditableFields) => {
+      // Bound args come first: the action is bound to the player name, and
+      // takes the patch as its input.
+      const result = await updatePlayerStateAction(playerName, patch);
+
+      return Boolean(result?.data?.success);
     },
-  } = useHookFormAction(
-    saveDraftRankSubmissionAction,
-    zodResolver(RankCalculatorValidator),
-    {
-      formProps: {
-        defaultValues: formData,
-        criteriaMode: 'all',
-        mode: 'onBlur',
-      },
-    },
+    [playerName],
   );
 
-  // Custom save function with rank validation
-  const submitRankCalculator = form.handleSubmit(async (data) => {
-    try {
-      const result = await handleToastUpdates(saveDraftRankSubmission(data), {
-        pending: 'Saving draft...',
-        success: {
-          render() {
-            form.reset(data, { keepIsSubmitSuccessful: true });
+  // A failed write is the only thing worth interrupting for. Success is
+  // silent — a toast every 800ms would be intolerable, and "your edit
+  // applied" is not news.
+  const onAutosaveError = useCallback(() => {
+    toast.error("Your latest change didn't go through. Retrying…", {
+      toastId: 'autosave-failed',
+    });
+  }, []);
 
-            return 'Draft saved!';
-          },
-        },
-      });
-      return result;
-    } catch (error) {
-      console.error('Save failed:', error);
-      throw error;
-    }
-  });
+  const { flushNow } = useAutosave({ save, onError: onAutosaveError });
+
+  // "Apply for promotion" needs whatever is on screen to be stored first —
+  // which used to be spelled as a dirty check and a "save your data first!"
+  // toast. Now it just waits for the write.
+  const submitRankCalculator = useCallback(async () => {
+    await flushNow();
+  }, [flushNow]);
 
   // Each warning carries a stable `toastId` so it can only ever be on screen
   // once: the effect runs more than once per visit (React re-mounts it in
@@ -137,15 +136,7 @@ export function FormWrapper({
             playerName={playerName}
             userCalculators={userCalculators}
             showSaveActions={true}
-            onSave={() => saveDraftRankSubmission(form.getValues())}
-            isSaving={
-              isExecuting || isTransitioning || form.formState.isSubmitting
-            }
-            canSave={form.formState.isValid}
-            isActionActive={
-              isExecuting || isTransitioning || form.formState.isSubmitting
-            }
-            submitForm={submitRankCalculator}
+            beforeSubmit={flushNow}
           />
           <div style={{ flex: 1 }}>
             <RankCalculator submitRankCalculatorAction={submitRankCalculator} />

@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { db } from './index';
 import { playerItemOverrides } from './schema';
 
@@ -103,4 +103,44 @@ export async function getItemOverrides(
     (acc, { itemName, isAcquired }) => ({ ...acc, [itemName]: isAcquired }),
     {},
   );
+}
+
+/**
+ * Records the player's answer for specific items, leaving every other override
+ * alone.
+ *
+ * Autosave's counterpart to {@link syncItemOverrides}. It cannot compute the
+ * sparse diff, because it has no idea what the data sources derive — that is
+ * only known inside `fetchPlayerDetails`, which has just talked to WikiSync and
+ * Temple. So it stores the answer as given, for the handful of items that
+ * actually changed, and the next sync reconciles: `syncItemOverrides` drops any
+ * row a source has since explained.
+ *
+ * The upshot is that an override may be redundant for a few minutes, until the
+ * player next loads the calculator. Redundant is harmless; lost is not.
+ */
+export async function upsertItemOverrides(
+  playerName: string,
+  answers: Record<string, boolean>,
+): Promise<number> {
+  const rows = Object.entries(answers).map(([itemName, isAcquired]) => ({
+    playerName,
+    itemName,
+    isAcquired,
+  }));
+
+  if (rows.length === 0) return 0;
+
+  await db
+    .insert(playerItemOverrides)
+    .values(rows)
+    .onConflictDoUpdate({
+      target: [playerItemOverrides.playerName, playerItemOverrides.itemName],
+      set: {
+        isAcquired: sql`excluded.is_acquired`,
+        updatedAt: new Date(),
+      },
+    });
+
+  return rows.length;
 }
