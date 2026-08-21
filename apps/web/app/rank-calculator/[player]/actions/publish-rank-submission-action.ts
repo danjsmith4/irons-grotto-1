@@ -6,7 +6,6 @@ import {
   rankSubmissionDiffKey,
   rankSubmissionKey,
   rankSubmissionMetadataKey,
-  userDraftRankSubmissionKey,
 } from '@/config/redis';
 import { randomUUID } from 'crypto';
 import { sendDiscordMessage } from '@/app/rank-calculator/utils/send-discord-message';
@@ -44,7 +43,6 @@ import { getRankName } from '../../utils/get-rank-name';
 import { accountTypeLabels } from '@/app/schemas/staff';
 import { getRankImageUrl } from '../../utils/get-rank-image-url';
 import { fetchPlayerDetails } from '../../data-sources/fetch-player-details/fetch-player-details';
-import { RankCalculatorSchema } from '../submit-rank-calculator-validation';
 import { stripEntityName } from '../../utils/strip-entity-name';
 import { approveSubmission } from '../../view/[submissionId]/utils/approve-submission';
 import dedent from 'dedent';
@@ -73,17 +71,8 @@ export const publishRankSubmissionAction = authActionClient
         throw new ActionError('You already have this rank!');
       }
 
-      const savedData = await redis.json.get<RankCalculatorSchema>(
-        userDraftRankSubmissionKey(userId, playerName),
-      );
-
-      if (!savedData) {
-        console.log('❌ No saved data error');
-        throw new ActionError('No saved data!');
-      }
-
       console.log('✅ Fetching player details...');
-      const playerDetails = await fetchPlayerDetails(playerName, userId, false);
+      const playerDetails = await fetchPlayerDetails(playerName, userId);
 
       if (!playerDetails.success) {
         console.log('❌ Failed to fetch player details:', playerDetails);
@@ -92,25 +81,51 @@ export const publishRankSubmissionAction = authActionClient
         );
       }
 
+      // `savedData` is what the player claims. It used to be the Redis draft;
+      // since the calculator autosaves, the claim *is* the stored record, and
+      // `fetchPlayerDetails` returns it already blended with whatever the
+      // sources could confirm.
+      const savedData = playerDetails.data;
+
       const {
-        data: {
-          acquiredItems,
-          achievementDiaries,
-          combatAchievementTier,
-          collectionLogCount,
-          totalLevel,
-          accountType,
-          joinDate,
-          hasTemplePlayerStats,
-          hasTempleCollectionLog,
-          hasWikiSyncData,
-          isTempleCollectionLogOutdated,
-          tzhaarCape,
-          hasBloodTorva,
-          hasDizanasQuiver,
-          hasAchievementDiaryCape,
-        },
-      } = playerDetails;
+        accountType,
+        joinDate,
+        hasTemplePlayerStats,
+        hasTempleCollectionLog,
+        hasWikiSyncData,
+        isTempleCollectionLogOutdated,
+      } = playerDetails.data;
+
+      // ...and this is what the sources say on their own. Diffing the blend
+      // against itself could only ever report agreement, which is what made
+      // the checks below stop catching unverified claims.
+      const {
+        acquiredItems: sourceAcquiredItemNames,
+        achievementDiaries,
+        combatAchievementTier,
+        collectionLogCount,
+        totalLevel,
+        tzhaarCape,
+        hasBloodTorva,
+        hasDizanasQuiver,
+        hasAchievementDiaryCape,
+      } = playerDetails.data.sourceValues ?? {
+        acquiredItems: [],
+        achievementDiaries: null,
+        combatAchievementTier: null,
+        collectionLogCount: 0,
+        totalLevel: 0,
+        tzhaarCape: 'None' as const,
+        hasBloodTorva: false,
+        hasDizanasQuiver: false,
+        hasAchievementDiaryCape: false,
+      };
+
+      // The item diff below asks "does a source account for this tick?", which
+      // was a lookup into the blended map. Against the source list it is a set.
+      const acquiredItems = Object.fromEntries(
+        sourceAcquiredItemNames.map((name) => [name, true]),
+      ) as Record<string, boolean>;
 
       // Mains are welcome to keep a sheet, but approving an application
       // assigns a real in-game and Discord clan rank off the ironman ladder,
@@ -251,11 +266,13 @@ export const publishRankSubmissionAction = authActionClient
         ],
         combatAchievementTier:
           hasWikiSyncData &&
-          CombatAchievementTier._def.values.indexOf(combatAchievementTier) <
+          CombatAchievementTier._def.values.indexOf(
+            combatAchievementTier ?? 'None',
+          ) <
             CombatAchievementTier._def.values.indexOf(
               savedData.combatAchievementTier,
             )
-            ? combatAchievementTier
+            ? (combatAchievementTier ?? 'None')
             : null,
         collectionLogCount:
           hasTemplePlayerStats &&
@@ -306,9 +323,31 @@ export const publishRankSubmissionAction = authActionClient
 
       const submissionTransaction = redis.multi();
 
-      submissionTransaction.copy(
-        userDraftRankSubmissionKey(userId, playerName),
+      // The snapshot is written from the player record rather than COPY'd from
+      // the Redis draft. Same shape, same reader — the moderator view still
+      // loads it whole into a disabled form — but it no longer depends on a key
+      // the calculator stopped maintaining when it began autosaving.
+      //
+      // `sourceValues` and the response's own metadata flags are stripped:
+      // the snapshot is the sheet as submitted, not a diagnostic bundle.
+      const {
+        sourceValues: _sourceValues,
+        rawCollectionLogItems: _rawCollectionLogItems,
+        currentRank: _currentRank,
+        hasTemplePlayerStats: _hasTemplePlayerStats,
+        hasTempleCollectionLog: _hasTempleCollectionLog,
+        hasWikiSyncData: _hasWikiSyncData,
+        hasThirdPartyData: _hasThirdPartyData,
+        isTempleCollectionLogOutdated: _isTempleCollectionLogOutdated,
+        isMobileOnly: _isMobileOnly,
+        discordMembership: _discordMembership,
+        ...submissionSnapshot
+      } = savedData;
+
+      submissionTransaction.json.set(
         rankSubmissionKey(submissionId),
+        '$',
+        submissionSnapshot,
       );
 
       submissionTransaction.hset(rankSubmissionMetadataKey(submissionId), {

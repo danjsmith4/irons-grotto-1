@@ -201,7 +201,13 @@ The **only** UI is on failure: a toast when a write does not land, because that 
 
 "Apply for promotion" no longer checks `isDirty` or tells anyone to save first. It awaits a flush — the question was never "is the form dirty", it was "is what I am about to submit what they can see".
 
-⚠️ **The Redis draft is still written, and is a shim.** Nothing reads it for the calculator any more; Postgres is authoritative. But a rank submission is still a literal Redis `COPY` of the draft, so `updatePlayerStateAction` mirrors each patch into it to stop members submitting sheets that don't match their screen. When submissions snapshot from the player record instead, the draft has no readers left and `userDraftRankSubmissionKey` goes.
+**The Redis draft is gone.** `userDraftRankSubmissionKey`, `saveDraftRankSubmissionAction` and the page-load rewrite that called it on every visit are all deleted. A submission snapshot is now written from the player record rather than `COPY`'d from the draft, and `fetchPlayerDetails` lost its `mergeSavedData` parameter — it chose between two stores, and there is only one.
+
+⚠️ **The submission diff needs the *unblended* source values.** `fetchPlayerDetails` returns values with the player's claim already merged in (a claim wins where it outruns what a source can see), which is right for display and points — but the moderator diff exists to show where a claim outruns its evidence, and comparing a blend against itself can only report agreement. `PlayerDetailsResponse.sourceValues` carries the raw source-computed values for exactly the diffed fields, and `publish-rank-submission-action` compares stored claim against that.
+
+This was briefly broken: extending `currentDbValues` to cover `hasBloodTorva` / `hasDizanasQuiver` / `hasAchievementDiaryCape` (the fix for a quiet source wiping them) also made the "fresh" side of the diff fall back to the stored claim, so an unverified claim stopped being flagged — and `approveSubmission` grants Discord roles off `!hasBloodTorvaDiscrepancy`. Don't collapse `sourceValues` back into the blended fields.
+
+**"Delete data"** no longer deletes a draft — it clears the player's *claims* (`resetPlayerClaims`): the manual flags, the proof link, every item override. Stats, diaries and the stored collection log are left, since a source re-derives those on the next sync anyway.
 
 ## Rank-calculator approvals
 

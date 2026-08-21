@@ -927,3 +927,41 @@ export async function updatePlayerEditableFields(
     }
   }
 }
+
+/**
+ * Clears everything the player has asserted for themselves.
+ *
+ * The claims, and only the claims: the manual flags, the proof link, and every
+ * notable-item override. Stats, rank, points, diaries and the stored collection
+ * log are left alone — those come from the data sources and would simply be
+ * re-derived on the next sync, so wiping them would achieve nothing except a
+ * window of wrong numbers.
+ *
+ * Backs the calculator's "Delete data" action. Not recoverable.
+ */
+export async function resetPlayerClaims(
+  playerName: string,
+  discordUserId: string,
+): Promise<void> {
+  await assertDiscordOwnership(playerName, discordUserId);
+
+  await db.transaction(async (tx) => {
+    await tx
+      .update(players)
+      .set({
+        hasBloodTorva: false,
+        hasDizanasQuiver: false,
+        hasRadiantOathplate: false,
+        hasAchievementDiaryCape: false,
+        tzhaarCape: 'None',
+        combatAchievementTier: 'None',
+        proofLink: null,
+        updatedAt: new Date(),
+      })
+      .where(eq(players.playerName, playerName));
+
+    await tx
+      .delete(playerItemOverrides)
+      .where(eq(playerItemOverrides.playerName, playerName));
+  });
+}

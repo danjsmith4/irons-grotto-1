@@ -74,7 +74,6 @@ export default async function ViewSubmissionPage({
       const freshDetails = await fetchPlayerDetails(
         submission.playerName,
         user.user.id,
-        false,
       );
       if (freshDetails.success) {
         freshModerationData = {

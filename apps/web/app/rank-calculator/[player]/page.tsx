@@ -8,7 +8,6 @@ import {
 import { fetchPlayerDetails } from '../data-sources/fetch-player-details/fetch-player-details';
 import { fetchPlayerAccounts } from '../data-sources/fetch-player-accounts';
 import { FormWrapper } from './form-wrapper';
-import { saveDraftRankSubmissionAction } from './actions/save-draft-rank-submission-action';
 import {
   fetchItemDropRates,
   generateRequiredItemList,
@@ -59,10 +58,6 @@ export default async function RankCalculatorPage({
     isMobileOnly,
     ...formData
   } = playerDetails.data;
-
-  if (hasThirdPartyData) {
-    await saveDraftRankSubmissionAction(formData);
-  }
 
   const queryClient = new QueryClient();
 

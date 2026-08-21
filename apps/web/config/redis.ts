@@ -1,6 +1,5 @@
 enum RedisKeyNamespace {
   RankSubmission = 'rank-submission',
-  DraftRankSubmission = 'draft-rank-submission',
   SubmissionMetadata = 'metadata',
   SubmissionDiff = 'diff',
   User = 'user',
@@ -10,10 +9,6 @@ enum RedisKeyNamespace {
 
 export function rankSubmissionKey(id: string) {
   return `${RedisKeyNamespace.RankSubmission}:${id}` as const;
-}
-
-export function userDraftRankSubmissionKey(userId: string, playerName: string) {
-  return `${RedisKeyNamespace.User}:${userId}:${RedisKeyNamespace.DraftRankSubmission}:${playerName.toLowerCase()}` as const;
 }
 
 export function rankSubmissionMetadataKey(id: string) {

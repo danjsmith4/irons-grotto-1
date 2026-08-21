@@ -78,7 +78,6 @@ export async function GET() {
         const result = await fetchPlayerDetails(
           player.playerName,
           player.discordUserId,
-          false,
         );
 
         if (result.success) {
