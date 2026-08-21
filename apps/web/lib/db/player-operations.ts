@@ -15,6 +15,7 @@ import {
 } from './schema';
 import { getCategoryFromItemName } from './item-mapping-utils';
 import { calculatePlayerPoints } from '@/app/rank-calculator/utils/calculate-player-points';
+import { upsertItemOverrides } from './item-override-operations';
 import { syncPlayerAccomplishments } from './accomplishment-operations';
 import type { PlayerDetailsResponse } from '@/app/rank-calculator/data-sources/fetch-player-details/fetch-player-details';
 import { TempleOSRSCollectionLogItem } from '@/app/schemas/temple-api';
@@ -856,5 +857,73 @@ export async function processPlayerData(
   } catch (error) {
     console.error(`Failed to process player data for ${playerName}:`, error);
     throw error; // Re-throw to let calling code handle the error appropriately
+  }
+}
+
+/**
+ * Writes a change the player made to their own sheet.
+ *
+ * The autosave path. Everything here is a field the player owns outright or
+ * claims for themselves — see `PlayerEditableSchema`, which is what constrains
+ * the caller. Stats, rank and points are absent by construction: they are
+ * derived or come from a data source, and the browser does not get a vote.
+ *
+ * Partial: only the keys actually supplied are touched. That is what lets two
+ * edits in different panels land independently instead of each rewriting the
+ * whole record.
+ */
+export async function updatePlayerEditableFields(
+  playerName: string,
+  fields: {
+    // `pickBy` in the zod transform leaves the value type optional.
+    acquiredItems?: Record<string, boolean | undefined>;
+    achievementDiaries?: Record<string, string>;
+    combatAchievementTier?: string;
+    tzhaarCape?: string;
+    hasBloodTorva?: boolean;
+    hasDizanasQuiver?: boolean;
+    hasRadiantOathplate?: boolean;
+    hasAchievementDiaryCape?: boolean;
+    proofLink?: string | null;
+  },
+  discordUserId: string,
+): Promise<void> {
+  await assertDiscordOwnership(playerName, discordUserId);
+
+  const { acquiredItems, achievementDiaries, proofLink, ...scalars } = fields;
+
+  const updateData: Partial<UpdatePlayerData> = { ...scalars };
+
+  // `proofLink` is separated out because null and '' are real values here —
+  // the player clearing their link — and must not be mistaken for "unset".
+  if (proofLink !== undefined) updateData.proofLink = proofLink;
+
+  if (Object.keys(updateData).length > 0) {
+    await updatePlayer(playerName, updateData, discordUserId);
+  }
+
+  if (achievementDiaries) {
+    await Promise.all(
+      Object.entries(achievementDiaries).map(([location, tier]) =>
+        createOrUpdateAchievementDiary({
+          playerName,
+          location,
+          tier,
+          completed: tier !== 'None',
+        }),
+      ),
+    );
+  }
+
+  if (acquiredItems) {
+    const answers = Object.fromEntries(
+      Object.entries(acquiredItems)
+        .filter(([, value]) => value !== undefined)
+        .map(([itemName, value]) => [itemName, Boolean(value)]),
+    );
+
+    if (Object.keys(answers).length > 0) {
+      await upsertItemOverrides(playerName, answers);
+    }
   }
 }
