@@ -40,7 +40,7 @@ export default async function DashboardPage() {
 
   const recentAccomplishmentsResult = await fetchRecentAccomplishments();
   const recentAccomplishments = recentAccomplishmentsResult.success
-    ? recentAccomplishmentsResult.data
+    ? (recentAccomplishmentsResult.data ?? [])
     : [];
 
   // Fetch user's calculators
@@ -155,23 +155,27 @@ export default async function DashboardPage() {
                 margin: 0,
               }}
             >
-              Recent accomplishments, member promotions and collection log
-              updates
+              {recentAccomplishments.length > 0
+                ? 'Recent accomplishments, member promotions and collection log updates'
+                : 'Recent member promotions and collection log updates'}
             </p>
           </div>
 
           {/* Accomplishments — the headline feed, full width above the
-              narrower rank-up and collection-log columns */}
-          <div
-            style={{
-              maxWidth: '1200px',
-              margin: '0 auto 2rem',
-            }}
-          >
-            <RecentAccomplishmentsTable
-              accomplishments={recentAccomplishments ?? []}
-            />
-          </div>
+              narrower rank-up and collection-log columns. Hidden entirely
+              until there is something to show; see the note on the homepage. */}
+          {recentAccomplishments.length > 0 && (
+            <div
+              style={{
+                maxWidth: '1200px',
+                margin: '0 auto 2rem',
+              }}
+            >
+              <RecentAccomplishmentsTable
+                accomplishments={recentAccomplishments}
+              />
+            </div>
+          )}
 
           <div
             style={{

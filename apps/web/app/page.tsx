@@ -54,7 +54,7 @@ export default async function HomePage() {
 
   const recentAccomplishmentsResult = await fetchRecentAccomplishments();
   const recentAccomplishments = recentAccomplishmentsResult.success
-    ? recentAccomplishmentsResult.data
+    ? (recentAccomplishmentsResult.data ?? [])
     : [];
 
   // Fetch leaderboard data (fetch more to account for unranked players being filtered)
@@ -205,12 +205,23 @@ export default async function HomePage() {
               </div>
 
               {/* Accomplishments — the headline feed, full width above the
-                  narrower rank-up and collection-log columns */}
-              <div style={{ width: '100%', maxWidth: '1250px' }}>
-                <RecentAccomplishmentsTable
-                  accomplishments={recentAccomplishments ?? []}
-                />
-              </div>
+                  narrower rank-up and collection-log columns.
+
+                  Hidden entirely until there is something to show. Unlike the
+                  other two feeds this one starts empty by design: a player's
+                  first detection pass is recorded as backfill and kept out of
+                  the feed, so an empty-state card would sit on the homepage
+                  for weeks after launch announcing that nothing has happened.
+                  Guarded here rather than inside the component because the
+                  parent is a flex column with a gap — an element that renders
+                  nothing still leaves a hole. */}
+              {recentAccomplishments.length > 0 && (
+                <div style={{ width: '100%', maxWidth: '1250px' }}>
+                  <RecentAccomplishmentsTable
+                    accomplishments={recentAccomplishments}
+                  />
+                </div>
+              )}
 
               {/* Recent activity tables */}
               <div

@@ -38,18 +38,13 @@ export function RecentAccomplishmentsTable({
     </div>
   );
 
+  // Renders nothing rather than an empty-state card — this feed starts empty
+  // by design (a player's first detection pass is backfill and stays out of
+  // it), so a "nothing has happened yet" card would be the homepage's
+  // headline for weeks after launch. Callers already guard on length to avoid
+  // leaving a gap in their flex layout; this is the backstop.
   if (accomplishments.length === 0) {
-    return (
-      <div className={styles.card}>
-        {header}
-        <div className={styles.empty}>
-          No recent accomplishments
-          <span className={styles.emptyHint}>
-            Milestones appear here as members reach them
-          </span>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   return (
