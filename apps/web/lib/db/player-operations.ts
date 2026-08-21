@@ -6,6 +6,7 @@ import {
   playerAchievementDiaries,
   playerRankUps,
   playerAccomplishments,
+  playerItemOverrides,
   type Player,
   type NewPlayer,
   type PlayerAcquiredItem,
@@ -139,6 +140,9 @@ export async function deletePlayer(
     await tx
       .delete(playerAccomplishments)
       .where(eq(playerAccomplishments.playerName, playerName));
+    await tx
+      .delete(playerItemOverrides)
+      .where(eq(playerItemOverrides.playerName, playerName));
 
     // Delete the player record
     await tx.delete(players).where(eq(players.playerName, playerName));

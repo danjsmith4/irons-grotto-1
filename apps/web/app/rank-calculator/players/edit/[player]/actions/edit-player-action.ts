@@ -18,6 +18,7 @@ import {
   playerAchievementDiaries,
   playerRankUps,
   playerAccomplishments,
+  playerItemOverrides,
 } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 
@@ -66,9 +67,11 @@ export const editPlayerAction = authActionClient
       // that on both — so an unresolvable account is cleared to null instead,
       // and the calculator asks its owner.
       const renamedAccountType = hasPlayerNameChanged
-        ? await resolveAccountType(maybeFormattedPlayerName, tracking.info).then(
-            (resolution) =>
-              resolution.status === 'resolved' ? resolution.accountType : null,
+        ? await resolveAccountType(
+            maybeFormattedPlayerName,
+            tracking.info,
+          ).then((resolution) =>
+            resolution.status === 'resolved' ? resolution.accountType : null,
           )
         : undefined;
 
@@ -111,6 +114,14 @@ export const editPlayerAction = authActionClient
             .update(playerAccomplishments)
             .set({ playerName: maybeFormattedPlayerName })
             .where(eq(playerAccomplishments.playerName, previousPlayerName));
+
+          // Overrides are keyed by player name too, and are the only home for
+          // a tick no data source explains — stranding them would silently
+          // undo the player's own answers.
+          await tx
+            .update(playerItemOverrides)
+            .set({ playerName: maybeFormattedPlayerName })
+            .where(eq(playerItemOverrides.playerName, previousPlayerName));
         });
       } else {
         // No name change, just update the player record
