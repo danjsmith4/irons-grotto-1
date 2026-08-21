@@ -179,7 +179,8 @@ export interface UpdatePlayerData {
   ehp?: number;
   combatAchievementTier?: string;
   rank?: string;
-  proofLink?: string;
+  // Nullable, matching the column: null clears the link, undefined leaves it.
+  proofLink?: string | null;
   collectionLogCount?: number;
   collectionLogTotal?: number;
   totalLevel?: number;
@@ -686,7 +687,10 @@ export async function updatePlayerWithFullData(
   if (ehp !== undefined && ehp !== null) updateData.ehp = ehp;
   if (combatAchievementTier && combatAchievementTier !== 'None')
     updateData.combatAchievementTier = combatAchievementTier;
-  if (proofLink) updateData.proofLink = proofLink;
+  // `undefined` means the caller had nothing to say; `null` and `''` are the
+  // player deliberately removing their link. `if (proofLink)` conflated the
+  // three and made a proof link impossible to clear once set.
+  if (proofLink !== undefined) updateData.proofLink = proofLink;
   if (collectionLogCount !== undefined && collectionLogCount !== null)
     updateData.collectionLogCount = collectionLogCount;
   if (collectionLogTotal !== undefined && collectionLogTotal !== null)
