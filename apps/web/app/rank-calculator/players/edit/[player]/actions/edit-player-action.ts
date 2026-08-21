@@ -17,6 +17,7 @@ import {
   playerAcquiredItems,
   playerAchievementDiaries,
   playerRankUps,
+  playerAccomplishments,
 } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 
@@ -102,6 +103,14 @@ export const editPlayerAction = authActionClient
             .update(playerRankUps)
             .set({ playerName: maybeFormattedPlayerName })
             .where(eq(playerRankUps.playerName, previousPlayerName));
+
+          // Accomplishments move with the player. Missing this would strand
+          // them under the old name, and the next detection pass would treat
+          // the renamed player as brand new and re-earn the lot.
+          await tx
+            .update(playerAccomplishments)
+            .set({ playerName: maybeFormattedPlayerName })
+            .where(eq(playerAccomplishments.playerName, previousPlayerName));
         });
       } else {
         // No name change, just update the player record

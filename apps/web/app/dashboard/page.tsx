@@ -3,11 +3,13 @@ import { redirect } from 'next/navigation';
 import { Inter } from 'next/font/google';
 import { fetchRecentRankUps } from '@/app/data-sources/fetch-recent-rank-ups';
 import { fetchRecentClogUpdates } from '@/app/data-sources/fetch-recent-clog-updates';
+import { fetchRecentAccomplishments } from '@/app/data-sources/fetch-recent-accomplishments';
 import { fetchPlayerAccounts } from '@/app/rank-calculator/data-sources/fetch-player-accounts';
 import { fetchUserRecentClogs } from '@/app/data-sources/fetch-user-recent-clogs';
 import { fetchLeaderboard } from '@/app/data-sources/fetch-leaderboard';
 import { RecentRankUpsTable } from '@/app/components/recent-rank-ups-table';
 import { RecentClogUpdatesTable } from '@/app/components/recent-clog-updates-table';
+import { RecentAccomplishmentsTable } from '@/app/components/recent-accomplishments-table';
 import { RecentClogsContainer } from '@/app/components/recent-clogs-container';
 import { Leaderboard } from '@/app/components/leaderboard';
 import { NavBar } from '@/app/components/nav-bar';
@@ -34,6 +36,11 @@ export default async function DashboardPage() {
   const recentClogUpdatesResult = await fetchRecentClogUpdates();
   const recentClogUpdates = recentClogUpdatesResult.success
     ? recentClogUpdatesResult.data
+    : [];
+
+  const recentAccomplishmentsResult = await fetchRecentAccomplishments();
+  const recentAccomplishments = recentAccomplishmentsResult.success
+    ? (recentAccomplishmentsResult.data ?? [])
     : [];
 
   // Fetch user's calculators
@@ -148,9 +155,27 @@ export default async function DashboardPage() {
                 margin: 0,
               }}
             >
-              Recent member promotions and collection log updates
+              {recentAccomplishments.length > 0
+                ? 'Recent accomplishments, member promotions and collection log updates'
+                : 'Recent member promotions and collection log updates'}
             </p>
           </div>
+
+          {/* Accomplishments — the headline feed, full width above the
+              narrower rank-up and collection-log columns. Hidden entirely
+              until there is something to show; see the note on the homepage. */}
+          {recentAccomplishments.length > 0 && (
+            <div
+              style={{
+                maxWidth: '1200px',
+                margin: '0 auto 2rem',
+              }}
+            >
+              <RecentAccomplishmentsTable
+                accomplishments={recentAccomplishments}
+              />
+            </div>
+          )}
 
           <div
             style={{

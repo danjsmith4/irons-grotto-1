@@ -5,6 +5,7 @@ import {
   playerAcquiredItems,
   playerAchievementDiaries,
   playerRankUps,
+  playerAccomplishments,
   type Player,
   type NewPlayer,
   type PlayerAcquiredItem,
@@ -13,6 +14,7 @@ import {
 } from './schema';
 import { getCategoryFromItemName } from './item-mapping-utils';
 import { calculatePlayerPoints } from '@/app/rank-calculator/utils/calculate-player-points';
+import { syncPlayerAccomplishments } from './accomplishment-operations';
 import type { PlayerDetailsResponse } from '@/app/rank-calculator/data-sources/fetch-player-details/fetch-player-details';
 import { TempleOSRSCollectionLogItem } from '@/app/schemas/temple-api';
 import type { AccountType } from '@/app/schemas/staff';
@@ -134,6 +136,9 @@ export async function deletePlayer(
     await tx
       .delete(playerRankUps)
       .where(eq(playerRankUps.playerName, playerName));
+    await tx
+      .delete(playerAccomplishments)
+      .where(eq(playerAccomplishments.playerName, playerName));
 
     // Delete the player record
     await tx.delete(players).where(eq(players.playerName, playerName));
@@ -811,7 +816,7 @@ export async function processPlayerData(
     .limit(1);
 
   try {
-    const player = existingPlayer
+    let player = existingPlayer
       ? // Player exists - update with new data (ownership validated in updatePlayerWithFullData)
         (await updatePlayerWithFullData(playerData, discordUserId))!
       : // Player doesn't exist - create new record (no ownership validation needed for new players)
@@ -826,15 +831,24 @@ export async function processPlayerData(
     try {
       const { totalPoints } = await calculatePlayerPoints(playerData);
 
-      return (await updatePlayerPoints(playerName, totalPoints)) ?? player;
+      player = (await updatePlayerPoints(playerName, totalPoints)) ?? player;
     } catch (error) {
       console.error(
         `Failed to recalculate points for ${playerName}, keeping the stored total:`,
         error,
       );
-
-      return player;
     }
+
+    // Accomplishments are read back off the record we just wrote, so this has
+    // to come last. Never fatal: a member's stats landing is the point of this
+    // call, and noticing what they add up to can wait for the next run.
+    try {
+      await syncPlayerAccomplishments(playerName);
+    } catch (error) {
+      console.error(`Failed to sync accomplishments for ${playerName}:`, error);
+    }
+
+    return player;
   } catch (error) {
     console.error(`Failed to process player data for ${playerName}:`, error);
     throw error; // Re-throw to let calling code handle the error appropriately

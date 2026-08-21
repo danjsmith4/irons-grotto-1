@@ -143,6 +143,36 @@ Three things to preserve when touching this page:
 
 Data-source convention: return `{ success: true, data } | { success: false, error }`; filter to `players.isActive`; `isMaxed = totalLevel === 2376`; pets = `playerAcquiredItems.itemId in AllPetItemIds`; infernal = `tzhaarCape === 'Infernal cape'`.
 
+## Accomplishments feed
+
+The third activity feed, alongside rank ups and collection log — the notable things a member does that are not a promotion and not a single drop. It runs **full width above** the other two on both the homepage and the dashboard.
+
+`player_accomplishments` (migration `0019`) is one row per thing achieved. Four files, one job each:
+
+| | |
+|---|---|
+| `app/schemas/accomplishments.ts` | the `AccomplishmentType` enum (mirrors `accomplishmentTypeEnum`), plus its labels and **wiki-image icons** |
+| `config/accomplishments.ts` | the numbers — `milestoneThresholds`, which CA tiers count, the feed size |
+| `app/utils/detect-accomplishments.ts` | pure: a snapshot in, the accomplishments it qualifies for out |
+| `lib/db/accomplishment-operations.ts` | `syncPlayerAccomplishments` — loads the snapshot, writes what's new |
+
+**Detection is stateless, and that is the whole design.** `detectAccomplishments` reports everything a player *currently* qualifies for — never "what changed" — and every row is inserted `on conflict do nothing` against `(player_name, accomplishment_key)`. Nothing has to diff against the last run, so re-running is free and a **missed run is caught up rather than lost**. Two consequences to keep in mind:
+
+- **`accomplishment_key` is the identity and must stay stable.** Never build it from a label or a live count. Renaming a key re-announces the accomplishment to everyone.
+- **Lowering a threshold in `milestoneThresholds` retroactively announces it** for everyone already past it. Raising or removing one is safe. Treat the list as append-only in practice.
+
+A player crossing several thresholds at once earns **all** of them (1,100 clog slots → 100/250/500/750/1000), and Grandmaster CAs earn Master too. That is deliberate and follows from statelessness.
+
+⚠️ **The first pass over a player is backfill.** Members join with a whole account behind them, so the first detection would otherwise dump a decade of history into the feed at once. `players.accomplishments_backfilled_at` marks that a player has had their first pass; everything found in it is written with `is_backfilled = true` and **`fetch-recent-accomplishments` filters those out**. The timestamp is set even when nothing was detected — otherwise a brand-new account would stay in backfill mode forever and its first real accomplishment would be swallowed.
+
+**When it runs.** `processPlayerData` calls it after the player record is written (it reads that record, not a live API), so the batch `GET /api/update-all-players` and every calculator save both cover it — no new endpoint. The call is wrapped in its own try/catch: a member's stats landing is the point, and noticing what they add up to can wait for the next run.
+
+**Icons come from the type**, resolved as OSRS Wiki image names through `formatWikiImageUrl` exactly like clog items (`ItemImageWithFallback` degrades to an avatar if the wiki renames one). The one exception is `icon_item_name`, which a row sets when the accomplishment names its own item — a pet is its own picture.
+
+**Accomplishments follow the player.** `deletePlayer` deletes them and the rename path in `edit-player-action.ts` moves them; miss the rename and the next pass treats the player as brand new and re-earns the lot.
+
+Mains are included — this is not the ladder. There is **no EHC milestone**: nothing stores efficient-hours-collected per player (`petEhcRates` is points config, not a player stat), so there is no data to detect it from.
+
 ## Favicon / app icons (App Router gotcha)
 
 Icons come from **file conventions**, not `metadata.icons`: `app/favicon.ico`, `app/icon.png`, `app/apple-icon.png` (all generated from `public/L1.png`). These files **take precedence over any `icons` field in `layout.tsx` metadata** — if the favicon is wrong, it's because a stale `app/favicon.ico` exists, not the metadata. To change icons, replace those files (regenerate from the logo with `sharp`); don't add `metadata.icons`.

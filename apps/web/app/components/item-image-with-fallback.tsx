@@ -6,7 +6,12 @@ import { Avatar } from '@radix-ui/themes';
 import { formatWikiImageUrl } from '@/app/rank-calculator/utils/format-wiki-url';
 
 interface ItemImageWithFallbackProps {
-  itemId: number;
+  /**
+   * Unused — the wiki image is resolved from the name. Kept because callers
+   * have one to hand, and optional because callers rendering something that is
+   * not a collection-log item (an accomplishment icon) do not.
+   */
+  itemId?: number;
   itemName: string;
   size?: number;
   style?: React.CSSProperties;

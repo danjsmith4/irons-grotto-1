@@ -31,6 +31,34 @@ export const staffRoleEnum = pgEnum('staff_role', [
   'owner',
 ]);
 
+/**
+ * The kind of accomplishment, and the *only* thing that decides its icon and
+ * its grouping in the feed — see `config/accomplishments.ts`, which maps each
+ * value to a wiki image and a display name.
+ *
+ * Adding a value here is the whole cost of adding a new accomplishment: the
+ * detector in `app/utils/detect-accomplishments.ts` decides when it is earned,
+ * and the config decides how it looks.
+ */
+export const accomplishmentTypeEnum = pgEnum('accomplishment_type', [
+  // Threshold milestones — earned repeatedly, once per threshold crossed.
+  'collection_log',
+  'total_level',
+  'ehb',
+  'ehp',
+  // One-off feats.
+  'maxed',
+  'elite_diary',
+  'diary_cape',
+  'combat_achievement',
+  'inferno',
+  'colosseum',
+  'blood_torva',
+  'radiant_oathplate',
+  'toa_cursed_phalanx',
+  'pet',
+]);
+
 export const accountTypeEnum = pgEnum('account_type', [
   'main',
   'ironman',
@@ -123,6 +151,16 @@ export const players = pgTable(
     // so they can be restored automatically if they become active again.
     isActive: boolean('is_active').notNull().default(true),
 
+    // When this player's accomplishments were first detected.
+    //
+    // The detector reports everything a player *currently* qualifies for, so
+    // the first pass over an existing member would announce a decade of
+    // achievements at once. That first pass is instead recorded as backfill
+    // (`player_accomplishments.is_backfilled`) and kept out of the feed; this
+    // column is what tells the two passes apart, and it must be per-player
+    // because members keep joining with a full account behind them.
+    accomplishmentsBackfilledAt: timestamp('accomplishments_backfilled_at'),
+
     // Metadata
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -188,6 +226,7 @@ export const playersRelations = relations(players, ({ many }) => ({
   acquiredItems: many(playerAcquiredItems),
   achievementDiaries: many(playerAchievementDiaries),
   rankUps: many(playerRankUps),
+  accomplishments: many(playerAccomplishments),
 }));
 
 export const playerAcquiredItemsRelations = relations(
@@ -226,6 +265,83 @@ export const playerRankUpsRelations = relations(playerRankUps, ({ one }) => ({
     references: [players.playerName],
   }),
 }));
+
+/**
+ * Notable things a member has done, as a feed alongside rank ups and clogs.
+ *
+ * Detection is *stateless*: `detectAccomplishments` reports everything a player
+ * currently qualifies for and every row is inserted `on conflict do nothing`
+ * against `(player_name, accomplishment_key)`. Nothing has to diff against the
+ * previous run, so a re-run is free and a missed run is caught up rather than
+ * lost — but it also means the row's own timestamp is the only record of
+ * *when* something happened, which is why `achieved_at` is set explicitly
+ * (from the collection log's own date where there is one) rather than defaulted.
+ */
+export const playerAccomplishments = pgTable(
+  'player_accomplishments',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
+    playerName: varchar('player_name', { length: 12 }).notNull(),
+    type: accomplishmentTypeEnum('type').notNull(),
+
+    /**
+     * Stable identity of this exact accomplishment, e.g. `collection_log:1000`
+     * or `elite_diary:Morytania`. This is the dedupe key, so it must never
+     * encode anything that can change after the fact (a display label, a
+     * count) or the same feat would be announced twice.
+     */
+    accomplishmentKey: text('accomplishment_key').notNull(),
+
+    /** Rendered as-is in the feed, e.g. "1,000 collection log slots". */
+    label: text('label').notNull(),
+
+    /** The threshold reached, for milestones. Null for one-off feats. */
+    value: real('value'),
+
+    /**
+     * Overrides the type's configured icon where the accomplishment names its
+     * own item — a pet is its own picture. Null means use the type's icon.
+     */
+    iconItemName: text('icon_item_name'),
+
+    /**
+     * True for everything found in the player's very first detection pass:
+     * real, but not news. Kept out of the feed, and the reason the feed does
+     * not explode the first time this runs over an established clan.
+     */
+    isBackfilled: boolean('is_backfilled').notNull().default(false),
+
+    achievedAt: timestamp('achieved_at').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => ({
+    // One row per accomplishment per player — this is what makes re-running
+    // the detector a no-op rather than a duplicate.
+    playerAccomplishmentUnique: unique().on(
+      table.playerName,
+      table.accomplishmentKey,
+    ),
+    // The feed's only query: newest first across every player.
+    achievedAtIdx: index('player_accomplishments_achieved_at_idx').on(
+      table.achievedAt,
+    ),
+  }),
+);
+
+export type PlayerAccomplishment = typeof playerAccomplishments.$inferSelect;
+export type NewPlayerAccomplishment = typeof playerAccomplishments.$inferInsert;
+
+export const playerAccomplishmentsRelations = relations(
+  playerAccomplishments,
+  ({ one }) => ({
+    player: one(players, {
+      fields: [playerAccomplishments.playerName],
+      references: [players.playerName],
+    }),
+  }),
+);
 
 /**
  * Every change to `players.staff_role`, and who made it.
