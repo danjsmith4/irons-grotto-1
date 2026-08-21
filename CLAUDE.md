@@ -107,7 +107,7 @@ Clean, data-forward minimalism on the dark navy base (think Linear / Vercel / tr
 - **Green is a deliberate accent** — buttons, links, focus, active sort, small highlights only. Structure is **hairline** (`rgb(var(--ig-text-muted) / 0.1)`) borders + typography, not colored borders. Buttons are flat (solid green + dark `--ig-on-accent` text, or hairline ghost) — no gradient fills, lift, or glow.
 - **No emoji as UI**, no neon glow / floating / rotating-ray backgrounds. Headers use the `<SectionHeader>` primitive (`app/components/section-header.tsx`): display title + muted subtitle + muted radix-icon + actions slot.
 - **Reusable primitives:** `SectionHeader`; the activity-feed style (`app/components/activity-feed.module.css`) shared by the rank-ups + collection-log feeds (item/rank tile + two-line entry + count badge + mono time); the leaderboard's `leaderboard.module.css`.
-- **Infinite scroll everywhere — no "Load more" buttons.** Paginated lists auto-fetch near the scroll end (leaderboard `handleScroll`; clogs scroller `onLoadMore`).
+- **Infinite scroll everywhere — no "Load more" buttons.** Paginated lists auto-fetch near the scroll end (leaderboard `handleScroll`; `recent-clogs-scroller`'s `onLoadMore` is the other worked example, though that component is not currently rendered — see below).
 
 ## Clan data components
 
@@ -117,7 +117,7 @@ The DB stores far more than the leaderboard shows; these surface it (all in `app
 - **`PlayerProfileModal`** — opens over the current window when a player name is clicked. Fetches `GET /api/player-profile?name=` (→ `fetchPlayerProfile`): rank progress vs `rankThresholds`, stat grid, notable-item badges, clue tiers, achievement-diary matrix (`playerAchievementDiaries`, otherwise unused), and rank-up timeline.
 - **`RarestDrops`** ("Rarest in the Grotto") ← `fetchCollectionLogInsights` — items the fewest members have logged, from `playerAcquiredItems`.
 
-**Clickable player names, app-wide.** The profile modal is hosted once by `PlayerProfileProvider` (in `app/providers.tsx`). Render any clan member's name with `<PlayerNameButton name={rsn} .../>` (or call `usePlayerProfile().openProfile(name)`) and it opens their profile — used in the leaderboard, both activity feeds, the clogs scroller, and the inactivity checker. Prefer this over linking names out to TempleOSRS.
+**Clickable player names, app-wide.** The profile modal is hosted once by `PlayerProfileProvider` (in `app/providers.tsx`). Render any clan member's name with `<PlayerNameButton name={rsn} .../>` (or call `usePlayerProfile().openProfile(name)`) and it opens their profile — used in the leaderboard, the activity feeds, and the inactivity checker. Prefer this over linking names out to TempleOSRS.
 
 > **Design north-star:** the player profile modal (`player-profile-modal.tsx` + its module CSS) sets the layout/type/hairline/token patterns for the app. The **rank calculator was rebuilt against it** (see below) — match both when adding UI.
 
@@ -141,6 +141,12 @@ Three things to preserve when touching this page:
 - **Category inputs live in modals, so tests must open them first.** Jest specs click the tile and await the dialog; the Cypress helper `generateScalingTests` takes an `openCategory` regex for the same reason. Totals stay on the tile, so only per-input assertions need the modal.
 - **Nothing on the client writes points.** `useRank` / `useRankCalculator` / `useTotalPoints` are pure — the running total they produce is for display only, and `useTotalPoints` remains the cheaper option when just the number is needed. `players.points` is recalculated server-side by `calculatePlayerPoints` (`app/rank-calculator/utils/calculate-player-points.ts`) inside `processPlayerData`, from the stored record, and that is the only place it is written. Don't reintroduce a client-side write: the previous one posted to an **unauthenticated** action taking `(playerName, points)`, so the leaderboard was whatever the client last claimed, for whichever player it named. If `calculatePlayerPoints` throws (it needs live wiki drop rates) the stored total is left alone — stale is a cosmetic lag, zero would be a catastrophe.
 
+### Feeds on the homepage and dashboard
+
+Three activity feeds sit in one `auto-fit` grid (`minmax(320px, 1fr)`, gap 2rem) on both pages: **Rank Ups**, **Accomplishments**, **Collection Log**. Three across when there's room, collapsing to two then one with no breakpoint arithmetic. Grid's default `align-items: stretch` keeps the cards level, which the fixed `max-height: 420px` on `.list` in `activity-feed.module.css` already assumes. Accomplishments renders conditionally — with nothing to show it would leave an empty grid cell, and a column of whitespace reads worse than two columns.
+
+**"Your Latest Collection Logs" is deliberately not rendered.** `RecentClogsContainer` / `recent-clogs-scroller` / `fetchUserRecentClogs` / `GET /api/user-recent-clogs` all still exist and work — they were unmounted from the dashboard on member feedback, because showing someone their own recent clog items duplicates the collection log in game exactly. The clan-wide **Collection Log** feed is a different thing and stays: other members' drops aren't visible in game.
+
 Data-source convention: return `{ success: true, data } | { success: false, error }`; filter to `players.isActive`; `isMaxed = totalLevel === 2376`; pets = `playerAcquiredItems.itemId in AllPetItemIds`; infernal = `tzhaarCape === 'Infernal cape'`.
 
 ## Accomplishments feed
@@ -163,9 +169,11 @@ The third activity feed, alongside rank ups and collection log — the notable t
 
 A player crossing several thresholds at once earns **all** of them (1,100 clog slots → 100/250/500/750/1000), and Grandmaster CAs earn Master too. That is deliberate and follows from statelessness.
 
-⚠️ **The feed is capped per sync, not filtered by age.** Detection stamps everything found in one run with a single timestamp, so a member tracked for the first time — or syncing Temple after a long gap — lands a burst of rows sharing one `achieved_at`. `fetchRecentAccomplishments` shows at most `maxAccomplishmentsPerSync` (5) from any one `(player, achieved_at)` group.
+⚠️ **The feed shows at most one row per `(player, achieved_at)`.** Detection stamps everything found in one run with a single timestamp, so a member tracked for the first time — or syncing Temple after a long gap — lands a burst of rows sharing one `achieved_at`. `fetchRecentAccomplishments` uses a CTE with `row_number()` over that group and keeps only rank 1.
 
-This is deliberately the **same rule** `recent-clogs-scroller.tsx` already applies to a bulk collection-log sync (`MAX_ITEMS_PER_SYNC`), keyed the same way. An earlier design hid a player's whole first pass behind an `is_backfilled` flag instead; that was dropped because those accomplishments are real and worth seeing (a new member's inferno cape), and because it did nothing for the case that isn't a first pass at all — an existing member syncing after a year away.
+**One, not a cap.** A cap makes the artefact unlikely; the window function makes it impossible, which is the property wanted — a burst showing "100 / 250 / 500 efficient hours played" together is not an achievement, it is visibly a first sync, since nobody earns all three in the same instant. Which row survives is decided inside the window: one-off feats (null `value`) ahead of threshold milestones, then the highest threshold, then `id` so the feed doesn't reshuffle between requests.
+
+Two earlier designs were tried and dropped. Hiding a player's whole first pass behind an `is_backfilled` flag discarded real accomplishments and did nothing for the case that *isn't* a first pass — an existing member syncing after a year away. A cap of five still let one member's burst fill half the feed with consecutive milestones. Don't reintroduce a tunable count: a constant at 1 is an invitation to raise it.
 
 **When it runs.** `processPlayerData` calls it after the player record is written (it reads that record, not a live API), so the batch `GET /api/update-all-players` and every calculator save both cover it — no new endpoint. The call is wrapped in its own try/catch: a member's stats landing is the point, and noticing what they add up to can wait for the next run.
 
