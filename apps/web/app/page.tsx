@@ -10,6 +10,7 @@ import { redirect } from 'next/navigation';
 import { maybeRunInactivitySync } from '@/lib/db/inactivity-sync';
 import { fetchRecentRankUps } from './data-sources/fetch-recent-rank-ups';
 import { fetchRecentClogUpdates } from './data-sources/fetch-recent-clog-updates';
+import { fetchRecentAccomplishments } from './data-sources/fetch-recent-accomplishments';
 import { fetchLeaderboard } from './data-sources/fetch-leaderboard';
 import { fetchClanStats } from './data-sources/fetch-clan-stats';
 import { fetchCollectionLogInsights } from './data-sources/fetch-collection-log-insights';
@@ -17,6 +18,7 @@ import { ClanStats } from './components/clan-stats';
 import { RarestDrops } from './components/rarest-drops';
 import { RecentRankUpsTable } from './components/recent-rank-ups-table';
 import { RecentClogUpdatesTable } from './components/recent-clog-updates-table';
+import { RecentAccomplishmentsTable } from './components/recent-accomplishments-table';
 import { Leaderboard } from './components/leaderboard';
 import { FadeInOnScroll } from './components/fade-in-on-scroll';
 
@@ -48,6 +50,11 @@ export default async function HomePage() {
   const recentClogUpdatesResult = await fetchRecentClogUpdates();
   const recentClogUpdates = recentClogUpdatesResult.success
     ? recentClogUpdatesResult.data
+    : [];
+
+  const recentAccomplishmentsResult = await fetchRecentAccomplishments();
+  const recentAccomplishments = recentAccomplishmentsResult.success
+    ? recentAccomplishmentsResult.data
     : [];
 
   // Fetch leaderboard data (fetch more to account for unranked players being filtered)
@@ -195,6 +202,14 @@ export default async function HomePage() {
                 }}
               >
                 <Leaderboard initialPlayers={leaderboard} />
+              </div>
+
+              {/* Accomplishments — the headline feed, full width above the
+                  narrower rank-up and collection-log columns */}
+              <div style={{ width: '100%', maxWidth: '1250px' }}>
+                <RecentAccomplishmentsTable
+                  accomplishments={recentAccomplishments ?? []}
+                />
               </div>
 
               {/* Recent activity tables */}
