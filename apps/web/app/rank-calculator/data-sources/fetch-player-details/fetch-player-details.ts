@@ -43,8 +43,10 @@ import {
   TempleOSRSCollectionLogItem,
 } from '@/app/schemas/temple-api';
 
-export interface PlayerDetailsResponse
-  extends Omit<RankCalculatorSchema, 'rank' | 'points'> {
+export interface PlayerDetailsResponse extends Omit<
+  RankCalculatorSchema,
+  'rank' | 'points'
+> {
   currentRank?: Rank;
   hasTemplePlayerStats: boolean;
   hasTempleCollectionLog: boolean;
@@ -154,12 +156,31 @@ export async function fetchPlayerDetails(
         )
       : undefined;
 
-    // Always preserve manual checkbox values from database regardless of mergeSavedData
-    const currentDbValues = !mergeSavedData
-      ? {
-          hasRadiantOathplate: playerRecord.hasRadiantOathplate,
-        }
-      : undefined;
+    // The stored record is the floor for anything a source might fail to
+    // report. An unreachable source says *nothing*, which is not the same as
+    // saying "no" — but the values below are all computed as plain booleans and
+    // counts, so a missing source arrives here indistinguishable from a genuine
+    // negative and would be written straight over a real value.
+    //
+    // This used to cover `hasRadiantOathplate` alone (the one field somebody
+    // noticed, because it has no source at all) and only when `mergeSavedData`
+    // was false. Every field here has the same failure mode, and it applies in
+    // both modes: a player with no draft yet gets no protection from `savedData`
+    // either. Hence unconditional, and covering all of them.
+    const currentDbValues = {
+      hasRadiantOathplate: playerRecord.hasRadiantOathplate,
+      hasBloodTorva: playerRecord.hasBloodTorva,
+      hasDizanasQuiver: playerRecord.hasDizanasQuiver,
+      hasAchievementDiaryCape: playerRecord.hasAchievementDiaryCape,
+      clueScrollCounts: {
+        Beginner: playerRecord.clueCountBeginner,
+        Easy: playerRecord.clueCountEasy,
+        Medium: playerRecord.clueCountMedium,
+        Hard: playerRecord.clueCountHard,
+        Elite: playerRecord.clueCountElite,
+        Master: playerRecord.clueCountMaster,
+      },
+    };
 
     const { joinDate, playerName: rsn, rank: currentRank } = playerRecord;
     const [wikiSyncData, templePlayerStats, templeCollectionLog, discordRoles] =
@@ -340,11 +361,9 @@ export async function fetchPlayerDetails(
     const accountType = templeAccountType ?? playerRecord.accountType;
 
     if (templeAccountType && templeAccountType !== playerRecord.accountType) {
-      await updatePlayerAccountType(rsn, templeAccountType).catch(
-        (error) => {
-          Sentry.captureException(error);
-        },
-      );
+      await updatePlayerAccountType(rsn, templeAccountType).catch((error) => {
+        Sentry.captureException(error);
+      });
     }
 
     const result = {
@@ -379,16 +398,24 @@ export async function fetchPlayerDetails(
         proofLink,
         currentRank: currentRank as Rank,
         tzhaarCape: mergeTzhaarCapes(tzhaarCape, savedData?.tzhaarCape),
-        hasBloodTorva: (hasBloodTorva || savedData?.hasBloodTorva) ?? false,
+        // Each of these latches on: once earned it cannot be lost in game, so
+        // the only thing a `false` from any one input can mean is "this input
+        // could not see it". Falling through to the stored value last is what
+        // stops a WikiSync outage silently unsetting a member's kit.
+        hasBloodTorva:
+          hasBloodTorva ||
+          (savedData?.hasBloodTorva ?? false) ||
+          currentDbValues.hasBloodTorva,
         hasRadiantOathplate:
-          savedData?.hasRadiantOathplate ??
-          currentDbValues?.hasRadiantOathplate ??
-          false,
+          savedData?.hasRadiantOathplate ?? currentDbValues.hasRadiantOathplate,
         hasDizanasQuiver:
-          (hasDizanasQuiver || savedData?.hasDizanasQuiver) ?? false,
+          hasDizanasQuiver ||
+          (savedData?.hasDizanasQuiver ?? false) ||
+          currentDbValues.hasDizanasQuiver,
         hasAchievementDiaryCape:
-          (hasAchievementDiaryCape || savedData?.hasAchievementDiaryCape) ??
-          false,
+          hasAchievementDiaryCape ||
+          (savedData?.hasAchievementDiaryCape ?? false) ||
+          currentDbValues.hasAchievementDiaryCape,
         hasTemplePlayerStats: !!templePlayerStats,
         hasTempleCollectionLog: !!templeCollectionLog,
         hasWikiSyncData: !!wikiSyncData,
@@ -400,13 +427,35 @@ export async function fetchPlayerDetails(
         combatBonusPoints,
         skillingBonusPoints: 0, // Leaving this in for future use, if we decide to add a skilling diary
         notableItemsBonusPoints: 0, // Leaving this in for future use, if we decide to add a notable items diary
+        // Clue counts only go up in game, so a reading lower than what is
+        // stored means Temple is incomplete rather than that the player lost
+        // clues. Without the floor, a Temple outage maps every count to 0 and
+        // writes it, wiping the lot.
         clueScrollCounts: {
-          Beginner: beginnerClueCount ?? 0,
-          Easy: easyClueCount ?? 0,
-          Medium: mediumClueCount ?? 0,
-          Hard: hardClueCount ?? 0,
-          Elite: eliteClueCount ?? 0,
-          Master: masterClueCount ?? 0,
+          Beginner: Math.max(
+            beginnerClueCount ?? 0,
+            currentDbValues.clueScrollCounts.Beginner,
+          ),
+          Easy: Math.max(
+            easyClueCount ?? 0,
+            currentDbValues.clueScrollCounts.Easy,
+          ),
+          Medium: Math.max(
+            mediumClueCount ?? 0,
+            currentDbValues.clueScrollCounts.Medium,
+          ),
+          Hard: Math.max(
+            hardClueCount ?? 0,
+            currentDbValues.clueScrollCounts.Hard,
+          ),
+          Elite: Math.max(
+            eliteClueCount ?? 0,
+            currentDbValues.clueScrollCounts.Elite,
+          ),
+          Master: Math.max(
+            masterClueCount ?? 0,
+            currentDbValues.clueScrollCounts.Master,
+          ),
         },
         rawCollectionLogItems: templeCollectionLog
           ? templeCollectionLog.items
