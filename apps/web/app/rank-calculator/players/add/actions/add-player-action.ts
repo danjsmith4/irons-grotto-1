@@ -8,7 +8,6 @@ import { fetchPlayerMeta } from '../../../data-sources/fetch-player-meta';
 import { ensureTrackedOnTemple } from '../../../data-sources/ensure-tracked-on-temple';
 import { AddPlayerSchema } from './add-player-schema';
 import { createNewPlayer, getPlayerByName } from '@/lib/db/player-operations';
-import { isMainAccount } from '@/app/schemas/staff';
 import { resolveDeclaredAccountType } from '../../../utils/resolve-declared-account-type';
 import { resolveAccountType } from '../../../utils/resolve-account-type';
 
@@ -102,18 +101,11 @@ export const addPlayerAction = authActionClient
         });
       }
 
+      // Mains are not turned away. The calculator is a personal progress
+      // tracker and everyone gets one; what a main cannot do is apply for a
+      // rank (`canApplyForRank`) or place in the clan rankings, which is
+      // enforced where those actually happen rather than at the door.
       const { accountType: resolvedAccountType, gimGroupName } = declared;
-
-      // Only an explicit declaration of a main turns someone away.
-      if (isMainAccount(resolvedAccountType)) {
-        returnValidationErrors(AddPlayerSchema, {
-          playerName: {
-            _errors: [
-              'Only ironman accounts can be registered in this clan. Main accounts are not eligible for standard clan ranks.',
-            ],
-          },
-        });
-      }
 
       try {
         await createNewPlayer({

@@ -21,6 +21,7 @@ import { DeleteSubmissionDataDialog } from '@/app/rank-calculator/components/del
 import { handleToastUpdates } from '@/app/rank-calculator/utils/handle-toast-updates';
 import { useCurrentPlayer } from '@/app/rank-calculator/contexts/current-player-context';
 import { canAccessAdminDashboard } from '@/app/utils/staff-permissions';
+import { canApplyForRank } from '@/config/ranks';
 import { useViewerStaffRole } from './use-viewer-staff-role';
 import styles from './nav-bar.module.css';
 
@@ -86,6 +87,7 @@ export function NavBar({
   const rank = rankCalculator?.rank ?? null;
   const currentPlayerName = currentPlayer?.playerName ?? '';
   const currentRank = currentPlayer?.rank ?? null;
+  const accountType = formContext?.watch('accountType') ?? null;
 
   // Action hooks - only bind when we have the required data
   const { executeAsync: publishRankSubmission } = useAction(
@@ -222,6 +224,16 @@ export function NavBar({
                 <DropdownMenu.Content color="gray" variant="soft">
                   <DropdownMenu.Item
                     onClick={() => {
+                      // Explained rather than silently disabled — a main's
+                      // sheet still works, it just isn't on the rank ladder.
+                      if (!canApplyForRank(accountType)) {
+                        toast.error(
+                          'Main accounts cannot apply for clan ranks. Your calculator is still yours for tracking progress.',
+                        );
+
+                        return;
+                      }
+
                       if (isDirty) {
                         toast.error('Please save your data first!');
 

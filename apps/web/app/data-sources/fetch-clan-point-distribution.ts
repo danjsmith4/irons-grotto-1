@@ -1,6 +1,7 @@
 import { db } from '@/lib/db';
 import { players } from '@/lib/db/schema';
-import { and, desc, eq, ne } from 'drizzle-orm';
+import { rankedMember } from '@/lib/db/player-filters';
+import { and, desc, ne } from 'drizzle-orm';
 
 export interface ClanPointDistribution {
   /**
@@ -16,7 +17,8 @@ export interface ClanPointDistribution {
 
 /**
  * The clan-wide points curve, used to place a submission against the rest of
- * the Grotto. Active members only, matching the leaderboard's filter.
+ * the Grotto. Ranked members only, matching the leaderboard's filter — a main
+ * in the pool would shift every ironman's percentile.
  */
 export async function fetchClanPointDistribution(
   /**
@@ -35,11 +37,8 @@ export async function fetchClanPointDistribution(
       .from(players)
       .where(
         excludePlayerName
-          ? and(
-              eq(players.isActive, true),
-              ne(players.playerName, excludePlayerName),
-            )
-          : eq(players.isActive, true),
+          ? and(rankedMember, ne(players.playerName, excludePlayerName))
+          : rankedMember,
       )
       .orderBy(desc(players.points));
 

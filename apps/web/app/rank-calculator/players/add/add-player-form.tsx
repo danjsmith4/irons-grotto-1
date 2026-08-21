@@ -94,7 +94,12 @@ export function AddPlayerForm({ members }: AddPlayerFormProps) {
     const isResolved = Boolean(accountTypeResult);
 
     setNeedsAccountType(!isResolved);
-    form.setValue('accountType', isResolved ? undefined : 'main');
+    // Left unselected rather than defaulted to "main". Mains can register now,
+    // so a pre-ticked option would quietly classify anyone who skipped past
+    // the question — and being recorded as a main is not a small thing: it
+    // pins the account to `mainAccountRank` and off the leaderboard. Saving
+    // without answering stores null, and the calculator asks properly.
+    form.setValue('accountType', undefined);
   }
 
   const { execute: executeAddToTemple } = useAction(addToTempleAction, {
@@ -262,7 +267,7 @@ export function AddPlayerForm({ members }: AddPlayerFormProps) {
                   not listed individually on the hiscores.
                 </Text>
                 <RadioGroup.Root
-                  value={accountType ?? 'main'}
+                  value={accountType ?? ''}
                   onValueChange={(value) => {
                     form.setValue('accountType', value as AccountTypeChoice, {
                       shouldDirty: true,

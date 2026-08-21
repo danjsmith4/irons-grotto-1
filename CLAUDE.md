@@ -129,6 +129,19 @@ There is **one** points ladder (`rankThresholds` in `config/ranks.ts`). The only
 
 `players.account_type` (enum, **nullable**) holds the mode; `players.gim_group_name` records the group a GIM was verified against. **Null means unresolved, and is exactly what raises the blocking prompt** — it is not a missing-data bug.
 
+### Mains are members — they are just not ranked
+
+**Signup does not turn mains away, and no gate should be reintroduced there.** The calculator is a personal progress tracker and everyone gets one; the account type is resolved and recorded, not used as a bouncer. What a main cannot do is enforced where it actually happens:
+
+- **Apply for a rank.** `canApplyForRank(accountType)` in `config/ranks.ts` — approval assigns a real in-game and Discord clan rank off the ironman ladder. Enforced server-side in `publish-rank-submission-action.ts` (the client is not what decides who gets a rank), with the UI matching: no rank-up dialog in `calculator-hero.tsx`, and "Apply for promotion" in `nav-bar.tsx` explains rather than silently disabling.
+- **Place in the clan rankings.** `rankedMember` in `lib/db/player-filters.ts` — used by `fetch-leaderboard`, `fetch-clan-point-distribution` (a main in the pool shifts every ironman's percentile) and `fetch-clan-stats`.
+
+Mains **do** appear in the activity feeds, `fetch-collection-log-insights` ("Rarest in the Grotto") and player profiles. They are in the clan; they are just not on the ladder.
+
+⚠️ **The exclusion must keep nulls.** `rankedMember` uses `account_type IS DISTINCT FROM 'main'`, not `<> 'main'`: in SQL `NULL <> 'main'` is NULL, not true, so a bare inequality would silently drop every member whose game mode is still unresolved — the exact accounts the prompt is chasing. Spec'd in `player-filters.spec.ts`.
+
+Because a main is now a real outcome rather than a rejection, **neither account-type picker pre-selects one** (`add-player-form.tsx`, `account-type-dialog.tsx`): a stray Confirm would pin the account to `mainAccountRank` and off the leaderboard. Unanswered stores null, and the calculator asks properly.
+
 **Why it cannot simply be derived.** `resolveTempleAccountType` (`app/schemas/temple-api.ts`) returns null whenever Temple says *main*, and that is deliberate:
 
 - Temple's `Game mode` (0 main / 1 IM / 2 UIM / 3 HCIM) is read off the individual hiscore boards and is sound.

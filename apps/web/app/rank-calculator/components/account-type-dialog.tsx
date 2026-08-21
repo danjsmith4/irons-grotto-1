@@ -46,7 +46,10 @@ const choiceHints = {
  */
 export function AccountTypeDialog({ playerName }: { playerName: string }) {
   const { setValue } = useFormContext<RankCalculatorSchema>();
-  const [choice, setChoice] = useState<AccountTypeChoice>('main');
+  // Starts unselected. Mains are allowed in the clan now, so a pre-ticked
+  // "main" is a trap: one stray Confirm pins the account to `mainAccountRank`
+  // and off the leaderboard. The answer has to be given, not defaulted into.
+  const [choice, setChoice] = useState<AccountTypeChoice | null>(null);
   const [groupName, setGroupName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
@@ -64,6 +67,10 @@ export function AccountTypeDialog({ playerName }: { playerName: string }) {
   }
 
   async function handleConfirm() {
+    if (!choice) {
+      return;
+    }
+
     setIsSaving(true);
 
     const result = await setAccountTypeAction(playerName, choice, groupName);
@@ -131,7 +138,7 @@ export function AccountTypeDialog({ playerName }: { playerName: string }) {
             do not list group ironmen individually. Which is this account?
           </Text>
           <RadioGroup.Root
-            value={choice}
+            value={choice ?? ''}
             onValueChange={(value) => {
               setChoice(value as AccountTypeChoice);
               setMissingGroupName(null);
@@ -196,7 +203,9 @@ export function AccountTypeDialog({ playerName }: { playerName: string }) {
             <Button
               variant="solid"
               loading={isSaving}
-              disabled={choice === 'group_ironman' && !groupName.trim()}
+              disabled={
+                !choice || (choice === 'group_ironman' && !groupName.trim())
+              }
               onClick={() => {
                 void handleConfirm();
               }}

@@ -1,5 +1,6 @@
 import { db } from '@/lib/db';
 import { players, playerAcquiredItems } from '@/lib/db/schema';
+import { rankedMember } from '@/lib/db/player-filters';
 import { and, eq, sql } from 'drizzle-orm';
 import { AllPetItemIds } from '../schemas/osrs';
 
@@ -17,8 +18,9 @@ export interface ClanStats {
 }
 
 /**
- * Clan-wide aggregate stats for the "Grotto at a glance" strip. Only counts
- * active members (matching the leaderboard's isActive filter).
+ * Clan-wide aggregate stats for the "Grotto at a glance" strip. Counts ranked
+ * members only (matching the leaderboard's filter) — this describes an ironman
+ * clan's own progress, so a main's totals do not belong in it.
  */
 export async function fetchClanStats(): Promise<
   { success: true; data: ClanStats } | { success: false; error: string }
@@ -37,7 +39,7 @@ export async function fetchClanStats(): Promise<
         quiverCount: sql<number>`count(*) filter (where ${players.hasDizanasQuiver})::int`,
       })
       .from(players)
-      .where(eq(players.isActive, true));
+      .where(rankedMember);
 
     const [petRow] = await db
       .select({ totalPets: sql<number>`count(*)::int` })
@@ -46,7 +48,7 @@ export async function fetchClanStats(): Promise<
         players,
         and(
           eq(players.playerName, playerAcquiredItems.playerName),
-          eq(players.isActive, true),
+          rankedMember,
         ),
       )
       .where(
