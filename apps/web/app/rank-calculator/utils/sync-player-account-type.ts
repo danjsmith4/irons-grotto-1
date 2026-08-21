@@ -1,16 +1,16 @@
 import { AccountType } from '@/app/schemas/staff';
-import { resolveTempleAccountType } from '@/app/schemas/temple-api';
 import { updatePlayerAccountType } from '@/lib/db/player-operations';
-import { fetchTemplePlayerInfo } from '../data-sources/fetch-temple-player-info';
+import { ensureTrackedOnTemple } from '../data-sources/ensure-tracked-on-temple';
+import { resolveAccountType } from './resolve-account-type';
 
 export type AccountTypeSyncOutcome =
-  /** Resolved from Temple and written. */
+  /** Resolved and written. */
   | 'updated'
-  /** Resolved from Temple, and already what we had stored. */
+  /** Resolved, and already what we had stored. */
   | 'unchanged'
-  /** Temple could not settle it, and the player has not told us either. */
+  /** Nothing could settle it, and the player has not told us either. */
   | 'unresolved'
-  /** Temple could not settle it, but the player already answered. */
+  /** Nothing could settle it, but the player already answered. */
   | 'answered'
   | 'failed';
 
@@ -20,24 +20,29 @@ export interface AccountTypeSyncResult {
 }
 
 /**
- * Resolves one player's game mode from TempleOSRS and stores it.
+ * Resolves one player's game mode and stores it.
  *
  * Only ever *fills in* a type — a Temple reading of "main" is ambiguous (it
  * reports group ironmen it has not been told about identically), so it never
  * overwrites an answer the player has already given, and never writes `main`
- * on Temple's say-so alone. Players it cannot settle are reported as
- * `unresolved`, which is precisely the set that will be prompted.
+ * on anyone's say-so. Players it cannot settle are reported as `unresolved`,
+ * which is precisely the set that will be prompted.
+ *
+ * Registers untracked members on Temple as it goes. A member Temple has never
+ * seen has no stats to be scored on either, so the batch run is the right
+ * place to fix that once, rather than leaving it until they next open the
+ * calculator.
  */
 export async function syncPlayerAccountType(
   playerName: string,
   storedAccountType: AccountType | null,
 ): Promise<AccountTypeSyncResult> {
   try {
-    const info = await fetchTemplePlayerInfo(playerName);
+    const { info } = await ensureTrackedOnTemple(playerName);
+    const resolution = await resolveAccountType(playerName, info);
 
-    const accountType = info
-      ? resolveTempleAccountType(info['Game mode'], info.GIM)
-      : null;
+    const accountType =
+      resolution.status === 'resolved' ? resolution.accountType : null;
 
     if (!accountType) {
       return {

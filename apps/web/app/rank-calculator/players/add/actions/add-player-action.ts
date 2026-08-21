@@ -5,12 +5,12 @@ import { returnValidationErrors } from 'next-safe-action';
 import * as Sentry from '@sentry/nextjs';
 import { ActionError } from '@/app/action-error';
 import { fetchPlayerMeta } from '../../../data-sources/fetch-player-meta';
-import { fetchTemplePlayerInfo } from '../../../data-sources/fetch-temple-player-info';
+import { ensureTrackedOnTemple } from '../../../data-sources/ensure-tracked-on-temple';
 import { AddPlayerSchema } from './add-player-schema';
 import { createNewPlayer, getPlayerByName } from '@/lib/db/player-operations';
-import { resolveTempleAccountType } from '@/app/schemas/temple-api';
 import { isMainAccount } from '@/app/schemas/staff';
 import { resolveDeclaredAccountType } from '../../../utils/resolve-declared-account-type';
+import { resolveAccountType } from '../../../utils/resolve-account-type';
 
 async function assertUniquePlayerRecord(userId: string, playerName: string) {
   if (!userId) {
@@ -51,43 +51,43 @@ export const addPlayerAction = authActionClient
         });
       }
 
-      const [playerMeta, templeInfo] = await Promise.all([
+      const [playerMeta, tracking] = await Promise.all([
         fetchPlayerMeta(playerName),
-        fetchTemplePlayerInfo(playerName),
+        // The form does this too, but the server never trusts that it did.
+        // Already-tracked accounts cost one cheap read and no wait.
+        ensureTrackedOnTemple(playerName),
       ]);
 
       const maybeFormattedPlayerName = playerMeta?.rsn ?? playerName;
 
-      // Game mode. Temple settles it whenever it reports anything but a main;
-      // a main reading is ambiguous, because Temple reports group ironmen it
-      // has never been told about exactly the same way. In that case the
-      // player has told us, and a claimed group is verified against the group
-      // hiscores rather than taken at face value.
-      const templeAccountType = templeInfo
-        ? resolveTempleAccountType(templeInfo['Game mode'], templeInfo.GIM)
-        : null;
+      // Game mode, from the sources that can assert one — Temple's reading,
+      // then the ironman hiscore boards. Only if neither can does the player's
+      // own answer come into it, and a claimed group is verified against the
+      // group hiscores rather than taken at face value.
+      const resolution = await resolveAccountType(playerName, tracking.info);
 
-      // Nothing to resolve from and nothing declared means the question was
-      // never put to the player — the form only asks when Temple comes up
-      // short. That is stored as null, which is what makes the calculator ask
-      // on first load. It is emphatically not a declaration of a main.
-      const declared = templeAccountType
-        ? ({
-            status: 'resolved',
-            accountType: templeAccountType,
-            gimGroupName: null,
-          } as const)
-        : accountType
-          ? await resolveDeclaredAccountType(
-              maybeFormattedPlayerName,
-              accountType,
-              gimGroupNameInput,
-            )
-          : ({
+      // Unresolved *and* undeclared means the question was never put to the
+      // player — the form only asks when it has to. That is stored as null,
+      // which is what makes the calculator ask on first load. It is
+      // emphatically not a declaration of a main.
+      const declared =
+        resolution.status === 'resolved'
+          ? ({
               status: 'resolved',
-              accountType: null,
+              accountType: resolution.accountType,
               gimGroupName: null,
-            } as const);
+            } as const)
+          : accountType
+            ? await resolveDeclaredAccountType(
+                maybeFormattedPlayerName,
+                accountType,
+                gimGroupNameInput,
+              )
+            : ({
+                status: 'resolved',
+                accountType: null,
+                gimGroupName: null,
+              } as const);
 
       // A group we cannot find is never quietly downgraded to unranked — the
       // player is told, and decides whether it was a typo or a genuinely
