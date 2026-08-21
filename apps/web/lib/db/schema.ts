@@ -12,6 +12,7 @@ import {
   unique,
   uniqueIndex,
   index,
+  primaryKey,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm/sql/sql';
 import { relations } from 'drizzle-orm';
@@ -265,6 +266,69 @@ export const playerRankUpsRelations = relations(playerRankUps, ({ one }) => ({
     references: [players.playerName],
   }),
 }));
+
+/**
+ * Notable items a player has ticked that no data source accounts for.
+ *
+ * `player_acquired_items` holds what TempleOSRS reports from the collection
+ * log, and quest/combat-achievement items are derived live from WikiSync. What
+ * neither covers is the player reaching into the calculator and ticking
+ * something themselves — an item Temple has not caught up on, or one that is
+ * only evidenced by a screenshot. Until this table, that lived **only in the
+ * Redis draft**, which made the draft impossible to delete without losing it.
+ *
+ * **Sparse, not a materialised map.** A row exists only where the player's
+ * answer *differs* from what the sources derive. So:
+ *
+ *     effective = derived(collection log ∪ quests ∪ CAs) ⊕ overrides
+ *
+ * Three things fall out of that, all of them wanted:
+ *
+ * - It self-heals. When Temple catches up and the derived set agrees, the row
+ *   is deleted, and the moderator's submission diff shrinks by itself.
+ * - It stays correct as `data/item-list.ts` changes — which it does routinely,
+ *   via the `add-osrs-content` skill. A materialised map would accumulate rows
+ *   for items that no longer exist.
+ * - It *is* the discrepancy list. An override with `is_acquired = true` is
+ *   exactly "the player claims this and no source agrees", which is what the
+ *   submission diff already wants to show a moderator.
+ */
+export const playerItemOverrides = pgTable(
+  'player_item_overrides',
+  {
+    playerName: varchar('player_name', { length: 12 }).notNull(),
+    /**
+     * The form's own key for the item — `stripEntityName(item.name)`. Stored
+     * verbatim so it round-trips through the calculator without translation.
+     */
+    itemName: text('item_name').notNull(),
+    /**
+     * The player's answer. `false` is meaningful: it is an explicit untick of
+     * something a source *does* report, which is why this is not simply a list
+     * of claimed items.
+     */
+    isAcquired: boolean('is_acquired').notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (table) => ({
+    playerItemOverridePk: primaryKey({
+      columns: [table.playerName, table.itemName],
+    }),
+  }),
+);
+
+export type PlayerItemOverride = typeof playerItemOverrides.$inferSelect;
+export type NewPlayerItemOverride = typeof playerItemOverrides.$inferInsert;
+
+export const playerItemOverridesRelations = relations(
+  playerItemOverrides,
+  ({ one }) => ({
+    player: one(players, {
+      fields: [playerItemOverrides.playerName],
+      references: [players.playerName],
+    }),
+  }),
+);
 
 /**
  * Notable things a member has done, as a feed alongside rank ups and clogs.

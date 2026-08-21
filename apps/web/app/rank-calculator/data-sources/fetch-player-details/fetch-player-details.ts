@@ -39,6 +39,10 @@ import {
   updatePlayerAccountType,
 } from '@/lib/db/player-operations';
 import {
+  getItemOverrides,
+  syncItemOverrides,
+} from '@/lib/db/item-override-operations';
+import {
   resolveTempleAccountType,
   TempleOSRSCollectionLogItem,
 } from '@/app/schemas/temple-api';
@@ -279,11 +283,18 @@ export async function fetchPlayerDetails(
             .map(({ name }) => stripEntityName(name))
         : [];
 
-    const previouslyAcquiredItems = savedData
-      ? Object.keys(savedData.acquiredItems).filter(
-          (key) => savedData.acquiredItems[key],
-        )
-      : [];
+    // What the player has said for themselves, from both places it can live.
+    //
+    // The draft still wins where it has an opinion, so nothing changes for a
+    // player mid-edit. The stored overrides are what make that draft removable:
+    // they are the only durable home for a tick no data source accounts for,
+    // and they are written back further down.
+    const storedOverrides = await getItemOverrides(playerRecord.playerName);
+
+    const previouslyAcquiredItems = Object.keys({
+      ...storedOverrides,
+      ...(savedData?.acquiredItems ?? {}),
+    }).filter((key) => savedData?.acquiredItems?.[key] ?? storedOverrides[key]);
 
     const allCurrentNotableItemNames = new Set(
       Object.values(itemList)
@@ -470,6 +481,23 @@ export async function fetchPlayerDetails(
       } catch (error) {
         console.error('Failed to sync player data to database:', error);
         // Continue even if database sync fails
+      }
+
+      // Persist the ticks the sources don't account for. This has to happen
+      // here rather than inside `processPlayerData`, because this is the only
+      // place that still knows which items were *derived* — by the time the
+      // response is assembled the two sets have been unioned and the
+      // distinction is gone.
+      //
+      // After `processPlayerData`, so a brand new player has a row to hang
+      // these off. Non-fatal for the same reason as the sync above.
+      try {
+        await syncItemOverrides(playerRecord.playerName, {
+          derived: acquiredItems,
+          submitted: acquiredItemsMap,
+        });
+      } catch (error) {
+        console.error('Failed to sync notable item overrides:', error);
       }
     }
 
