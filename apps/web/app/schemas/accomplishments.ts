@@ -25,7 +25,6 @@ export const AccomplishmentType = z.enum([
   'blood_torva',
   'radiant_oathplate',
   'toa_cursed_phalanx',
-  'pet',
 ]);
 
 export type AccomplishmentType = z.infer<typeof AccomplishmentType>;
@@ -63,7 +62,6 @@ export const accomplishmentTypeLabels = {
   blood_torva: 'Cosmetic',
   radiant_oathplate: 'Cosmetic',
   toa_cursed_phalanx: 'Tombs of Amascut',
-  pet: 'Pet',
 } as const satisfies Record<AccomplishmentType, string>;
 
 /**
@@ -91,5 +89,4 @@ export const accomplishmentTypeIcons = {
   blood_torva: 'Sanguine torva platebody',
   radiant_oathplate: 'Radiant oathplate chest',
   toa_cursed_phalanx: 'Cursed phalanx',
-  pet: 'Collection log',
 } as const satisfies Record<AccomplishmentType, string>;

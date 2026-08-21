@@ -1,5 +1,4 @@
 import {
-  AllPetItemIds,
   CombatAchievementTier,
   DiaryTier,
   maximumTotalLevel,
@@ -51,8 +50,6 @@ export interface DetectedAccomplishment {
   label: string;
   /** The threshold reached, for milestones. Null for one-off feats. */
   value: number | null;
-  /** Overrides the type's icon where the accomplishment names its own item. */
-  iconItemName: string | null;
   /**
    * When it actually happened, where that is knowable — the collection log
    * carries its own dates. Null means "we only know we can see it now", and the
@@ -60,8 +57,6 @@ export interface DetectedAccomplishment {
    */
   achievedAt: Date | null;
 }
-
-const petItemIds = new Set(AllPetItemIds);
 
 const combatAchievementTierOrder = CombatAchievementTier.options;
 
@@ -98,7 +93,6 @@ function detectMilestones(
       key: `${type}:${threshold}`,
       label: label(threshold),
       value: threshold,
-      iconItemName: null,
       achievedAt: null,
     }));
 }
@@ -144,7 +138,6 @@ export function detectAccomplishments(
       key: 'maxed',
       label: `Maxed — level 99 in all ${skillsCount} skills`,
       value: maximumTotalLevel,
-      iconItemName: null,
       achievedAt: null,
     });
   }
@@ -158,7 +151,6 @@ export function detectAccomplishments(
       key: `elite_diary:${location}`,
       label: `${location} elite diary`,
       value: null,
-      iconItemName: null,
       achievedAt: null,
     });
   });
@@ -169,7 +161,6 @@ export function detectAccomplishments(
       key: 'diary_cape',
       label: 'Achievement diary cape',
       value: null,
-      iconItemName: null,
       achievedAt: null,
     });
   }
@@ -186,7 +177,6 @@ export function detectAccomplishments(
         key: `combat_achievement:${tier}`,
         label: `${tier} combat achievements`,
         value: null,
-        iconItemName: null,
         achievedAt: null,
       });
     });
@@ -197,7 +187,6 @@ export function detectAccomplishments(
       key: 'inferno',
       label: 'Completed the Inferno',
       value: null,
-      iconItemName: null,
       achievedAt: null,
     });
   }
@@ -208,7 +197,6 @@ export function detectAccomplishments(
       key: 'colosseum',
       label: 'Completed the Fortis Colosseum',
       value: null,
-      iconItemName: null,
       achievedAt: null,
     });
   }
@@ -219,7 +207,6 @@ export function detectAccomplishments(
       key: 'blood_torva',
       label: 'Blood torva',
       value: null,
-      iconItemName: null,
       achievedAt: null,
     });
   }
@@ -230,7 +217,6 @@ export function detectAccomplishments(
       key: 'radiant_oathplate',
       label: 'Radiant oathplate',
       value: null,
-      iconItemName: null,
       achievedAt: null,
     });
   }
@@ -242,19 +228,6 @@ export function detectAccomplishments(
         key: 'toa_cursed_phalanx',
         label: 'Cursed phalanx — Tombs of Amascut at 500 invocation',
         value: null,
-        iconItemName: null,
-        achievedAt: item.dateFirstLogged,
-      });
-    }
-
-    if (petItemIds.has(item.itemId)) {
-      accomplishments.push({
-        type: 'pet',
-        key: `pet:${item.itemId}`,
-        label: item.itemName,
-        value: null,
-        // A pet is its own picture, so the row overrides the type's icon.
-        iconItemName: item.itemName,
         achievedAt: item.dateFirstLogged,
       });
     }

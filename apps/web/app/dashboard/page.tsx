@@ -5,12 +5,10 @@ import { fetchRecentRankUps } from '@/app/data-sources/fetch-recent-rank-ups';
 import { fetchRecentClogUpdates } from '@/app/data-sources/fetch-recent-clog-updates';
 import { fetchRecentAccomplishments } from '@/app/data-sources/fetch-recent-accomplishments';
 import { fetchPlayerAccounts } from '@/app/rank-calculator/data-sources/fetch-player-accounts';
-import { fetchUserRecentClogs } from '@/app/data-sources/fetch-user-recent-clogs';
 import { fetchLeaderboard } from '@/app/data-sources/fetch-leaderboard';
 import { RecentRankUpsTable } from '@/app/components/recent-rank-ups-table';
 import { RecentClogUpdatesTable } from '@/app/components/recent-clog-updates-table';
 import { RecentAccomplishmentsTable } from '@/app/components/recent-accomplishments-table';
-import { RecentClogsContainer } from '@/app/components/recent-clogs-container';
 import { Leaderboard } from '@/app/components/leaderboard';
 import { NavBar } from '@/app/components/nav-bar';
 
@@ -45,15 +43,6 @@ export default async function DashboardPage() {
 
   // Fetch user's calculators
   const userCalculators = await fetchPlayerAccounts();
-
-  // Fetch user's recent collection log items
-  const playerNames = Object.values(userCalculators).map(
-    (player: { rsn: string }) => player.rsn,
-  );
-  const userRecentClogsResult = await fetchUserRecentClogs(playerNames, 20, 0);
-  const userRecentClogs = userRecentClogsResult.success
-    ? userRecentClogsResult.data
-    : [];
 
   // Fetch leaderboard data
   const leaderboardResult = await fetchLeaderboard(50, 0);
@@ -96,34 +85,12 @@ export default async function DashboardPage() {
             maxWidth: '1200px',
           }}
         >
-          {/* User's Recent Clogs */}
-          {playerNames.length > 0 && (
-            <div style={{ marginBottom: '3rem' }}>
-              <div
-                style={{
-                  textAlign: 'center',
-                  marginBottom: '1rem',
-                }}
-              >
-                <h2
-                  style={{
-                    fontFamily: 'var(--font-display), ui-sans-serif, system-ui',
-                    color: 'rgb(var(--ig-text))',
-                    fontSize: '1.5rem',
-                    fontWeight: 600,
-                    letterSpacing: '-0.01em',
-                    margin: 0,
-                  }}
-                >
-                  Your Latest Collection Logs
-                </h2>
-              </div>
-              <RecentClogsContainer
-                initialItems={userRecentClogs}
-                playerNames={playerNames}
-              />
-            </div>
-          )}
+          {/* "Your Latest Collection Logs" used to sit here. Removed on member
+              feedback: it showed you your own recent clog items, which is
+              exactly what the collection log in game already does. The
+              components and their API route are kept — nothing about them is
+              wrong, there is just no reason to render them here. */}
+
           {/* Leaderboard section */}
           <div
             style={{
@@ -161,49 +128,23 @@ export default async function DashboardPage() {
             </p>
           </div>
 
-          {/* Accomplishments — the headline feed, full width above the
-              narrower rank-up and collection-log columns. Hidden entirely
-              until there is something to show; see the note on the homepage. */}
-          {recentAccomplishments.length > 0 && (
-            <div
-              style={{
-                maxWidth: '1200px',
-                margin: '0 auto 2rem',
-              }}
-            >
+          {/* The three activity feeds, side by side on a wide screen. See the
+              note on the homepage — same grid, same reasoning. */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+              gap: '2rem',
+              width: '100%',
+            }}
+          >
+            <RecentRankUpsTable rankUps={recentRankUps ?? []} />
+            {recentAccomplishments.length > 0 && (
               <RecentAccomplishmentsTable
                 accomplishments={recentAccomplishments}
               />
-            </div>
-          )}
-
-          <div
-            style={{
-              display: 'flex',
-              gap: '2rem',
-              flexDirection: 'row',
-              justifyContent: 'center',
-              flexWrap: 'wrap',
-            }}
-          >
-            <div
-              style={{
-                flex: '1 1 400px',
-                minWidth: '400px',
-                maxWidth: '500px',
-              }}
-            >
-              <RecentRankUpsTable rankUps={recentRankUps ?? []} />
-            </div>
-            <div
-              style={{
-                flex: '1 1 400px',
-                minWidth: '400px',
-                maxWidth: '500px',
-              }}
-            >
-              <RecentClogUpdatesTable clogUpdates={recentClogUpdates ?? []} />
-            </div>
+            )}
+            <RecentClogUpdatesTable clogUpdates={recentClogUpdates ?? []} />
           </div>
         </div>
       </div>

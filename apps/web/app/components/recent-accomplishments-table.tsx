@@ -17,7 +17,6 @@ interface AccomplishmentData {
   playerName: string;
   type: AccomplishmentType;
   label: string;
-  iconItemName: string | null;
   achievedAt: Date;
 }
 
@@ -52,15 +51,13 @@ export function RecentAccomplishmentsTable({
       {header}
       <div className={styles.list}>
         {accomplishments.map((accomplishment) => {
-          // A pet is its own picture; everything else is identified by its type.
-          const iconName =
-            accomplishment.iconItemName ??
-            accomplishmentTypeIcons[accomplishment.type];
-
           return (
             <div key={accomplishment.id} className={styles.row}>
               <div className={styles.tile}>
-                <ItemImageWithFallback itemName={iconName} size={30} />
+                <ItemImageWithFallback
+                  itemName={accomplishmentTypeIcons[accomplishment.type]}
+                  size={30}
+                />
               </div>
               <div className={styles.body}>
                 <span className={styles.title}>{accomplishment.label}</span>

@@ -18,11 +18,6 @@ export interface SyncPlayerAccomplishmentsResult {
   detected: number;
   /** How many of those were new, and so written. */
   recorded: number;
-  /**
-   * Whether this was the player's first pass, in which case the rows written
-   * are marked as backfill and kept out of the feed.
-   */
-  backfilled: boolean;
 }
 
 /**
@@ -33,10 +28,11 @@ export interface SyncPlayerAccomplishmentsResult {
  * stopped achieving things. It reads the player's stored record rather than any
  * live API, so it belongs *after* whatever refreshed that record.
  *
- * The first pass over a player is recorded as backfill. Members join with a
- * whole account behind them and the detector reports everything it can see, so
- * without this the feed's first render would be a decade of other people's
- * history — see `players.accomplishments_backfilled_at`.
+ * A player's first pass finds everything they already qualify for at once, and
+ * that is fine: those are real accomplishments and the feed shows them. What
+ * stops one member's first sync filling the whole feed is the per-sync cap in
+ * `fetchRecentAccomplishments`, which is the same rule the collection-log rail
+ * already uses.
  */
 export async function syncPlayerAccomplishments(
   playerName: string,
@@ -54,14 +50,13 @@ export async function syncPlayerAccomplishments(
       hasRadiantOathplate: players.hasRadiantOathplate,
       hasDizanasQuiver: players.hasDizanasQuiver,
       hasAchievementDiaryCape: players.hasAchievementDiaryCape,
-      accomplishmentsBackfilledAt: players.accomplishmentsBackfilledAt,
     })
     .from(players)
     .where(eq(players.playerName, playerName))
     .limit(1);
 
   if (!player) {
-    return { detected: 0, recorded: 0, backfilled: false };
+    return { detected: 0, recorded: 0 };
   }
 
   const [diaries, acquiredItems] = await Promise.all([
@@ -108,7 +103,6 @@ export async function syncPlayerAccomplishments(
     acquiredItems,
   });
 
-  const isBackfill = player.accomplishmentsBackfilledAt === null;
   const now = new Date();
 
   const recorded = await db.transaction(async (tx) => {
@@ -123,8 +117,6 @@ export async function syncPlayerAccomplishments(
                 accomplishmentKey: accomplishment.key,
                 label: accomplishment.label,
                 value: accomplishment.value,
-                iconItemName: accomplishment.iconItemName,
-                isBackfilled: isBackfill,
                 // The collection log knows when a drop happened; nothing else
                 // does, so the rest are dated from this run.
                 achievedAt: accomplishment.achievedAt ?? now,
@@ -139,24 +131,12 @@ export async function syncPlayerAccomplishments(
             .returning({ id: playerAccomplishments.id })
         : [];
 
-    if (isBackfill) {
-      // Set unconditionally, including for a player who qualified for nothing —
-      // otherwise a brand new account would stay in backfill mode forever and
-      // its first real accomplishment would be silently swallowed.
-      await tx
-        .update(players)
-        .set({ accomplishmentsBackfilledAt: now })
-        .where(eq(players.playerName, playerName));
-    }
-
     return inserted.length;
   });
 
   if (recorded > 0) {
-    console.log(
-      `Recorded ${recorded} ${isBackfill ? 'backfilled ' : ''}accomplishment(s) for ${playerName}`,
-    );
+    console.log(`Recorded ${recorded} accomplishment(s) for ${playerName}`);
   }
 
-  return { detected: detected.length, recorded, backfilled: isBackfill };
+  return { detected: detected.length, recorded };
 }
