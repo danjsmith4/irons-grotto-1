@@ -1,22 +1,11 @@
 enum RedisKeyNamespace {
   RankSubmission = 'rank-submission',
-  RankSubmissions = 'rank-submissions',
   DraftRankSubmission = 'draft-rank-submission',
   SubmissionMetadata = 'metadata',
   SubmissionDiff = 'diff',
-  OsrsAccounts = 'osrs-accounts',
   User = 'user',
   PlayerGameModes = 'player-game-modes',
-  PlayerIronmanStatus = 'player-ironman-status',
   RankUpMessages = 'rank-up-messages',
-}
-
-export function userRankSubmissionsKey(userId: string, playerName: string) {
-  return `${RedisKeyNamespace.User}:${userId}:${RedisKeyNamespace.RankSubmissions}:${playerName.toLowerCase()}` as const;
-}
-
-export function userOSRSAccountsKey(userId: string) {
-  return `${RedisKeyNamespace.User}:${userId}:${RedisKeyNamespace.OsrsAccounts}` as const;
 }
 
 export function rankSubmissionKey(id: string) {
@@ -36,7 +25,5 @@ export function rankSubmissionDiffKey(id: string) {
 }
 
 export const playerGameModesKey = RedisKeyNamespace.PlayerGameModes;
-
-export const playerIronmanStatusKey = RedisKeyNamespace.PlayerIronmanStatus;
 
 export const rankUpMessagesKey = RedisKeyNamespace.RankUpMessages;

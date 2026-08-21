@@ -192,14 +192,21 @@ export async function approveSubmission({
 
   const result = await transaction.exec();
 
-  db.transaction(async (tx) => {
+  // The database is what actually grants the rank, so this must be awaited.
+  // Unawaited and swallowed by a `.catch`, a failure here left Redis reporting
+  // "Approved" while the player kept their old rank — with nothing to indicate
+  // it had happened.
+  await db.transaction(async (tx) => {
     const user = await tx.query.players.findFirst({
       where: eq(players.playerName, playerName),
     });
 
-    if ((user && user.rank == rank) || oldRank === rank) {
-      tx.rollback();
-      return { success: true };
+    // Already at this rank: there is nothing to move and no rank-up row worth
+    // writing. This was `tx.rollback()`, which is control flow spelled as an
+    // error — it also discarded the status write above and made "nothing to
+    // do" indistinguishable from "the write failed".
+    if ((user && user.rank === rank) || oldRank === rank) {
+      return;
     }
 
     await tx.insert(playerRankUps).values({
@@ -215,9 +222,7 @@ export async function approveSubmission({
         rank,
       })
       .where(eq(players.playerName, playerName));
-  }).catch((e) =>
-    console.log(`Error encountered during rank up db modifications ${e}`),
-  );
+  });
 
   if (!result) {
     throw new ActionError('Unable to persist approval to database');

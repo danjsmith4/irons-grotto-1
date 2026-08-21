@@ -7,7 +7,6 @@ import {
   rankSubmissionKey,
   rankSubmissionMetadataKey,
   userDraftRankSubmissionKey,
-  userRankSubmissionsKey,
 } from '@/config/redis';
 import { randomUUID } from 'crypto';
 import { sendDiscordMessage } from '@/app/rank-calculator/utils/send-discord-message';
@@ -309,11 +308,6 @@ export const publishRankSubmissionAction = authActionClient
 
       submissionTransaction.copy(
         userDraftRankSubmissionKey(userId, playerName),
-        rankSubmissionKey(submissionId),
-      );
-
-      submissionTransaction.lpush(
-        userRankSubmissionsKey(userId, playerName),
         rankSubmissionKey(submissionId),
       );
 
