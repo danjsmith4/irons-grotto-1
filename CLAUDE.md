@@ -46,6 +46,35 @@ open "$(gh pr view --json url --jq .url)"     # macOS: opens the PR in the defau
 
 `gh` is installed via Homebrew and authenticated as `mattlm0831`. The PR body should say what was **not** verified as well as what was — e.g. anything behind the Discord auth gate can't be checked headlessly.
 
+## Announcing a change — every PR body needs a member summary
+
+When a PR merges to `main`, `.github/workflows/announce-merge.yaml` posts a note to the clan Discord. It does **not** write that note — it greps the PR body for this block and posts what it finds verbatim:
+
+```markdown
+<!-- member-summary:start -->
+Your collection log now updates on the leaderboard as soon as you log a new item, instead of waiting for the nightly refresh.
+<!-- member-summary:end -->
+```
+
+**Include it in every PR.** A PR without the block is skipped with a warning — nothing is announced, and that release is invisible to members. The delimiters are HTML comments, so they don't render on GitHub; only the sentence shows.
+
+### How to write it
+
+This is read by **clan members**, not developers. They do not know what a data source is, they will never open the repo, and they don't care which file changed. One or two sentences, plain language, describing **what is different for them**.
+
+- **Say what they'll notice.** "Player profiles now open instantly" — not "memoised the profile fetch".
+- **No jargon, no identifiers.** No file names, function names, table names, library names, or PR/issue numbers.
+- **Technical work still gets announced** — framed by its effect, or as general upkeep. A migration, a refactor, a dependency bump: *"Behind-the-scenes upgrades to keep the site fast and reliable."* Vague is fine here; silence is not. **The point is to show the site is actively worked on**, so every merge says something.
+- **Present tense, active voice.** "The leaderboard now shows…", not "Added a thing that will show…".
+- **Don't oversell.** No "massive", no "revolutionary". Understated reads as competent.
+
+| Instead of | Write |
+|---|---|
+| Added `player_accomplishments` table + stateless detection hooked into `processPlayerData` | A new Accomplishments feed on the homepage shows milestones as members hit them — pets, inferno capes, collection log milestones and more. |
+| Fixed unawaited `db.transaction` in `approve-submission.ts` | Rank approvals now apply reliably every time. |
+| Bumped Drizzle, regenerated migrations, added indexes | Infrastructure upgrades to keep things running smoothly. |
+| Collapsed the Redis/Postgres split behind a single write path | Your calculator now saves changes automatically as you make them. |
+
 ## Drift canary
 `app/rank-calculator/utils/notable-item-points-drift.spec.ts` hits the **live wiki** and lists every notable item that currently renders `-`. Run it to see what's broken after wiki drift. (Networked — not a hermetic unit test.) `schemas/wiki.spec.ts` is the hermetic guard for the casing normalisation.
 
