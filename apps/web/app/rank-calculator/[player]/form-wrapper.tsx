@@ -10,10 +10,8 @@ import {
   RankCalculatorSchema,
   RankCalculatorValidator,
 } from './submit-rank-calculator-validation';
-import {
-  PlayerEditableFields,
-  updatePlayerStateAction,
-} from './actions/update-player-state-action';
+import { updatePlayerStateAction } from './actions/update-player-state-action';
+import { PlayerEditableFields } from './player-editable-schema';
 import { useAutosave } from '../hooks/use-autosave';
 import { CurrentPlayerProvider } from '../contexts/current-player-context';
 import { NavBar } from '@/app/components/nav-bar';
@@ -68,7 +66,11 @@ export function FormWrapper({
     });
   }, []);
 
-  const { flushNow } = useAutosave({ save, onError: onAutosaveError });
+  const { flushNow } = useAutosave({
+    form,
+    save,
+    onError: onAutosaveError,
+  });
 
   // "Apply for promotion" needs whatever is on screen to be stored first —
   // which used to be spelled as a dirty check and a "save your data first!"
