@@ -13,6 +13,7 @@ import {
   uniqueIndex,
   index,
   primaryKey,
+  jsonb,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm/sql/sql';
 import { relations } from 'drizzle-orm';
@@ -417,6 +418,105 @@ export const staffRoleChanges = pgTable(
 
 export type StaffRoleChange = typeof staffRoleChanges.$inferSelect;
 export type NewStaffRoleChange = typeof staffRoleChanges.$inferInsert;
+
+export const rankSubmissionStatusEnum = pgEnum('rank_submission_status', [
+  'pending',
+  'approved',
+  'rejected',
+]);
+
+/**
+ * A member's application for a rank, and its review.
+ *
+ * Previously three Redis keys per submission — the snapshot, a metadata hash
+ * and a diff hash — which meant the only record of who was promoted, by whom,
+ * and over what disagreement lived outside the database entirely.
+ *
+ * **The snapshot is `jsonb`, deliberately, and versioned.** It is evidentiary
+ * rather than queryable: its one reader loads it whole into a disabled form so
+ * a moderator can see the sheet as submitted. Normalising it would couple a
+ * historical record to today's `players` schema — add a column and every past
+ * submission silently gains a value it never had; drop one and history is
+ * rewritten. An immutable record must not be editable by a migration.
+ *
+ * Same reasoning for `diff`: a fixed nine-key record, four of whose values are
+ * maps or arrays. Nine columns would buy nothing.
+ *
+ * The four data-source flags **do** get real columns — `approveSubmission`
+ * branches on `has_wikisync_data`, and together they are the auto-approval
+ * predicate, so they are read as data rather than as evidence.
+ */
+export const rankSubmissions = pgTable(
+  'rank_submissions',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
+    playerName: varchar('player_name', { length: 12 }).notNull(),
+
+    submittedByDiscordId: varchar('submitted_by_discord_id', {
+      length: 20,
+    }).notNull(),
+    submittedAt: timestamp('submitted_at').defaultNow().notNull(),
+
+    /**
+     * The rank applied for, and the one held at the time.
+     *
+     * Nullable because neither was recorded anywhere before this table: the
+     * snapshot is the form *minus* `rank` and `points`, and the metadata hash
+     * never carried them — they existed only in the Discord embed. Backfilled
+     * rows therefore have none, and the moderator view shows "—".
+     *
+     * Going forward this is what approval reads, rather than taking the rank
+     * from whatever the client posts.
+     */
+    rank: varchar('rank', { length: 50 }),
+    previousRank: varchar('previous_rank', { length: 50 }),
+    totalPoints: real('total_points'),
+
+    status: rankSubmissionStatusEnum('status').notNull().default('pending'),
+    actionedByDiscordId: varchar('actioned_by_discord_id', { length: 20 }),
+    actionedAt: timestamp('actioned_at'),
+    isAutomatic: boolean('is_automatic').notNull().default(false),
+
+    /**
+     * A string, and Postgres will keep it one. The second Redis client
+     * (`redisRaw`) existed solely because Upstash coerced this to a number.
+     */
+    discordMessageId: varchar('discord_message_id', { length: 20 }).notNull(),
+
+    hasTemplePlayerStats: boolean('has_temple_player_stats').notNull(),
+    hasTempleCollectionLog: boolean('has_temple_collection_log').notNull(),
+    hasWikiSyncData: boolean('has_wikisync_data').notNull(),
+    isTempleCollectionLogOutdated: boolean(
+      'is_temple_collection_log_outdated',
+    ).notNull(),
+
+    /** `{ version: 1, data: RankSubmissionSnapshotV1 }` */
+    snapshot: jsonb('snapshot').notNull(),
+    /** `{ version: 1, data: RankSubmissionDiff }` */
+    diff: jsonb('diff').notNull(),
+
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (table) => ({
+    playerNameIdx: index('rank_submissions_player_name_idx').on(
+      table.playerName,
+    ),
+    // The moderation queue: pending first, newest first.
+    statusIdx: index('rank_submissions_status_submitted_at_idx').on(
+      table.status,
+      table.submittedAt,
+    ),
+    discordMessageIdUnique: uniqueIndex(
+      'rank_submissions_discord_message_id_unique',
+    ).on(table.discordMessageId),
+  }),
+);
+
+export type RankSubmission = typeof rankSubmissions.$inferSelect;
+export type NewRankSubmission = typeof rankSubmissions.$inferInsert;
 
 // Singleton bookkeeping for scheduled-ish jobs that are triggered by page
 // traffic rather than a server cron (there is no long-running server). Each

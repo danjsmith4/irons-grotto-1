@@ -209,6 +209,20 @@ This was briefly broken: extending `currentDbValues` to cover `hasBloodTorva` / 
 
 **"Delete data"** no longer deletes a draft — it clears the player's *claims* (`resetPlayerClaims`): the manual flags, the proof link, every item override. Stats, diaries and the stored collection log are left, since a source re-derives those on the next sync anyway.
 
+## Submissions live in Postgres
+
+`rank_submissions` (migration `0022`) replaced three Redis keys per submission — the snapshot, a metadata hash and a diff hash. `lib/db/submission-operations.ts` is the whole surface.
+
+- **Snapshot and diff are versioned `jsonb`**, parsed with the pinned `RankSubmissionSnapshotV1` (`app/schemas/rank-submission-snapshot.ts`) rather than the live `RankCalculatorSchema`. That distinction is load-bearing: the moderator view used to cast the stored blob to the live schema, so the next change to the calculator's shape would have made every historical submission parse wrong. **When the form changes, add a `V2` — don't edit V1.**
+- The four data-source flags **are** real columns: `approveSubmission` branches on them and together they are the auto-approval predicate (`isAutoApprovable`, spec'd).
+- `discord_message_id` is a `varchar`. Postgres won't coerce a snowflake to a number, which is why **`redisRaw` is deleted** — that second client existed solely for this.
+
+⚠️ **Approval claims the row before touching Discord.** `approveRankSubmission` does `SELECT … FOR UPDATE` on a pending row, then moves the rank and writes the rank-up in the *same* transaction; Discord runs only after it commits. Previously the status check was a plain read, and every Discord side effect ran first — so two moderators clicking within a second of each other both assigned roles and both DM'd the member. Whoever loses the race now gets null and stops. `rejectSubmissionAction` does the same via `claimRankSubmission`.
+
+**The rank comes from the row, not the caller.** `approveSubmission` no longer takes a `rank` argument — it reads what was recorded when the member applied. Submissions backfilled out of Redis have none (it lived only in the Discord embed), so they refuse automatic approval and say so.
+
+Discord failure after a commit is **reported, not rolled back** — `{ success: true, discord: 'synced' | 'failed' }` — matching the staff-role convention.
+
 ## Rank-calculator approvals
 
 `approveSubmission` assigns Discord roles and messages the submitter for every approval. There is one rank ladder, so there is no longer a structure to branch on (`rankDiscordRoles` covers every `StandardRank`).

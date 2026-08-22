@@ -2,22 +2,15 @@
 
 import { z } from 'zod';
 import { formatNumber } from '@/app/rank-calculator/utils/format-number';
-import {
-  rankSubmissionDiffKey,
-  rankSubmissionKey,
-  rankSubmissionMetadataKey,
-} from '@/config/redis';
 import { randomUUID } from 'crypto';
 import { sendDiscordMessage } from '@/app/rank-calculator/utils/send-discord-message';
 import { clientConstants } from '@/config/constants.client';
 import { serverConstants } from '@/config/constants.server';
 import { format } from 'date-fns';
-import { redis } from '@/redis';
 import { authActionClient } from '@/app/safe-action';
 import {
   AchievementDiaryMap,
   RankSubmissionDiff,
-  RankSubmissionMetadata,
 } from '@/app/schemas/rank-calculator';
 import { discordBotClient } from '@/discord';
 import { ChannelType, Routes } from 'discord-api-types/v10';
@@ -45,6 +38,7 @@ import { getRankImageUrl } from '../../utils/get-rank-image-url';
 import { fetchPlayerDetails } from '../../data-sources/fetch-player-details/fetch-player-details';
 import { stripEntityName } from '../../utils/strip-entity-name';
 import { approveSubmission } from '../../view/[submissionId]/utils/approve-submission';
+import { createRankSubmission } from '@/lib/db/submission-operations';
 import dedent from 'dedent';
 export const publishRankSubmissionAction = authActionClient
   .metadata({ actionName: 'publish-rank-submission' })
@@ -321,15 +315,9 @@ export const publishRankSubmissionAction = authActionClient
         isAutoApprovalAvailable,
       });
 
-      const submissionTransaction = redis.multi();
-
-      // The snapshot is written from the player record rather than COPY'd from
-      // the Redis draft. Same shape, same reader — the moderator view still
-      // loads it whole into a disabled form — but it no longer depends on a key
-      // the calculator stopped maintaining when it began autosaving.
-      //
-      // `sourceValues` and the response's own metadata flags are stripped:
-      // the snapshot is the sheet as submitted, not a diagnostic bundle.
+      // The snapshot is the sheet as submitted, taken from the player record.
+      // `sourceValues` and the response's own metadata flags are stripped: this
+      // is evidence of what a member claimed, not a diagnostic bundle.
       const {
         sourceValues: _sourceValues,
         rawCollectionLogItems: _rawCollectionLogItems,
@@ -344,32 +332,28 @@ export const publishRankSubmissionAction = authActionClient
         ...submissionSnapshot
       } = savedData;
 
-      submissionTransaction.json.set(
-        rankSubmissionKey(submissionId),
-        '$',
-        submissionSnapshot,
-      );
+      try {
+        await createRankSubmission({
+          id: submissionId,
+          playerName,
+          submittedByDiscordId: userId,
+          rank,
+          previousRank: currentRank ?? null,
+          totalPoints,
+          discordMessageId,
+          hasTemplePlayerStats,
+          hasTempleCollectionLog,
+          hasWikiSyncData,
+          isTempleCollectionLogOutdated,
+          snapshot: submissionSnapshot,
+          diff: submissionDiff,
+        });
+      } catch (error) {
+        // The Discord message is posted before the row exists, so a failed
+        // write leaves an application announced but unreviewable. Take the
+        // message back down rather than leaving that.
+        Sentry.captureException(error);
 
-      submissionTransaction.hset(rankSubmissionMetadataKey(submissionId), {
-        discordMessageId,
-        status: 'Pending',
-        submittedBy: userId,
-        submittedAt: new Date(),
-        actionedBy: null,
-        hasTemplePlayerStats,
-        hasTempleCollectionLog,
-        hasWikiSyncData,
-        isTempleCollectionLogOutdated,
-      } satisfies RankSubmissionMetadata);
-
-      submissionTransaction.hset(
-        rankSubmissionDiffKey(submissionId),
-        submissionDiff,
-      );
-
-      const submissionResult = await submissionTransaction.exec();
-
-      if (!submissionResult) {
         await discordBotClient.delete(
           Routes.channelMessage(channelId, discordMessageId),
         );
@@ -380,7 +364,6 @@ export const publishRankSubmissionAction = authActionClient
       if (isAutoApprovalAvailable) {
         try {
           await approveSubmission({
-            rank,
             submissionId,
             isAutomatic: true,
           });

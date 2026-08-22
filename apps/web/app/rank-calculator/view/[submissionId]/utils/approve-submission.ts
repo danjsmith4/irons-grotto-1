@@ -1,34 +1,31 @@
 import { ActionError } from '@/app/action-error';
-import type { CombatAchievementTier } from '@/app/schemas/osrs';
-import type {
-  RankSubmissionDiff,
-  RankSubmissionStatus,
-} from '@/app/schemas/rank-calculator';
 import { serverConstants } from '@/config/constants.server';
 import type { achievementDiscordRoles } from '@/config/discord-roles';
-import {
-  rankSubmissionDiffKey,
-  rankSubmissionKey,
-  rankSubmissionMetadataKey,
-} from '@/config/redis';
 import { discordBotClient } from '@/discord';
-import { redis, redisRaw } from '@/redis';
 import { Routes } from 'discord-api-types/v10';
+import {
+  approveRankSubmission,
+  getRankSubmission,
+} from '@/lib/db/submission-operations';
+import { Rank } from '@/config/enums';
+import {
+  parseDiff,
+  parseSnapshot,
+} from '@/app/schemas/rank-submission-snapshot';
 import { assignRankDiscordRole } from './assign-rank-discord-role';
 import { assignAchievementDiscordRoles } from './assign-achievement-discord-roles';
 import { sendDiscordMessage } from '@/app/rank-calculator/utils/send-discord-message';
 import dedent from 'dedent';
 import { getRankName } from '@/app/rank-calculator/utils/get-rank-name';
-import type { Rank } from '@/config/enums';
 import * as Sentry from '@sentry/node';
-import { db } from '@/lib/db';
-import { playerRankUps, players } from '@/lib/db/schema';
-import { getPlayerByName } from '@/lib/db/player-operations';
-import { eq } from 'drizzle-orm';
 
+/**
+ * Note the absence of `rank`. It used to be passed in — which meant the client
+ * told the server which rank to grant, and the server took its word. It is now
+ * read from the submission row, where it was recorded when the member applied.
+ */
 type ApproveSubmissionInput = {
   submissionId: string;
-  rank: Rank;
 } & (
   | {
       approverId: string;
@@ -42,60 +39,41 @@ type ApproveSubmissionInput = {
 
 export async function approveSubmission({
   submissionId,
-  rank,
   approverId,
   isAutomatic = false,
 }: ApproveSubmissionInput) {
-  const metadata = (await redisRaw.hmget(
-    rankSubmissionMetadataKey(submissionId),
-    'status',
-    'discordMessageId',
-    'submittedBy',
-    'hasWikiSyncData',
-  )) as unknown as [RankSubmissionStatus, string, string, string];
+  const submission = await getRankSubmission(submissionId);
 
-  if (!metadata) {
-    throw new ActionError('Unable to find submission metadata');
+  if (!submission) {
+    throw new ActionError('Unable to find submission');
   }
 
-  const [submissionStatus, messageId, submitterId, hasWikiSyncData] = metadata;
+  const snapshot = parseSnapshot(submission.snapshot);
+  const submissionDiff = parseDiff(submission.diff);
 
-  if (submissionStatus !== 'Pending') {
-    throw new ActionError('Submission does not need to be moderated!');
+  if (!snapshot || !submissionDiff) {
+    throw new ActionError('Unable to read submission data for application');
   }
 
-  const submissionData = await redis.json.get<{
-    '$.playerName': [string];
-    '$.combatAchievementTier': [CombatAchievementTier];
-    '$.hasBloodTorva': [boolean];
-  }>(
-    rankSubmissionKey(submissionId),
-    '$.playerName',
-    '$.combatAchievementTier',
-    '$.hasBloodTorva',
-  );
+  // Stored as a varchar; narrowed back here so the Discord helpers, which are
+  // keyed by rank, keep their exhaustiveness.
+  const rank = Rank.safeParse(submission.rank);
 
-  if (!submissionData) {
-    throw new ActionError('Unable to find submission data for application');
+  if (!rank.success) {
+    // Only possible for a submission backfilled out of Redis, where the applied
+    // rank was never recorded anywhere but the Discord embed.
+    throw new ActionError(
+      'This submission predates rank tracking and must be actioned manually.',
+    );
   }
 
-  const {
-    '$.playerName': [playerName],
-    '$.combatAchievementTier': [combatAchievementTier],
-    '$.hasBloodTorva': [isBloodTorvaChecked],
-  } = submissionData;
+  const approvedRank = rank.data;
 
-  const submissionDiff = await redis.hmget<
-    Pick<RankSubmissionDiff, 'combatAchievementTier' | 'hasBloodTorva'>
-  >(
-    rankSubmissionDiffKey(submissionId),
-    'combatAchievementTier',
-    'hasBloodTorva',
-  );
-
-  if (!submissionDiff) {
-    throw new ActionError('Unable to find submission diff for application');
-  }
+  const messageId = submission.discordMessageId;
+  const submitterId = submission.submittedByDiscordId;
+  const hasWikiSyncData = submission.hasWikiSyncData;
+  const combatAchievementTier = snapshot.combatAchievementTier;
+  const isBloodTorvaChecked = snapshot.hasBloodTorva;
 
   const {
     combatAchievementTier: combatAchievementTierDiscrepancy,
@@ -105,7 +83,7 @@ export async function approveSubmission({
   // If the player has WikiSync data available and has the Grandmaster CA tier,
   // they can be assigned the Grandmaster role.
   const isVerifiedGrandmaster =
-    hasWikiSyncData === 'true' &&
+    hasWikiSyncData &&
     combatAchievementTier === 'Grandmaster' &&
     !combatAchievementTierDiscrepancy;
 
@@ -113,9 +91,7 @@ export async function approveSubmission({
   // they can be assigned the Blood Torva role.
   // This item is based on multiple combat achievements that are available via WikiSync.
   const hasVerifiedAncientBloodOrnamentKit =
-    hasWikiSyncData === 'true' &&
-    isBloodTorvaChecked &&
-    !hasBloodTorvaDiscrepancy;
+    hasWikiSyncData && isBloodTorvaChecked && !hasBloodTorvaDiscrepancy;
 
   const applicableAchievementDiscordRoles = {
     'Blood Torva': hasVerifiedAncientBloodOrnamentKit,
@@ -126,107 +102,71 @@ export async function approveSubmission({
     applicableAchievementDiscordRoles,
   ).some(Boolean);
 
-  await discordBotClient.put(
-    Routes.channelMessageOwnReaction(
-      serverConstants.discord.channelId,
-      messageId,
-      encodeURIComponent('☑️'),
-    ),
-  );
-  await assignRankDiscordRole(rank, submitterId);
+  const actionedBy = isAutomatic ? null : (approverId ?? null);
 
-  const newAchievementRoles = requiresAchievementRoles
-    ? await assignAchievementDiscordRoles(
-        submitterId,
-        applicableAchievementDiscordRoles,
-      )
-    : [];
-
-  await sendDiscordMessage(
-    {
-      content: dedent`
-        <@${submitterId}>
-
-        Your application has been ${
-          isAutomatic
-            ? 'automatically approved'
-            : `approved by <@${approverId}>`
-        } and you have been assigned the following role(s) on Discord:
-
-        ${[getRankName(rank), ...newAchievementRoles.filter(Boolean)]
-          .map((role) => `- ${role}`)
-          .join('\n')}
-
-        Please reach out to any member of staff to update your in-game rank!
-      `,
-    },
-    messageId,
-  );
-
-  const playerRecord = await getPlayerByName(playerName, submitterId);
-
-  if (!playerRecord) {
-    throw new ActionError('Unable to find player record!');
-  }
-
-  const transaction = redis.multi();
-
-  const actionedBy = isAutomatic ? 'System' : approverId;
-
-  const oldRank = playerRecord.rank;
-
-  if (!actionedBy) {
+  if (!isAutomatic && !actionedBy) {
     Sentry.captureException('Unable to determine actionedBy for approval');
 
     throw new ActionError('Something went wrong while approving submission');
   }
 
-  transaction.hset<string>(rankSubmissionMetadataKey(submissionId), {
-    status: 'Approved',
-    actionedBy,
-    automaticApproval: isAutomatic ? 'true' : 'false',
+  // Claim the submission and move the rank in one transaction, *before* any
+  // Discord side effect. Whoever loses this race gets null and stops, instead
+  // of assigning a second set of roles over the top of the first.
+  const approval = await approveRankSubmission(submissionId, {
+    actionedByDiscordId: actionedBy,
+    isAutomatic,
   });
 
-  // Note: We no longer update Redis with player data since we're moving to database-only
-  // The database transaction below will handle the rank update
-
-  const result = await transaction.exec();
-
-  // The database is what actually grants the rank, so this must be awaited.
-  // Unawaited and swallowed by a `.catch`, a failure here left Redis reporting
-  // "Approved" while the player kept their old rank — with nothing to indicate
-  // it had happened.
-  await db.transaction(async (tx) => {
-    const user = await tx.query.players.findFirst({
-      where: eq(players.playerName, playerName),
-    });
-
-    // Already at this rank: there is nothing to move and no rank-up row worth
-    // writing. This was `tx.rollback()`, which is control flow spelled as an
-    // error — it also discarded the status write above and made "nothing to
-    // do" indistinguishable from "the write failed".
-    if ((user && user.rank === rank) || oldRank === rank) {
-      return;
-    }
-
-    await tx.insert(playerRankUps).values({
-      playerName: playerName,
-      newRank: rank,
-      oldRank: oldRank ?? (user ? user.rank : undefined), // old rank
-      createdAt: new Date(),
-    });
-
-    await tx
-      .update(players)
-      .set({
-        rank,
-      })
-      .where(eq(players.playerName, playerName));
-  });
-
-  if (!result) {
-    throw new ActionError('Unable to persist approval to database');
+  if (!approval) {
+    throw new ActionError('Submission does not need to be moderated!');
   }
 
-  return { success: true };
+  // Discord only after the approval has committed. The database is what grants
+  // the rank, so an outage here cannot un-grant it — the outcome is reported
+  // rather than rolled back, matching how staff-role changes already behave.
+  try {
+    await discordBotClient.put(
+      Routes.channelMessageOwnReaction(
+        serverConstants.discord.channelId,
+        messageId,
+        encodeURIComponent('☑️'),
+      ),
+    );
+    await assignRankDiscordRole(approvedRank, submitterId);
+
+    const newAchievementRoles = requiresAchievementRoles
+      ? await assignAchievementDiscordRoles(
+          submitterId,
+          applicableAchievementDiscordRoles,
+        )
+      : [];
+
+    await sendDiscordMessage(
+      {
+        content: dedent`
+          <@${submitterId}>
+
+          Your application has been ${
+            isAutomatic
+              ? 'automatically approved'
+              : `approved by <@${approverId}>`
+          } and you have been assigned the following role(s) on Discord:
+
+          ${[getRankName(approvedRank), ...newAchievementRoles.filter(Boolean)]
+            .map((role) => `- ${role}`)
+            .join('\n')}
+
+          Please reach out to any member of staff to update your in-game rank!
+        `,
+      },
+      messageId,
+    );
+  } catch (error) {
+    Sentry.captureException(error);
+
+    return { success: true, discord: 'failed' as const };
+  }
+
+  return { success: true, discord: 'synced' as const };
 }
