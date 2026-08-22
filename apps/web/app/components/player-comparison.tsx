@@ -6,6 +6,7 @@ import { getRankImageUrl } from '@/app/rank-calculator/utils/get-rank-image-url'
 import { getRankName } from '@/app/rank-calculator/utils/get-rank-name';
 import { Rank } from '@/config/enums';
 import type { ViewerAccount } from '@/app/data-sources/fetch-viewer-accounts';
+import { splitRowsByDirection } from '@/app/utils/build-points-comparison';
 import type {
   ComparisonRow,
   PointsComparison,
@@ -17,7 +18,7 @@ interface PlayerComparisonProps {
   accounts: ViewerAccount[];
 }
 
-/** How many ledger rows are shown before the rest are folded away. */
+/** How many ledger rows a list shows before the rest are folded away. */
 const visibleRowCount = 12;
 
 /**
@@ -81,7 +82,9 @@ export function PlayerComparison({
   const [comparison, setComparison] = useState<PointsComparison | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showAll, setShowAll] = useState(false);
+  const [expandedLeading, setExpandedLeading] = useState(false);
+  const [showTrailing, setShowTrailing] = useState(false);
+  const [expandedTrailing, setExpandedTrailing] = useState(false);
 
   // Pick up where the member left off, but never on an account that is not in
   // the list any more (renamed, removed, or the one being looked at).
@@ -108,7 +111,9 @@ export function PlayerComparison({
 
     setComparison(null);
     setError(null);
-    setShowAll(false);
+    setExpandedLeading(false);
+    setShowTrailing(false);
+    setExpandedTrailing(false);
     setLoading(true);
 
     fetch(
@@ -148,12 +153,13 @@ export function PlayerComparison({
     );
   }
 
-  const rows = comparison
-    ? showAll
-      ? comparison.rows
-      : comparison.rows.slice(0, visibleRowCount)
-    : [];
-  const hidden = comparison ? comparison.rows.length - rows.length : 0;
+  const { subjectLeads, leading, trailing, trailingTotal } = comparison
+    ? splitRowsByDirection(comparison)
+    : { subjectLeads: true, leading: [], trailing: [], trailingTotal: 0 };
+
+  const trailingLeader = subjectLeads
+    ? 'You'
+    : (comparison?.subject.playerName ?? '');
 
   return (
     <div className={styles.root}>
@@ -223,31 +229,66 @@ export function PlayerComparison({
               </span>
             </header>
 
-            {rows.length === 0 ? (
+            {leading.length === 0 ? (
               <div className={styles.empty}>
-                These two accounts score identically, line for line.
+                {comparison.rows.length === 0
+                  ? 'These two accounts score identically, line for line.'
+                  : `Every itemised difference favours ${
+                      trailingLeader === 'You' ? 'you' : trailingLeader
+                    }.`}
               </div>
             ) : (
-              <div className={styles.ledger}>
-                {rows.map((row) => (
-                  <LedgerRow
-                    key={row.key}
-                    row={row}
-                    scale={Math.max(comparison.largestDelta, 1)}
-                  />
-                ))}
-              </div>
+              <LedgerList
+                rows={leading}
+                scale={comparison.largestDelta}
+                expanded={expandedLeading}
+                onExpand={() => setExpandedLeading(true)}
+              />
             )}
 
-            {hidden > 0 && (
-              <button
-                type="button"
-                className={styles.moreButton}
-                onClick={() => setShowAll(true)}
-              >
-                Show {hidden.toLocaleString()} smaller difference
-                {hidden === 1 ? '' : 's'}
-              </button>
+            {trailing.length > 0 && (
+              <>
+                {/*
+                 * The other direction is folded away rather than dropped, and
+                 * its total sits in the label — so the ledger still reconciles
+                 * to the headline at a glance even while collapsed. On a
+                 * lopsided comparison this reads as a rounding error and gets
+                 * ignored; on a close one it is most of the story, and says so.
+                 */}
+                <button
+                  type="button"
+                  className={`${styles.moreButton} ${styles.counterButton}`}
+                  aria-expanded={showTrailing}
+                  onClick={() => setShowTrailing((shown) => !shown)}
+                >
+                  {trailingLeader}{' '}
+                  {trailingLeader === 'You' ? 'also lead' : 'also leads'}{' '}
+                  {trailing.length.toLocaleString()} line
+                  {trailing.length === 1 ? '' : 's'}{' '}
+                  {/*
+                   * Magnitude, not a signed delta. Every row is signed from
+                   * the subject, so this total is negative whenever the viewer
+                   * is the one leading — and "You also lead (−3,120)" reads as
+                   * a contradiction. The direction is already in the sentence.
+                   */}
+                  <span
+                    className={`${styles.counterTotal} ${
+                      subjectLeads ? styles.deltaViewer : styles.deltaSubject
+                    }`}
+                  >
+                    {trailingTotal.toLocaleString()} points
+                  </span>
+                </button>
+
+                {showTrailing && (
+                  <LedgerList
+                    rows={trailing}
+                    scale={comparison.largestDelta}
+                    expanded={expandedTrailing}
+                    onExpand={() => setExpandedTrailing(true)}
+                  />
+                )}
+              </>
             )}
           </section>
 
@@ -255,6 +296,47 @@ export function PlayerComparison({
         </>
       )}
     </div>
+  );
+}
+
+/**
+ * One direction's rows, with its own long tail folded away. Both lists scale
+ * their bars against the same number, so a row stays the same length whichever
+ * list it turns up in.
+ */
+function LedgerList({
+  rows,
+  scale,
+  expanded,
+  onExpand,
+}: {
+  rows: ComparisonRow[];
+  scale: number;
+  expanded: boolean;
+  onExpand: () => void;
+}) {
+  const visible = expanded ? rows : rows.slice(0, visibleRowCount);
+  const hidden = rows.length - visible.length;
+
+  return (
+    <>
+      <div className={styles.ledger}>
+        {visible.map((row) => (
+          <LedgerRow key={row.key} row={row} scale={Math.max(scale, 1)} />
+        ))}
+      </div>
+
+      {hidden > 0 && (
+        <button
+          type="button"
+          className={styles.moreButton}
+          onClick={onExpand}
+        >
+          Show {hidden.toLocaleString()} smaller difference
+          {hidden === 1 ? '' : 's'}
+        </button>
+      )}
+    </>
   );
 }
 

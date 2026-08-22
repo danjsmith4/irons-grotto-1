@@ -2,7 +2,10 @@ import type {
   PointsBreakdown,
   PointsBreakdownLine,
 } from '@/app/rank-calculator/utils/build-points-breakdown';
-import { buildPointsComparison } from './build-points-comparison';
+import {
+  buildPointsComparison,
+  splitRowsByDirection,
+} from './build-points-comparison';
 
 function breakdown(lines: Partial<PointsBreakdownLine>[]): PointsBreakdown {
   const filled = lines.map((line, index) => ({
@@ -178,5 +181,77 @@ describe('buildPointsComparison', () => {
         ['skilling', 0],
       ],
     );
+  });
+});
+
+describe('splitRowsByDirection', () => {
+  const mixed = () =>
+    buildPointsComparison(
+      side(
+        'Them',
+        [
+          { key: 'boss', points: 900 },
+          { key: 'skill', points: 0 },
+          { key: 'clue', points: 40 },
+        ],
+        5000,
+      ),
+      side(
+        'You',
+        [
+          { key: 'boss', points: 100 },
+          { key: 'skill', points: 300 },
+          { key: 'clue', points: 0 },
+        ],
+        1000,
+      ),
+    );
+
+  it('leads with the rows explaining the gap, not against it', () => {
+    const { subjectLeads, leading, trailing } = splitRowsByDirection(mixed());
+
+    expect(subjectLeads).toBe(true);
+    expect(leading.map(({ key }) => key)).toEqual(['boss', 'clue']);
+    expect(trailing.map(({ key }) => key)).toEqual(['skill']);
+  });
+
+  it('flips when the viewer is the one ahead', () => {
+    // Same rows, but the stored totals put the viewer in front — so the rows
+    // that now need explaining are the ones the viewer leads.
+    const comparison = buildPointsComparison(
+      side('Them', [{ key: 'boss', points: 900 }], 1000),
+      side('You', [{ key: 'boss', points: 100 }], 5000),
+    );
+    const { subjectLeads, leading, trailing } =
+      splitRowsByDirection(comparison);
+
+    expect(subjectLeads).toBe(false);
+    expect(leading).toHaveLength(0);
+    expect(trailing.map(({ key }) => key)).toEqual(['boss']);
+  });
+
+  it('reports the folded-away side as a magnitude, so it stays on screen', () => {
+    // The UI collapses these rows but keeps the number, which is the only
+    // reason collapsing them is honest — the ledger still reconciles.
+    expect(splitRowsByDirection(mixed()).trailingTotal).toBe(300);
+  });
+
+  it('keeps every row on one side or the other', () => {
+    const comparison = mixed();
+    const { leading, trailing } = splitRowsByDirection(comparison);
+
+    expect(leading.length + trailing.length).toBe(comparison.rows.length);
+  });
+
+  it('gives a dead-level comparison to the subject', () => {
+    // Nobody is ahead, and the page is about the profile's owner.
+    const { subjectLeads } = splitRowsByDirection(
+      buildPointsComparison(
+        side('Them', [{ key: 'a', points: 100 }], 2000),
+        side('You', [{ key: 'a', points: 40 }], 2000),
+      ),
+    );
+
+    expect(subjectLeads).toBe(true);
   });
 });

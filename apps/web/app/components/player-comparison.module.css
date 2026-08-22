@@ -358,6 +358,25 @@
   border-color: rgb(var(--ig-text-muted) / 0.32);
 }
 
+/*
+ * The other direction's toggle. It carries its own total, so the ledger stays
+ * reconcilable to the headline while the rows themselves are folded away —
+ * which is the only reason hiding them is honest.
+ */
+.counterButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  text-transform: none;
+  letter-spacing: 0.01em;
+  font-size: 12px;
+}
+.counterTotal {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
 .footnote {
   margin: 0;
   padding: 0 1.5rem 1.25rem;
