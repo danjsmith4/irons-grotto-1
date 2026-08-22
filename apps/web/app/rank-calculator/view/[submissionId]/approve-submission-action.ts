@@ -11,7 +11,7 @@ export const approveSubmissionAction = authActionClient
   .schema(ApproveSubmissionSchema)
   .action(
     async ({
-      parsedInput: { submissionId, rank },
+      parsedInput: { submissionId },
       ctx: { permissions, userId: approverId },
     }) => {
       if (!userCanModerateSubmission(permissions)) {
@@ -22,7 +22,6 @@ export const approveSubmissionAction = authActionClient
 
       return approveSubmission({
         submissionId,
-        rank,
         approverId,
       });
     },

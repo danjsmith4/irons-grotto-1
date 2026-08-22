@@ -1,24 +1,19 @@
-import {
-  rankSubmissionDiffKey,
-  rankSubmissionKey,
-  rankSubmissionMetadataKey,
-} from '@/config/redis';
 import { Flex, Heading } from '@radix-ui/themes';
-import { redis } from '@/redis';
 import { auth } from '@/auth';
-import {
-  RankSubmissionDiff,
-  RankSubmissionMetadata,
-} from '@/app/schemas/rank-calculator';
+import { RankSubmissionMetadata } from '@/app/schemas/rank-calculator';
 import {
   dehydrate,
   HydrationBoundary,
   QueryClient,
 } from '@tanstack/react-query';
 import { ReadonlyFormWrapper } from './readonly-form-wrapper';
-import { RankCalculatorSchema } from '../../[player]/submit-rank-calculator-validation';
 import { fetchPlayerDetails } from '../../data-sources/fetch-player-details/fetch-player-details';
 import { calculateDiffErrors } from './utils/calculate-diff-errors';
+import { getRankSubmission } from '@/lib/db/submission-operations';
+import {
+  parseDiff,
+  parseSnapshot,
+} from '@/app/schemas/rank-submission-snapshot';
 import { getDiscordUsername } from './get-discord-username';
 import {
   fetchItemDropRates,
@@ -32,17 +27,9 @@ export default async function ViewSubmissionPage({
   params: Promise<{ submissionId: string }>;
 }) {
   const { submissionId } = await params;
-  const [submission, submissionMetadata, submissionDiff] = await Promise.all([
-    redis.json.get<Omit<RankCalculatorSchema, 'rank' | 'points'>>(
-      rankSubmissionKey(submissionId),
-    ),
-    redis.hgetall<RankSubmissionMetadata>(
-      rankSubmissionMetadataKey(submissionId),
-    ),
-    redis.hgetall<RankSubmissionDiff>(rankSubmissionDiffKey(submissionId)),
-  ]);
+  const row = await getRankSubmission(submissionId);
 
-  if (!submission) {
+  if (!row) {
     return (
       <Flex align="center" justify="center" height="100vh">
         <Heading>404 submission not found</Heading>
@@ -50,13 +37,29 @@ export default async function ViewSubmissionPage({
     );
   }
 
-  if (!submissionMetadata) {
-    throw new Error('Unable to find submission metadata');
+  // Parsed with the pinned V1 schema rather than the live calculator schema, so
+  // a change to the form's shape cannot retroactively break an old submission.
+  const submission = parseSnapshot(row.snapshot);
+  const submissionDiff = parseDiff(row.diff);
+
+  if (!submission || !submissionDiff) {
+    throw new Error('Unable to read submission data');
   }
 
-  if (!submissionDiff) {
-    throw new Error('Unable to find submission diff');
-  }
+  // The three Redis keys this page used to read are now columns on one row.
+  const submissionMetadata = {
+    status: (row.status.charAt(0).toUpperCase() +
+      row.status.slice(1)) as RankSubmissionMetadata['status'],
+    discordMessageId: row.discordMessageId,
+    submittedBy: row.submittedByDiscordId,
+    submittedAt: row.submittedAt,
+    actionedBy: row.actionedByDiscordId,
+    hasTemplePlayerStats: row.hasTemplePlayerStats,
+    hasTempleCollectionLog: row.hasTempleCollectionLog,
+    hasWikiSyncData: row.hasWikiSyncData,
+    isTempleCollectionLogOutdated: row.isTempleCollectionLogOutdated,
+    automaticApproval: row.isAutomatic,
+  } satisfies RankSubmissionMetadata;
 
   const user = await auth();
 

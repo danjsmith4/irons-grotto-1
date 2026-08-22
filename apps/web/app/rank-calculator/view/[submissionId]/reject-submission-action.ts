@@ -4,11 +4,10 @@ import { authActionClient } from '@/app/safe-action';
 import { discordBotClient } from '@/discord';
 import { Routes } from 'discord-api-types/v10';
 import { serverConstants } from '@/config/constants.server';
-import { redis, redisRaw } from '@/redis';
-import { RankSubmissionStatus } from '@/app/schemas/rank-calculator';
-import { rankSubmissionMetadataKey } from '@/config/redis';
 import dedent from 'dedent';
+import * as Sentry from '@sentry/node';
 import { ActionError } from '@/app/action-error';
+import { claimRankSubmission } from '@/lib/db/submission-operations';
 import { userCanModerateSubmission } from './utils/user-can-moderate-submission';
 import { sendDiscordMessage } from '../../utils/send-discord-message';
 import { RejectSubmissionSchema } from './moderate-submission-schema';
@@ -24,49 +23,49 @@ export const rejectSubmissionAction = authActionClient
         );
       }
 
-      const metadata = (await redisRaw.hmget(
-        rankSubmissionMetadataKey(submissionId),
-        'status',
-        'discordMessageId',
-        'submittedBy',
-      )) as unknown as [RankSubmissionStatus, string, string];
+      // Claimed first, and Discord only after. Two moderators rejecting at once
+      // both used to pass the status check and both messaged the member.
+      const rejected = await claimRankSubmission(submissionId, {
+        status: 'rejected',
+        actionedByDiscordId: userId,
+      });
 
-      if (!metadata) {
-        throw new ActionError('Unable to find submission metadata');
-      }
-
-      const [submissionStatus, messageId, submitterId] = metadata;
-
-      if (submissionStatus !== 'Pending') {
+      if (!rejected) {
         throw new ActionError('Submission does not need to be moderated!');
       }
 
-      await discordBotClient.put(
-        Routes.channelMessageOwnReaction(
-          serverConstants.discord.channelId,
-          messageId,
-          encodeURIComponent('❌'),
-        ),
-      );
+      const messageId = rejected.discordMessageId;
+      const submitterId = rejected.submittedByDiscordId;
 
-      await sendDiscordMessage(
-        {
-          content: dedent`
+      // The rejection has committed; Discord failing cannot un-reject it, so
+      // the outcome is reported rather than rolled back.
+      try {
+        await discordBotClient.put(
+          Routes.channelMessageOwnReaction(
+            serverConstants.discord.channelId,
+            messageId,
+            encodeURIComponent('❌'),
+          ),
+        );
+
+        await sendDiscordMessage(
+          {
+            content: dedent`
             <@${submitterId}>
 
             Your application has been rejected by <@${userId}>.
-            
+
             Please reach out if you have any questions.
           `,
-        },
-        messageId,
-      );
+          },
+          messageId,
+        );
+      } catch (error) {
+        Sentry.captureException(error);
 
-      await redis.hset<RankSubmissionStatus>(
-        rankSubmissionMetadataKey(submissionId),
-        { status: 'Rejected' },
-      );
+        return { success: true, discord: 'failed' as const };
+      }
 
-      return { success: true };
+      return { success: true, discord: 'synced' as const };
     },
   );
