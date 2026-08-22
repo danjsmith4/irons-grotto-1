@@ -19,6 +19,7 @@ import {
   playerRankUps,
   playerAccomplishments,
   playerItemOverrides,
+  playerDerivedItems,
 } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 
@@ -122,6 +123,14 @@ export const editPlayerAction = authActionClient
             .update(playerItemOverrides)
             .set({ playerName: maybeFormattedPlayerName })
             .where(eq(playerItemOverrides.playerName, previousPlayerName));
+
+          // The unlogged items follow the name for the same reason. Strand
+          // them and the renamed player has no floor under those six until
+          // WikiSync next answers — which is exactly when it matters.
+          await tx
+            .update(playerDerivedItems)
+            .set({ playerName: maybeFormattedPlayerName })
+            .where(eq(playerDerivedItems.playerName, previousPlayerName));
         });
       } else {
         // No name change, just update the player record
