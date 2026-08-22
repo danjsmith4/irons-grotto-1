@@ -13,6 +13,8 @@ import { formatXpInMillions } from '@/app/utils/format-number';
 import { formatTimeAgo } from '@/app/utils/format-time-ago';
 import { clientConstants } from '@/config/constants.client';
 import { ItemImageWithFallback } from './item-image-with-fallback';
+import { PlayerComparison } from './player-comparison';
+import { useViewerAccounts } from './use-viewer-accounts';
 import type { PlayerProfile } from '../data-sources/fetch-player-profile';
 import styles from './player-profile-modal.module.css';
 
@@ -22,6 +24,13 @@ interface PlayerProfileModalProps {
 }
 
 const DIARY_TIERS = ['Easy', 'Medium', 'Hard', 'Elite'];
+
+type ProfileView = 'profile' | 'compare';
+
+const PROFILE_VIEWS: { key: ProfileView; label: string }[] = [
+  { key: 'profile', label: 'Profile' },
+  { key: 'compare', label: 'Compare' },
+];
 
 const NOTABLES: {
   key: keyof PlayerProfile['notables'];
@@ -49,6 +58,19 @@ export function PlayerProfileModal({
   const [profile, setProfile] = useState<PlayerProfile | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [view, setView] = useState<ProfileView>('profile');
+  const accounts = useViewerAccounts();
+
+  // Comparing an account against itself explains nothing, so a member looking
+  // at their own profile only gets the tab if they have a second account.
+  const canCompare = accounts.some(
+    (account) =>
+      account.playerName.toLowerCase() !== playerName?.toLowerCase(),
+  );
+
+  useEffect(() => {
+    setView('profile');
+  }, [playerName]);
 
   useEffect(() => {
     if (!playerName) return;
@@ -94,7 +116,10 @@ export function PlayerProfileModal({
         if (!open) onClose();
       }}
     >
-      <Dialog.Content maxWidth="720px" className={styles.content}>
+      <Dialog.Content
+        maxWidth={view === 'compare' ? '880px' : '720px'}
+        className={styles.content}
+      >
         {loading && <div className={styles.loading}>Loading profile…</div>}
         {error && <div className={styles.error}>{error}</div>}
 
@@ -136,6 +161,36 @@ export function PlayerProfileModal({
               </Dialog.Description>
             </VisuallyHidden>
 
+            {canCompare && (
+              <div
+                className={styles.tabs}
+                role="tablist"
+                aria-label="Profile view"
+              >
+                {PROFILE_VIEWS.map(({ key, label }) => (
+                  <button
+                    key={key}
+                    type="button"
+                    role="tab"
+                    aria-selected={view === key}
+                    className={`${styles.tab} ${
+                      view === key ? styles.tabActive : ''
+                    }`}
+                    onClick={() => setView(key)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {view === 'compare' ? (
+              <PlayerComparison
+                subjectName={profile.playerName}
+                accounts={accounts}
+              />
+            ) : (
+              <>
             <div className={styles.progressWrap}>
               <div className={styles.progressMeta}>
                 <span>
@@ -311,6 +366,8 @@ export function PlayerProfileModal({
                 View on TempleOSRS ↗
               </a>
             </div>
+              </>
+            )}
           </>
         )}
       </Dialog.Content>

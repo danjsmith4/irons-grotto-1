@@ -211,6 +211,24 @@ This was briefly broken: extending `currentDbValues` to cover `hasBloodTorva` / 
 
 **"Delete data"** no longer deletes a draft — it clears the player's *claims* (`resetPlayerClaims`): the manual flags, the proof link, every item override. Stats, diaries and the stored collection log are left, since a source re-derives those on the next sync anyway.
 
+## Source-derived items live in `player_derived_items`
+
+**Anything a data source derives about a player that no other table records goes in `player_derived_items` (migration `0023`). Do not add a new home for it, and do not leave it unstored.** `lib/db/derived-item-operations.ts` is the whole surface.
+
+Every notable item bar six is a collection log slot, so `player_acquired_items` already keeps a durable copy that survives a source going quiet. Six are not — the four quest items (**Barrows gloves**, **Book of the dead**, **Quest cape**, **Mage Arena 2 cape**), the one combat-achievement item (**6 Jads**) and **Music cape**, together worth **480 points**. They are settled purely by a live WikiSync read, and until `0023` they were stored nowhere: recomputed on every sync and forgotten in between.
+
+That made them the one part of the calculator with **no floor under it**. `currentDbValues` protects the scalar equivalents on the principle that an unreachable source says *nothing*, not "no" — these six could not have that protection, because there was no previous answer to fall back to. A WikiSync outage therefore subtracted up to 480 points from a member's stored total and left no record they had ever had it.
+
+⚠️ **`is_acquired` is a boolean and the row's absence is a third state.** No row means the source has never been read for that item; `false` means it was read and said no. **Collapsing those two is the bug the table exists to fix — never treat a missing row as a negative.**
+
+- `getSourceDerivedItemNames` (`app/rank-calculator/utils/`) derives the set from the item list (`!isCollectionLogItem`) rather than naming it, so a new `questItem` or `manualItem` is picked up automatically. Its spec asserts the current six, so **adding one fails the suite on purpose** — that is the reminder the new item needs a home here too.
+- `resolveDerivedItemWrite` owns the decision **not** to write after a failed read, returning `null`. The guard is a spec'd function rather than an `if` at the call site, because an `if` is one careless edit from deletion and the damage is silent. Don't reintroduce a call-site condition.
+- `getDerivedItems` **fails soft**, returning `{}` on error. It sits on the calculator's load path, and a safety net that can take down the page it protects is worse than no net.
+- Rows **follow a rename** (`edit-player-action.ts`) and go with a **deleted player** (`deletePlayer`). `resetPlayerClaims` deliberately leaves them: they are what a source reported, not a claim.
+- Reads are `??` never `||` — a stored `false` is a real answer and must not fall through to the next source.
+
+Consumers: `fetchPlayerDetails` uses it as the floor when WikiSync is quiet, and `fetch-player-comparison` reads it so two members can be scored from the database without a live round-trip each. With it in place the comparison ledger reconciles to `players.points` exactly, which is why that view carries no "unaccounted points" disclosure.
+
 ## Submissions live in Postgres
 
 `rank_submissions` (migration `0022`) replaced three Redis keys per submission — the snapshot, a metadata hash and a diff hash. `lib/db/submission-operations.ts` is the whole surface.

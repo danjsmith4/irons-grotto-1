@@ -1,0 +1,408 @@
+/*
+ * The profile comparison. Same hairline-and-typography language as
+ * player-profile-modal.module.css, which this sits inside — all colour comes
+ * from the --ig-* tokens, never a literal.
+ *
+ * The two sides have fixed colours throughout: the profile being looked at is
+ * blue (--ig-tertiary), the viewer's own account is green (--ig-secondary).
+ * Green keeps meaning "yours" the way it does everywhere else in the app.
+ */
+
+.root {
+  display: flex;
+  flex-direction: column;
+}
+
+.loading,
+.error,
+.empty {
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  color: rgb(var(--ig-text-muted));
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 12px;
+}
+.error {
+  color: rgb(var(--ig-danger));
+}
+
+/* ---------------------------------------------------------- account picker */
+.picker {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  padding: 0.85rem 1.5rem;
+  border-bottom: 1px solid rgb(var(--ig-text-muted) / 0.08);
+}
+.pickerLabel {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(var(--ig-text-muted));
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid rgb(var(--ig-text-muted) / 0.16);
+  background: transparent;
+  color: rgb(var(--ig-text-muted));
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    color 120ms ease,
+    border-color 120ms ease;
+}
+.chip:hover {
+  color: rgb(var(--ig-text));
+  border-color: rgb(var(--ig-text-muted) / 0.32);
+}
+.chipActive,
+.chipActive:hover {
+  color: rgb(var(--ig-secondary));
+  border-color: rgb(var(--ig-secondary) / 0.5);
+  background: rgb(var(--ig-secondary) / 0.08);
+}
+
+/* ------------------------------------------------------------- scoreboard */
+.scoreboard {
+  display: grid;
+  grid-template-columns: 1fr minmax(150px, 1.1fr) 1fr;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+}
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+.sideRight {
+  text-align: right;
+  align-items: flex-end;
+}
+.sideName {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgb(var(--ig-text-light));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.sideValue {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 1.6rem;
+  font-weight: 600;
+  line-height: 1;
+}
+.subjectValue {
+  color: rgb(var(--ig-tertiary));
+}
+.viewerValue {
+  color: rgb(var(--ig-secondary));
+}
+.sideRank {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgb(var(--ig-text-muted));
+}
+
+.gap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+}
+.gapValue {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: rgb(var(--ig-text));
+  line-height: 1;
+}
+.gapLabel {
+  font-size: 11px;
+  color: rgb(var(--ig-text-muted));
+  text-align: center;
+}
+/*
+ * One bar split between the two accounts rather than two bars side by side:
+ * the share each holds of their combined total is the fastest read of "how
+ * far apart are these two at all", before any of the detail below.
+ */
+.shareTrack {
+  width: 100%;
+  height: 6px;
+  margin-top: 0.25rem;
+  border-radius: 999px;
+  background: rgb(var(--ig-secondary) / 0.55);
+  overflow: hidden;
+}
+.shareFill {
+  height: 100%;
+  background: rgb(var(--ig-tertiary));
+}
+
+/* ---------------------------------------------------------------- sections */
+.section {
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid rgb(var(--ig-text-muted) / 0.08);
+}
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+.sectionTitle {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(var(--ig-text-muted));
+  margin: 0;
+}
+.sectionMeta {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  color: rgb(var(--ig-text-muted));
+}
+
+.legend {
+  display: flex;
+  gap: 0.85rem;
+  font-size: 11px;
+  color: rgb(var(--ig-text-muted));
+}
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+}
+.swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.swatchSubject {
+  background: rgb(var(--ig-tertiary));
+}
+.swatchViewer {
+  background: rgb(var(--ig-secondary));
+}
+
+/* ------------------------------------------------------------------ ledger */
+.ledger {
+  display: flex;
+  flex-direction: column;
+}
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 300px) 68px;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgb(var(--ig-text-muted) / 0.06);
+}
+.row:last-child {
+  border-bottom: none;
+}
+.rowEmphasis .rowName {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: rgb(var(--ig-text));
+}
+.rowEmphasis {
+  padding: 0.7rem 0;
+}
+
+.rowLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+}
+.rowIcon {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.rowText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.rowName {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: rgb(var(--ig-text-light));
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rowDetail {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  color: rgb(var(--ig-text-muted));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rowValues {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 48px;
+  align-items: center;
+  gap: 0.4rem;
+}
+.rowSubjectPoints,
+.rowViewerPoints {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  color: rgb(var(--ig-text-muted));
+}
+.rowSubjectPoints {
+  text-align: right;
+}
+
+/*
+ * A single track with the zero line down its middle. Both sides of every row
+ * are scaled against the largest difference in the list, so bar length is
+ * comparable from the top of the ledger to the bottom — which is the whole
+ * point of ordering it by weight.
+ */
+.barTrack {
+  position: relative;
+  height: 10px;
+  border-radius: 3px;
+  background: rgb(var(--ig-text-muted) / 0.07);
+  overflow: hidden;
+}
+.barAxis {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgb(var(--ig-text-muted) / 0.25);
+}
+.barFill {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  border-radius: 2px;
+}
+.barSubject {
+  background: rgb(var(--ig-tertiary));
+}
+.barViewer {
+  background: rgb(var(--ig-secondary));
+}
+
+.rowDelta {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: right;
+}
+.deltaSubject {
+  color: rgb(var(--ig-tertiary));
+}
+.deltaViewer {
+  color: rgb(var(--ig-secondary));
+}
+
+.moreButton {
+  margin-top: 0.85rem;
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid rgb(var(--ig-text-muted) / 0.16);
+  background: transparent;
+  color: rgb(var(--ig-text-muted));
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition:
+    color 120ms ease,
+    border-color 120ms ease;
+}
+.moreButton:hover {
+  color: rgb(var(--ig-text));
+  border-color: rgb(var(--ig-text-muted) / 0.32);
+}
+
+/*
+ * The other direction's toggle. It carries its own total, so the ledger stays
+ * reconcilable to the headline while the rows themselves are folded away —
+ * which is the only reason hiding them is honest.
+ */
+.counterButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  text-transform: none;
+  letter-spacing: 0.01em;
+  font-size: 12px;
+}
+.counterTotal {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+/* ------------------------------------------------------------- narrow view */
+@media (max-width: 640px) {
+  .scoreboard {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+  .sideRight {
+    text-align: center;
+    align-items: center;
+  }
+  .side {
+    align-items: center;
+  }
+  .row {
+    grid-template-columns: minmax(0, 1fr) 68px;
+    grid-template-areas:
+      'label delta'
+      'values values';
+  }
+  .rowLabel {
+    grid-area: label;
+  }
+  .rowDelta {
+    grid-area: delta;
+  }
+  .rowValues {
+    grid-area: values;
+  }
+}
