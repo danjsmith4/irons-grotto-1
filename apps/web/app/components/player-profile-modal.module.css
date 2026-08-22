@@ -317,3 +317,33 @@
 .templeLink:hover {
   text-decoration: underline;
 }
+
+/* View tabs — only rendered when the viewer has an account to compare against */
+.tabs {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.75rem 1.5rem 0;
+}
+.tab {
+  padding: 0.4rem 0.9rem;
+  border: none;
+  background: transparent;
+  border-bottom: 2px solid transparent;
+  color: rgb(var(--ig-text-muted));
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    color 120ms ease,
+    border-color 120ms ease;
+}
+.tab:hover {
+  color: rgb(var(--ig-text));
+}
+.tabActive,
+.tabActive:hover {
+  color: rgb(var(--ig-secondary));
+  border-bottom-color: rgb(var(--ig-secondary));
+}
