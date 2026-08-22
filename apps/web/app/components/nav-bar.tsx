@@ -20,6 +20,8 @@ import { deletePlayerAccountAction } from '@/app/rank-calculator/actions/delete-
 import { DeleteSubmissionDataDialog } from '@/app/rank-calculator/components/delete-submission-data-dialog';
 import { handleToastUpdates } from '@/app/rank-calculator/utils/handle-toast-updates';
 import { useCurrentPlayer } from '@/app/rank-calculator/contexts/current-player-context';
+import { getRankName } from '@/app/rank-calculator/utils/get-rank-name';
+import { isRankUp } from '@/app/rank-calculator/utils/is-rank-up';
 import { canAccessAdminDashboard } from '@/app/utils/staff-permissions';
 import { canApplyForRank } from '@/config/ranks';
 import { useViewerStaffRole } from './use-viewer-staff-role';
@@ -28,7 +30,12 @@ import styles from './nav-bar.module.css';
 interface NavBarProps {
   currentPage?: 'dashboard' | 'player' | 'submission' | 'admin';
   playerName?: string;
-  showSaveActions?: boolean;
+  /**
+   * Renders the calculator's own actions: the "Apply for promotion" button and
+   * the reset/delete entries in the overflow menu. Only the sheet's owner sees
+   * them — the readonly moderator view leaves this off.
+   */
+  showCalculatorActions?: boolean;
   isActionActive?: boolean;
   /**
    * Forces any pending autosave out before a submission snapshots the sheet.
@@ -50,7 +57,7 @@ interface NavBarProps {
 export function NavBar({
   currentPage = 'dashboard',
   playerName,
-  showSaveActions = false,
+  showCalculatorActions = false,
   isActionActive = false,
   beforeSubmit,
   userCalculators = {},
@@ -61,14 +68,14 @@ export function NavBar({
   const canAdminister = canAccessAdminDashboard(viewerStaffRole);
 
   // Form hooks - these will be null when not in form context
-  const formContext = showSaveActions
+  const formContext = showCalculatorActions
     ? useFormContext<RankCalculatorSchema>()
     : null;
-  const formState = showSaveActions
+  const formState = showCalculatorActions
     ? useFormState<RankCalculatorSchema>()
     : null;
-  const rankCalculator = showSaveActions ? useRankCalculator() : null;
-  const currentPlayer = showSaveActions ? useCurrentPlayer() : null;
+  const rankCalculator = showCalculatorActions ? useRankCalculator() : null;
+  const currentPlayer = showCalculatorActions ? useCurrentPlayer() : null;
 
   const [, startResetTransition] = useTransition();
   const [, startDeleteDialogTransition] = useTransition();
@@ -107,6 +114,45 @@ export function NavBar({
 
   const accounts = Object.values(userCalculators);
   const isBusy = isSubmitting || isActionActive;
+
+  // A promotion is actually waiting: the calculated rank is further up the
+  // ladder than the one they hold. That is the only state worth spending the
+  // green accent on — re-applying at a rank you already have is not.
+  const hasPromotion =
+    !!rank &&
+    canApplyForRank(accountType) &&
+    isRankUp(currentRank, rank, accountType);
+  const applyLabel = hasPromotion
+    ? `Apply for ${getRankName(rank)}`
+    : 'Apply for promotion';
+
+  function handleApplyForPromotion() {
+    // Explained rather than silently disabled — a main's sheet still works,
+    // it just isn't on the rank ladder.
+    if (!canApplyForRank(accountType)) {
+      toast.error(
+        'Main accounts cannot apply for clan ranks. Your calculator is still yours for tracking progress.',
+      );
+
+      return;
+    }
+
+    if (!rank) {
+      toast.error('No rank calculated yet!');
+
+      return;
+    }
+
+    // Whatever is on screen has to be stored before the submission snapshots
+    // it. This replaces the dirty check: the question was never "is the form
+    // dirty", it was "is what I am about to submit what they see".
+    void handleToastUpdates(
+      beforeSubmit?.().then(() =>
+        publishRankSubmission({ totalPoints, rank }),
+      ) ?? publishRankSubmission({ totalPoints, rank }),
+      { success: 'Rank application submitted!' },
+    );
+  }
 
   return (
     <nav className={styles.nav}>
@@ -193,79 +239,27 @@ export function NavBar({
         <div className={styles.actions}>
           {additionalButtons}
 
-          {/* There is no Save button. Changes persist as they are made — see
-              `useAutosave`. What is left here are the actions that are not
-              "store my edits": applying for a rank, resetting, deleting. */}
-          {showSaveActions && (
-            <div className={styles.save}>
-              <DropdownMenu.Root modal={false}>
-                <DropdownMenu.Trigger disabled={isBusy}>
-                  <button
-                    type="button"
-                    className={styles.saveMore}
-                    disabled={isBusy}
-                    aria-label="Calculator actions"
-                  >
-                    {isBusy && <Spinner size="1" />}
-                    <ChevronDownIcon />
-                  </button>
-                </DropdownMenu.Trigger>
-                <DropdownMenu.Content color="gray" variant="soft">
-                  <DropdownMenu.Item
-                    onClick={() => {
-                      // Explained rather than silently disabled — a main's
-                      // sheet still works, it just isn't on the rank ladder.
-                      if (!canApplyForRank(accountType)) {
-                        toast.error(
-                          'Main accounts cannot apply for clan ranks. Your calculator is still yours for tracking progress.',
-                        );
-
-                        return;
-                      }
-
-                      if (!rank) {
-                        toast.error('No rank calculated yet!');
-
-                        return;
-                      }
-
-                      // Whatever is on screen has to be stored before the
-                      // submission snapshots it. This replaces the dirty
-                      // check: the question was never "is the form dirty",
-                      // it was "is what I am about to submit what they see".
-                      void handleToastUpdates(
-                        beforeSubmit?.().then(() =>
-                          publishRankSubmission({ totalPoints, rank }),
-                        ) ?? publishRankSubmission({ totalPoints, rank }),
-                        { success: 'Rank application submitted!' },
-                      );
-                    }}
-                  >
-                    Apply for promotion
-                  </DropdownMenu.Item>
-                  <DropdownMenu.Item
-                    disabled={!isDirty}
-                    onClick={() => {
-                      startResetTransition(() => {
-                        reset?.();
-                      });
-                    }}
-                  >
-                    Reset form defaults
-                  </DropdownMenu.Item>
-                  <DropdownMenu.Separator />
-                  <DropdownMenu.Item
-                    color="red"
-                    onSelect={() => {
-                      startDeleteDialogTransition(() => {
-                        setIsDeleteSubmissionDataDialogOpen(true);
-                      });
-                    }}
-                  >
-                    Delete data
-                  </DropdownMenu.Item>
-                </DropdownMenu.Content>
-              </DropdownMenu.Root>
+          {/* There is no Save button — changes persist as they are made, see
+              `useAutosave`. Applying for a rank is what is left, and it is the
+              page's one real action, so it gets the button. Its old chevron
+              had nothing to hang off once Save went; resetting and deleting
+              are neither primary nor frequent, so they moved into the
+              overflow menu below rather than propping up a split control. */}
+          {showCalculatorActions && (
+            <>
+              <button
+                type="button"
+                className={`${styles.primaryAction} ${
+                  hasPromotion ? '' : styles.primaryActionQuiet
+                }`}
+                onClick={handleApplyForPromotion}
+                disabled={isBusy}
+                aria-label={applyLabel}
+              >
+                {isBusy && <Spinner size="1" />}
+                <span className={styles.primaryActionLabel}>{applyLabel}</span>
+                <span className={styles.primaryActionLabelShort}>Apply</span>
+              </button>
               <DeleteSubmissionDataDialog
                 open={isDeleteSubmissionDataDialogOpen}
                 onOpenChange={setIsDeleteSubmissionDataDialogOpen}
@@ -279,7 +273,7 @@ export function NavBar({
                   router.push('/dashboard');
                 }}
               />
-            </div>
+            </>
           )}
 
           <DropdownMenu.Root>
@@ -293,6 +287,33 @@ export function NavBar({
               </button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
+              {showCalculatorActions && (
+                <>
+                  <DropdownMenu.Label>This calculator</DropdownMenu.Label>
+                  <DropdownMenu.Item
+                    disabled={!isDirty || isBusy}
+                    onSelect={() => {
+                      startResetTransition(() => {
+                        reset?.();
+                      });
+                    }}
+                  >
+                    Reset form defaults
+                  </DropdownMenu.Item>
+                  <DropdownMenu.Item
+                    color="red"
+                    disabled={isBusy}
+                    onSelect={() => {
+                      startDeleteDialogTransition(() => {
+                        setIsDeleteSubmissionDataDialogOpen(true);
+                      });
+                    }}
+                  >
+                    Delete data
+                  </DropdownMenu.Item>
+                  <DropdownMenu.Separator />
+                </>
+              )}
               <DropdownMenu.Item asChild>
                 <Link
                   href="https://discord.com/channels/697877518455144468/1385071226837274808"

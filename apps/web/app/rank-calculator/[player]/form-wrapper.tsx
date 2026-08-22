@@ -137,7 +137,7 @@ export function FormWrapper({
             currentPage="player"
             playerName={playerName}
             userCalculators={userCalculators}
-            showSaveActions={true}
+            showCalculatorActions
             beforeSubmit={flushNow}
           />
           <div style={{ flex: 1 }}>

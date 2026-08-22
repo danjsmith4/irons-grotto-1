@@ -2,9 +2,10 @@
    Global navigation
 
    Quiet by design: navigation is text with an active indicator, and the only
-   solid green control is the page's primary action (Save). Everything
-   secondary — help, sign out — collapses into the overflow menu so the bar
-   reads as one row of information, not seven competing buttons.
+   solid green control is the page's primary action (applying for a rank, and
+   only when one is actually waiting). Everything secondary — reset, delete,
+   help, sign out — collapses into the overflow menu so the bar reads as one
+   row of information, not seven competing buttons.
    ========================================================================== */
 
 .nav {
@@ -128,56 +129,82 @@
   flex-shrink: 0;
 }
 
-/* -- split primary action ------------------------------------------------- */
+/* -- primary action ------------------------------------------------------- */
 
-.save {
-  display: flex;
-  align-items: stretch;
-}
+/*
+  One button, no attached chevron. It was a split control while Save existed;
+  autosave removed the anchor and left a caret hanging off nothing, so the
+  page's actual primary action — applying for a rank — took the slot, and the
+  quieter reset/delete entries went into the overflow menu.
 
-.saveMain,
-.saveMore {
+  Green only when a promotion is genuinely waiting (the calculated rank is
+  above the one they hold). Otherwise it is a hairline ghost: still there,
+  still clickable, just not shouting about a re-application at the same rank.
+*/
+.primaryAction {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
   height: 32px;
   padding: 0 0.85rem;
-  border: 0;
+  border: 1px solid transparent;
+  border-radius: 8px;
   background: rgb(var(--ig-secondary));
   color: rgb(var(--ig-on-accent));
   font: inherit;
   font-size: 13px;
   font-weight: 500;
+  white-space: nowrap;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
 }
 
-.saveMain {
-  border-radius: 8px 0 0 8px;
+.primaryActionQuiet {
+  background: rgb(var(--ig-surface-2) / 0.5);
+  border-color: rgb(var(--ig-text-muted) / 0.16);
+  color: rgb(var(--ig-text));
 }
 
-.saveMore {
-  padding: 0 0.45rem;
-  border-radius: 0 8px 8px 0;
-  border-left: 1px solid rgb(var(--ig-on-accent) / 0.2);
-}
-
-.saveMain:hover:not(:disabled),
-.saveMore:hover:not(:disabled) {
+.primaryAction:hover:not(:disabled) {
   background: color-mix(in srgb, rgb(var(--ig-secondary)) 88%, white);
 }
 
-.saveMain:disabled,
-.saveMore:disabled {
+.primaryActionQuiet:hover:not(:disabled) {
+  background: rgb(var(--ig-surface-2) / 0.8);
+  border-color: rgb(var(--ig-secondary) / 0.4);
+}
+
+.primaryAction:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
 
-.saveMain:focus-visible,
-.saveMore:focus-visible {
+.primaryAction:focus-visible {
   outline: 2px solid rgb(var(--ig-text) / 0.7);
   outline-offset: 2px;
+}
+
+.primaryActionQuiet:focus-visible {
+  outline-color: rgb(var(--ig-secondary) / 0.6);
+}
+
+/* The label names the rank on offer ("Apply for Sergeant"), which is too long
+   for a phone. `aria-label` carries the full text either way. */
+.primaryActionLabelShort {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .primaryActionLabel {
+    display: none;
+  }
+
+  .primaryActionLabelShort {
+    display: inline;
+  }
 }
 
 /* -- overflow menu -------------------------------------------------------- */
