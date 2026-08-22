@@ -21,16 +21,6 @@ interface PlayerComparisonProps {
 /** How many ledger rows a list shows before the rest are folded away. */
 const visibleRowCount = 12;
 
-/**
- * The ledger is scored from what is stored, and the headline from what the
- * leaderboard holds; a few points of daylight between them is the ordinary
- * case and saying so every time would be noise. These two thresholds have to
- * both be crossed before it is worth a sentence — a shortfall that is neither
- * large nor a meaningful share of the total explains nothing.
- */
-const unaccountedNoticePoints = 50;
-const unaccountedNoticeShare = 0.01;
-
 const storageKey = 'irons-grotto:comparison-account';
 
 function readStoredAccount() {
@@ -292,7 +282,6 @@ export function PlayerComparison({
             )}
           </section>
 
-          <Footnotes comparison={comparison} />
         </>
       )}
     </div>
@@ -468,31 +457,3 @@ function LedgerRow({
   );
 }
 
-function Footnotes({ comparison }: { comparison: PointsComparison }) {
-  const unaccounted = [comparison.subject, comparison.viewer].filter((side) => {
-    const shortfall = Math.abs(side.storedPoints - side.breakdownPoints);
-
-    return (
-      shortfall >= unaccountedNoticePoints &&
-      shortfall >= side.storedPoints * unaccountedNoticeShare
-    );
-  });
-
-  if (unaccounted.length === 0) {
-    return null;
-  }
-
-  return (
-    <p className={styles.footnote}>
-      {unaccounted
-        .map(
-          (side) =>
-            `${Math.abs(side.storedPoints - side.breakdownPoints).toLocaleString()} of ${side.playerName}'s points`,
-        )
-        .join(' and ')}{' '}
-      {unaccounted.length === 1 ? 'is' : 'are'} not itemised above — quest and
-      combat-achievement unlocks are read live by the calculator rather than
-      stored, so they sit outside this ledger.
-    </p>
-  );
-}

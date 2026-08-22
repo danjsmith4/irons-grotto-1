@@ -377,14 +377,6 @@
   font-weight: 600;
 }
 
-.footnote {
-  margin: 0;
-  padding: 0 1.5rem 1.25rem;
-  font-size: 11px;
-  line-height: 1.5;
-  color: rgb(var(--ig-text-muted));
-}
-
 /* ------------------------------------------------------------- narrow view */
 @media (max-width: 640px) {
   .scoreboard {

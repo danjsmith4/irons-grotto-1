@@ -23,6 +23,7 @@ import {
   generateRequiredItemList,
 } from '@/app/rank-calculator/data-sources/fetch-dropped-item-info';
 import { buildNotableItemList } from '@/app/rank-calculator/utils/build-notable-item-list';
+import { getDerivedItemsForPlayers } from '@/lib/db/derived-item-operations';
 import { buildPointsBreakdown } from '@/app/rank-calculator/utils/build-points-breakdown';
 import { stripEntityName } from '@/app/rank-calculator/utils/strip-entity-name';
 import {
@@ -60,31 +61,41 @@ function toAchievementDiaryMap(
  * Which notable items a player holds, according to what has been *stored* for
  * them.
  *
- * The calculator's own answer additionally folds in a live WikiSync read for
- * quest- and combat-achievement-derived items, which is not something two
- * arbitrary members can be scored on from the database. Those are a handful of
- * items out of several hundred, and any shortfall shows up in the ledger's
- * `unaccounted` line rather than being quietly absorbed.
+ * Three sources, in increasing order of authority:
+ *
+ * 1. the collection log (`player_acquired_items`), which settles every notable
+ *    item that occupies a log slot;
+ * 2. `player_derived_items`, which settles the six that do not — the quest
+ *    items, 6 Jads and Music cape, whose only source is a WikiSync read;
+ * 3. the player's own overrides, which win over both, exactly as they do in
+ *    the calculator.
+ *
+ * With (2) in place this arrives at the same answer the calculator does,
+ * without a live round-trip per player — which is what lets two arbitrary
+ * members be scored against each other from the database at all.
  */
-function buildStoredAcquiredItems(
+export function buildStoredAcquiredItems(
   notableItemList: ItemCategoryMap,
   collectionLogCounts: Record<string, number>,
+  derivedItems: Record<string, boolean>,
   overrides: Record<string, boolean>,
 ): Record<string, boolean> {
   return Object.values(notableItemList)
     .flatMap(({ items }) => items)
     .reduce<Record<string, boolean>>((acc, item) => {
       const key = stripEntityName(item.name);
-      const derived = isItemAcquired(item, {
-        acquiredItems: collectionLogCounts,
-      });
+      // `??` rather than `||` throughout: a stored `false` is a real answer and
+      // must not fall through to the next source.
+      const stored =
+        derivedItems[key] ??
+        isItemAcquired(item, { acquiredItems: collectionLogCounts });
 
-      return { ...acc, [key]: overrides[key] ?? derived };
+      return { ...acc, [key]: overrides[key] ?? stored };
     }, {});
 }
 
 async function loadPlayerInputs(playerNames: string[]) {
-  const [items, diaries, overrides] = await Promise.all([
+  const [items, diaries, overrides, derivedItems] = await Promise.all([
     db
       .select({
         playerName: playerAcquiredItems.playerName,
@@ -110,6 +121,7 @@ async function loadPlayerInputs(playerNames: string[]) {
       })
       .from(playerItemOverrides)
       .where(inArray(playerItemOverrides.playerName, playerNames)),
+    getDerivedItemsForPlayers(playerNames),
   ]);
 
   return (playerName: string) => ({
@@ -131,6 +143,7 @@ async function loadPlayerInputs(playerNames: string[]) {
         (acc, { itemName, isAcquired }) => ({ ...acc, [itemName]: isAcquired }),
         {},
       ),
+    derivedItems: derivedItems[playerName] ?? {},
   });
 }
 
@@ -140,6 +153,7 @@ function breakdownFor(
     collectionLogCounts: Record<string, number>;
     achievementDiaries: AchievementDiaryMap;
     overrides: Record<string, boolean>;
+    derivedItems: Record<string, boolean>;
   },
   notableItemList: ItemCategoryMap,
 ) {
@@ -171,6 +185,7 @@ function breakdownFor(
       acquiredItems: buildStoredAcquiredItems(
         notableItemList,
         stored.collectionLogCounts,
+        stored.derivedItems,
         stored.overrides,
       ),
       combatBonusPoints: player.combatBonusPoints,
