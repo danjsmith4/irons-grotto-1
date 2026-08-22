@@ -41,6 +41,12 @@ import {
   syncItemOverrides,
 } from '@/lib/db/item-override-operations';
 import {
+  getDerivedItems,
+  syncDerivedItems,
+} from '@/lib/db/derived-item-operations';
+import { getSourceDerivedItemNames } from '@/app/rank-calculator/utils/get-source-derived-item-names';
+import { resolveDerivedItemWrite } from './utils/resolve-derived-item-write';
+import {
   resolveTempleAccountType,
   TempleOSRSCollectionLogItem,
 } from '@/app/schemas/temple-api';
@@ -314,10 +320,35 @@ export async function fetchPlayerDetails(
     // and they are written back further down.
     const storedOverrides = await getItemOverrides(playerRecord.playerName);
 
+    /**
+     * The floor under the six notable items nothing logs.
+     *
+     * They are settled purely by WikiSync, so when WikiSync is unreachable
+     * `isItemAcquired` returns false for every one of them — and, unlike a
+     * collection log item, there is no second source and no logged copy to
+     * recover them from. Before `player_derived_items` existed that silently
+     * subtracted up to 480 points from the stored total and left no trace,
+     * which is the same hazard `currentDbValues` guards for the scalars: an
+     * unreachable source says *nothing*, not no.
+     *
+     * Applied only when WikiSync did not answer. When it did, its answer is
+     * authoritative and is written back below — otherwise a stale `true` would
+     * outlive the thing it described.
+     */
+    const storedDerivedItems = wikiSyncData
+      ? {}
+      : await getDerivedItems(playerRecord.playerName);
+
     const previouslyAcquiredItems = Object.keys({
       ...storedOverrides,
+      ...storedDerivedItems,
       ...(savedData?.acquiredItems ?? {}),
-    }).filter((key) => savedData?.acquiredItems?.[key] ?? storedOverrides[key]);
+    }).filter(
+      (key) =>
+        savedData?.acquiredItems?.[key] ??
+        storedOverrides[key] ??
+        storedDerivedItems[key],
+    );
 
     const allCurrentNotableItemNames = new Set(
       Object.values(itemList)
@@ -538,6 +569,32 @@ export async function fetchPlayerDetails(
         });
       } catch (error) {
         console.error('Failed to sync notable item overrides:', error);
+      }
+
+      // Give the unlogged items their home.
+      //
+      // `acquiredItems` rather than `acquiredItemsMap` — this records what the
+      // *source* said, not what the merge concluded, or a player's own tick
+      // would come back next sync wearing a source's authority. Music cape is
+      // settled by WikiSync's music tracks rather than by `isItemAcquired`, so
+      // it is added here the same way it is added to the map above.
+      //
+      // Whether to write at all is `resolveDerivedItemWrite`'s decision, not a
+      // condition here — see its note.
+      try {
+        const answers = resolveDerivedItemWrite({
+          itemNames: getSourceDerivedItemNames(itemList),
+          sourceAnswered: !!wikiSyncData,
+          sourceItems: hasMusicCape
+            ? [...acquiredItems, 'Music cape']
+            : acquiredItems,
+        });
+
+        if (answers) {
+          await syncDerivedItems(playerRecord.playerName, answers);
+        }
+      } catch (error) {
+        console.error('Failed to sync source-derived items:', error);
       }
     }
 

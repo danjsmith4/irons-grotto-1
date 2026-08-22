@@ -7,6 +7,7 @@ import {
   playerRankUps,
   playerAccomplishments,
   playerItemOverrides,
+  playerDerivedItems,
   type Player,
   type NewPlayer,
   type PlayerAcquiredItem,
@@ -144,6 +145,9 @@ export async function deletePlayer(
     await tx
       .delete(playerItemOverrides)
       .where(eq(playerItemOverrides.playerName, playerName));
+    await tx
+      .delete(playerDerivedItems)
+      .where(eq(playerDerivedItems.playerName, playerName));
 
     // Delete the player record
     await tx.delete(players).where(eq(players.playerName, playerName));
@@ -960,6 +964,9 @@ export async function resetPlayerClaims(
       })
       .where(eq(players.playerName, playerName));
 
+    // `player_derived_items` is deliberately left alone. This clears the
+    // player's *claims*, and those rows are not a claim — they are what a
+    // source last reported, which a re-sync would arrive at again anyway.
     await tx
       .delete(playerItemOverrides)
       .where(eq(playerItemOverrides.playerName, playerName));

@@ -321,6 +321,49 @@ export const playerItemOverridesRelations = relations(
 );
 
 /**
+ * The home for the notable items no collection log records.
+ *
+ * Every other notable item is a collection log slot, so `player_acquired_items`
+ * already holds a durable copy of it. Six are not: the four quest items
+ * (Barrows gloves, Book of the dead, Quest cape, Mage Arena 2 cape), the one
+ * combat-achievement item (6 Jads) and Music cape. Those are settled purely by
+ * a live WikiSync read, and until this table they were stored **nowhere** —
+ * recomputed from scratch on every sync and forgotten in between.
+ *
+ * That made them the one part of the calculator with no floor under it. The
+ * scalar equivalents (`has_blood_torva` and friends) are protected by
+ * `currentDbValues` in `fetchPlayerDetails`, on the principle that an
+ * unreachable source says *nothing*, which is not the same as saying no. These
+ * six could not have the same protection because there was no previous answer
+ * to fall back to, so a WikiSync outage silently subtracted up to 480 points
+ * from a member's stored total and left no record that they had ever had it.
+ *
+ * **`is_acquired` is a boolean and the row's absence is a third state.** No row
+ * means the source has never been read for this item; `false` means it was read
+ * and said no. Collapsing those two is exactly the bug this table exists to
+ * fix, so never treat a missing row as a negative.
+ */
+export const playerDerivedItems = pgTable(
+  'player_derived_items',
+  {
+    playerName: varchar('player_name', { length: 12 }).notNull(),
+    /** The form's own key for the item — `stripEntityName(item.name)`. */
+    itemName: text('item_name').notNull(),
+    /** What the source last said. See the note above on the missing row. */
+    isAcquired: boolean('is_acquired').notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (table) => ({
+    playerDerivedItemPk: primaryKey({
+      columns: [table.playerName, table.itemName],
+    }),
+  }),
+);
+
+export type PlayerDerivedItem = typeof playerDerivedItems.$inferSelect;
+export type NewPlayerDerivedItem = typeof playerDerivedItems.$inferInsert;
+
+/**
  * Notable things a member has done, as a feed alongside rank ups and clogs.
  *
  * Detection is *stateless*: `detectAccomplishments` reports everything a player
