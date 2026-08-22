@@ -1,12 +1,12 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { useFormContext } from 'react-hook-form';
+import type { UseFormReturn } from 'react-hook-form';
 import { debounce } from 'lodash';
 import {
   PlayerEditableFields,
   PlayerEditableSchema,
-} from '../[player]/actions/update-player-state-action';
+} from '../[player]/player-editable-schema';
 import { RankCalculatorSchema } from '../[player]/submit-rank-calculator-validation';
 
 /**
@@ -56,6 +56,16 @@ export function buildPlayerPatch(
 }
 
 interface UseAutosaveOptions {
+  /**
+   * The form itself, passed in rather than pulled from context.
+   *
+   * This hook is called by the component that *renders* `<FormProvider>`, so
+   * at the point it runs there is no provider above it and `useFormContext()`
+   * is null. Taking the instance is not just a workaround — the owner of the
+   * form is the right caller, and a descendant reaching for autosave through
+   * context would be a second writer.
+   */
+  form: UseFormReturn<FormValues>;
   /** Persists a patch. Resolves false if the write did not land. */
   save: (patch: PlayerEditableFields) => Promise<boolean>;
   onError: () => void;
@@ -73,8 +83,8 @@ interface UseAutosaveOptions {
  * Flushes immediately on tab hide, so a change made and then dismissed is not
  * lost inside the debounce window.
  */
-export function useAutosave({ save, onError }: UseAutosaveOptions) {
-  const { watch, getValues } = useFormContext<FormValues>();
+export function useAutosave({ form, save, onError }: UseAutosaveOptions) {
+  const { watch, getValues } = form;
 
   // What we believe is stored. Seeded from the values the server rendered.
   const committed = useRef<Partial<FormValues>>(getValues());
