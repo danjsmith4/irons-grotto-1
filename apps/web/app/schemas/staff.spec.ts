@@ -1,9 +1,5 @@
 import { parseAccountType, resolveTempleAccountType } from './temple-api';
 import { AccountType } from './staff';
-import {
-  isGroupMember,
-  parseGroupMembers,
-} from '../rank-calculator/utils/gim-group';
 
 /**
  * Real TempleOSRS `player_info.php` responses, read on 2026-08-20. Pinned here
@@ -82,51 +78,4 @@ describe('resolveTempleAccountType', () => {
       expect(resolve(player)).toBeNull();
     },
   );
-});
-
-describe('the group hiscores', () => {
-  // Trimmed from the real `view-group?name=broh` markup.
-  const groupPage = `
-    <td class='uc-scroll__table-cell'>
-      <a href='https://secure.runescape.com/m=hiscore_oldschool/hiscorepersonal?user1=Chestbroh'>Chestbroh</a>
-    </td>
-    <td class='uc-scroll__table-cell'>
-      <a href='https://secure.runescape.com/m=hiscore_oldschool/hiscorepersonal?user1=Natebroh'>Natebroh</a>
-    </td>
-    <td class='uc-scroll__table-cell'>
-      <a href='https://secure.runescape.com/m=hiscore_oldschool/hiscorepersonal?user1=Fe+Buu'>Fe Buu</a>
-    </td>
-  `;
-
-  it('reads the member list, which is the only place member names appear', () => {
-    expect(parseGroupMembers(groupPage)).toEqual([
-      'Chestbroh',
-      'Natebroh',
-      'Fe Buu',
-    ]);
-  });
-
-  it('decodes names carrying a space', () => {
-    expect(parseGroupMembers(groupPage)).toContain('Fe Buu');
-  });
-
-  it('finds no members on a page for a group that does not exist', () => {
-    expect(parseGroupMembers('<html><body>Not found</body></html>')).toEqual(
-      [],
-    );
-  });
-
-  const group = {
-    name: 'broh',
-    isHardcore: false,
-    members: parseGroupMembers(groupPage),
-  };
-
-  it('confirms a member regardless of how they capitalise their name', () => {
-    expect(isGroupMember(group, 'chestbroh')).toBe(true);
-  });
-
-  it('rejects a player who is not in the group they claimed', () => {
-    expect(isGroupMember(group, 'Weiny Water')).toBe(false);
-  });
 });

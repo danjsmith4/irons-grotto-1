@@ -70,9 +70,9 @@ export function AddPlayerForm({ members }: AddPlayerFormProps) {
     },
   });
 
-  // Most accounts resolve from TempleOSRS or the ironman hiscores, so the
-  // account-type question only appears for the ones that cannot — group
-  // ironmen look exactly like mains on every public API.
+  // Most accounts resolve from TempleOSRS, so the account-type question only
+  // appears for the ones that cannot — a group ironman whose group is not on
+  // Temple's GIM tracking looks exactly like a main.
   const [needsAccountType, setNeedsAccountType] = useState(false);
 
   // Being absent from TempleOSRS is a separate problem from an unknown game
@@ -263,8 +263,8 @@ export function AddPlayerForm({ members }: AddPlayerFormProps) {
               <Flex direction="column" gap="2">
                 <Label weight="bold">Account type</Label>
                 <Text as="p" size="1" color="gray">
-                  We could not work this out automatically — group ironmen are
-                  not listed individually on the hiscores.
+                  We could not work this out automatically — TempleOSRS cannot
+                  tell a group ironman from a main until the group is tracked.
                 </Text>
                 <RadioGroup.Root
                   value={accountType ?? ''}

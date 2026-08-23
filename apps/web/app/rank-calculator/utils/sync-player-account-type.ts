@@ -39,7 +39,7 @@ export async function syncPlayerAccountType(
 ): Promise<AccountTypeSyncResult> {
   try {
     const { info } = await ensureTrackedOnTemple(playerName);
-    const resolution = await resolveAccountType(playerName, info);
+    const resolution = await resolveAccountType(info);
 
     const accountType =
       resolution.status === 'resolved' ? resolution.accountType : null;
