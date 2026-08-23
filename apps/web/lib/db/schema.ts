@@ -141,9 +141,10 @@ export const players = pgTable(
     // has never heard of (see `resolveTempleAccountType`).
     accountType: accountTypeEnum('account_type'),
 
-    // The group a group ironman was verified against, kept so the claim can be
-    // re-checked against the hiscores later. Group names share the 12-character
-    // limit with player names.
+    // The group a group ironman says they are in — their own label, not a
+    // verified fact: TempleOSRS settles the game *mode*, and nothing needs the
+    // name to do it. Group names share the 12-character limit with player
+    // names.
     gimGroupName: varchar('gim_group_name', { length: 12 }),
 
     // Soft-delete flag driven by the daily inactivity reconcile. Inactive

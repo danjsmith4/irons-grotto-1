@@ -20,7 +20,7 @@ export const fetchAccountTypeAction = authActionClient
   .schema(z.object({ playerName: PlayerName }))
   .action(async ({ parsedInput: { playerName } }) => {
     const templeInfo = await fetchTemplePlayerInfo(playerName);
-    const resolution = await resolveAccountType(playerName, templeInfo);
+    const resolution = await resolveAccountType(templeInfo);
 
     return {
       accountType:

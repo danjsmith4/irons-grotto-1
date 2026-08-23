@@ -1,139 +1,67 @@
-import { http, HttpResponse } from 'msw';
-import { server } from '@/mocks/server';
-import { AccountType } from '@/app/schemas/staff';
+import type { TempleOSRSPlayerInfo } from '@/app/schemas/temple-api';
 import { resolveAccountType } from './resolve-account-type';
 
-const boards = {
-  hardcore:
-    'https://secure.runescape.com/m=hiscore_oldschool_hardcore_ironman/index_lite.json',
-  ultimate:
-    'https://secure.runescape.com/m=hiscore_oldschool_ultimate/index_lite.json',
-  ironman:
-    'https://secure.runescape.com/m=hiscore_oldschool_ironman/index_lite.json',
-} as const;
-
-type Board = keyof typeof boards;
-
-/** Real readings, taken 2026-08-21. */
-const templeReadings = {
-  /** SirBurrows — the ironman this whole fix started with. */
-  ironman: { 'Game mode': 1, GIM: 0 },
-  hardcore: { 'Game mode': 3, GIM: 0 },
-  /** A main *and* every group ironman Temple has not been told about. */
-  main: { 'Game mode': 0, GIM: 0 },
-} as const;
-
-function mockBoards(listedOn: Board[]) {
-  server.use(
-    ...Object.entries(boards).map(([board, url]) =>
-      http.get(url, () =>
-        listedOn.includes(board as Board)
-          ? HttpResponse.json({})
-          : new HttpResponse(null, { status: 404 }),
-      ),
-    ),
-  );
+/** Only two fields are read; the rest of the record is noise here. */
+function templeInfo(gameMode: number, gim: number) {
+  return { 'Game mode': gameMode, GIM: gim } as TempleOSRSPlayerInfo['data'];
 }
 
 describe('resolveAccountType', () => {
-  it('takes any non-main reading from Temple as authoritative', async () => {
-    mockBoards([]);
-
-    await expect(
-      resolveAccountType('player', templeReadings.ironman),
-    ).resolves.toEqual({
+  it('takes a solo ironman reading from Temple', async () => {
+    await expect(resolveAccountType(templeInfo(1, 0))).resolves.toEqual({
       status: 'resolved',
-      accountType: 'ironman' satisfies AccountType,
+      accountType: 'ironman',
       source: 'temple',
     });
   });
 
-  it('settles a solo ironman TempleOSRS has never seen', async () => {
-    mockBoards(['ironman']);
-
-    await expect(resolveAccountType('player', null)).resolves.toEqual({
-      status: 'resolved',
-      accountType: 'ironman' satisfies AccountType,
-      source: 'hiscores',
+  it('takes ultimate and hardcore from Temple too', async () => {
+    await expect(resolveAccountType(templeInfo(2, 0))).resolves.toMatchObject({
+      accountType: 'ultimate_ironman',
+    });
+    await expect(resolveAccountType(templeInfo(3, 0))).resolves.toMatchObject({
+      accountType: 'hardcore_ironman',
     });
   });
 
-  it('prefers the specific board when an account is listed on two', async () => {
-    mockBoards(['hardcore', 'ironman']);
-
-    await expect(resolveAccountType('player', null)).resolves.toMatchObject({
-      accountType: 'hardcore_ironman' satisfies AccountType,
+  it('reads a tracked group ironman off the GIM field', async () => {
+    // Verified live 2026-08-22: `FriccKip` of `friccnhecc` reports
+    // `Game mode 0 / GIM 12` once the group is on Temple's GIM tracking.
+    await expect(resolveAccountType(templeInfo(0, 12))).resolves.toMatchObject({
+      accountType: 'group_ironman',
+    });
+    await expect(resolveAccountType(templeInfo(0, 22))).resolves.toMatchObject({
+      accountType: 'hardcore_group_ironman',
     });
   });
 
-  it('reads an ultimate ironman off its own board', async () => {
-    mockBoards(['ultimate', 'ironman']);
-
-    await expect(resolveAccountType('player', null)).resolves.toMatchObject({
-      accountType: 'ultimate_ironman' satisfies AccountType,
+  it('never infers a main, however little Temple knows', async () => {
+    // A main reading is the *absence* of an answer: an untracked group ironman
+    // is indistinguishable from a real main. Verified live 2026-08-22 —
+    // `WhoKnowSteve` of the untracked `drippybros` reports `0 / 0`, exactly
+    // like a main. So it resolves to nothing and the player is asked.
+    await expect(resolveAccountType(templeInfo(0, 0))).resolves.toEqual({
+      status: 'unresolved',
     });
   });
 
-  it('drops a dead hardcore ironman back to a plain ironman', async () => {
-    mockBoards(['ironman']);
-
-    await expect(resolveAccountType('player', null)).resolves.toMatchObject({
-      accountType: 'ironman' satisfies AccountType,
+  it('treats no Temple record as no answer', async () => {
+    await expect(resolveAccountType(null)).resolves.toEqual({
+      status: 'unresolved',
     });
   });
 
-  it("outranks Temple's ambiguous main reading with a board listing", async () => {
-    mockBoards(['ironman']);
+  it('asks nothing but Temple', async () => {
+    // The OSRS hiscores fallback is deliberately gone: it only ever changed
+    // which badge an account got, since `rankThresholdsFor` branches on
+    // nothing but `isMainAccount`. A second source that can disagree, for no
+    // difference in outcome, is a cost with no benefit.
+    const fetchSpy = jest.spyOn(globalThis, 'fetch');
 
-    await expect(
-      resolveAccountType('player', templeReadings.main),
-    ).resolves.toEqual({
-      status: 'resolved',
-      accountType: 'ironman' satisfies AccountType,
-      source: 'hiscores',
-    });
-  });
+    await resolveAccountType(templeInfo(0, 0));
 
-  it('leaves an account no source can assert unresolved', async () => {
-    mockBoards([]);
+    expect(fetchSpy).not.toHaveBeenCalled();
 
-    await expect(
-      resolveAccountType('player', templeReadings.main),
-    ).resolves.toEqual({ status: 'unresolved' });
-  });
-
-  it('never infers a main, however little anything knows', async () => {
-    mockBoards([]);
-
-    const fromNothing = await resolveAccountType('player', null);
-    const fromMainReading = await resolveAccountType(
-      'player',
-      templeReadings.main,
-    );
-
-    expect(fromNothing).not.toHaveProperty('accountType');
-    expect(fromMainReading).not.toHaveProperty('accountType');
-  });
-
-  /**
-   * The separation this file exists to keep: resolving a game mode is a read.
-   * Registering an account on Temple is a different concern with a side effect
-   * and a sleep, and belongs to `ensureTrackedOnTemple`.
-   */
-  it('never registers anything on TempleOSRS', async () => {
-    const addDatapoint = jest.fn();
-
-    mockBoards([]);
-    server.use(
-      http.get('https://templeosrs.com/php/add_datapoint.php', () => {
-        addDatapoint();
-
-        return HttpResponse.text('ok');
-      }),
-    );
-
-    await resolveAccountType('player', null);
-
-    expect(addDatapoint).not.toHaveBeenCalled();
+    fetchSpy.mockRestore();
   });
 });

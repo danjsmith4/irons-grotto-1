@@ -25,13 +25,11 @@ const write = process.argv.includes('--write');
 const { Redis } = await import('@upstash/redis');
 const postgres = (await import('postgres')).default;
 
+// One client, deserialising. The `automaticDeserialization: false` variant is
+// *not* usable here: its `hgetall` returns a flat [field, value, field, value]
+// array rather than an object, so every lookup silently reads `undefined`.
+// The Discord ids survive as strings because they are stored JSON-quoted.
 const redis = Redis.fromEnv({ keepAlive: false });
-// Discord ids are numeric strings; the default client turns them into numbers
-// and loses precision. This is the last place that workaround is needed.
-const redisRaw = Redis.fromEnv({
-  keepAlive: false,
-  automaticDeserialization: false,
-});
 const sql = postgres(process.env.DATABASE_URL, { prepare: false });
 
 /** Redis stored these as 'Pending' | 'Approved' | 'Rejected'. */
@@ -66,11 +64,48 @@ console.log(`found ${ids.length} submissions in redis\n`);
 let migrated = 0;
 let skipped = 0;
 const problems = [];
+const pending = [];
+
+/**
+ * Reject the whole run rather than write nonsense.
+ *
+ * The first attempt at this read the metadata with the non-deserialising
+ * client, whose `hgetall` returns a flat array — so every `discordMessageId`
+ * came back `undefined` and 776 rows would have been written with the string
+ * "undefined". Only a unique index caught it. This checks the same thing
+ * directly, before anything is inserted.
+ */
+function assertMappingIsSane(rows) {
+  const missing = rows.filter(
+    (row) =>
+      !row.discord_message_id ||
+      row.discord_message_id === 'undefined' ||
+      !row.player_name ||
+      !row.submitted_by_discord_id,
+  );
+
+  if (missing.length > 0) {
+    console.error(
+      `\naborting: ${missing.length}/${rows.length} rows are missing a message id, player name or submitter.`,
+    );
+    console.error('first offender:', JSON.stringify(missing[0], null, 2));
+    process.exit(1);
+  }
+
+  const messageIds = new Set(rows.map((row) => row.discord_message_id));
+
+  if (messageIds.size !== rows.length) {
+    console.error(
+      `\naborting: ${rows.length - messageIds.size} duplicate discord message id(s); the unique index would reject these.`,
+    );
+    process.exit(1);
+  }
+}
 
 for (const id of ids) {
   const [snapshot, metadata, diff] = await Promise.all([
     redis.json.get(`rank-submission:${id}`),
-    redisRaw.hgetall(`rank-submission:${id}:metadata`),
+    redis.hgetall(`rank-submission:${id}:metadata`),
     redis.hgetall(`rank-submission:${id}:diff`),
   ]);
 
@@ -122,9 +157,17 @@ for (const id of ids) {
     diff: { version: 1, data: diff ?? {} },
   };
 
+  pending.push(row);
+}
+
+assertMappingIsSane(pending);
+
+for (const row of pending) {
+  const { id } = row;
+
   if (!write) {
     console.log(
-      `  would migrate ${id}  ${row.player_name.padEnd(13)} ${row.status}`,
+      `  would migrate ${id}  ${row.player_name.padEnd(13)} ${String(row.status).padEnd(9)} msg ${row.discord_message_id}`,
     );
     migrated += 1;
     continue;

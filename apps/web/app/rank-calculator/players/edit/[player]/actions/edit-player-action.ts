@@ -68,10 +68,7 @@ export const editPlayerAction = authActionClient
       // that on both — so an unresolvable account is cleared to null instead,
       // and the calculator asks its owner.
       const renamedAccountType = hasPlayerNameChanged
-        ? await resolveAccountType(
-            maybeFormattedPlayerName,
-            tracking.info,
-          ).then((resolution) =>
+        ? await resolveAccountType(tracking.info).then((resolution) =>
             resolution.status === 'resolved' ? resolution.accountType : null,
           )
         : undefined;

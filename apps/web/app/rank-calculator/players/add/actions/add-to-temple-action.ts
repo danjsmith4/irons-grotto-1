@@ -22,7 +22,7 @@ export const addToTempleAction = authActionClient
   .schema(z.object({ playerName: PlayerName }))
   .action(async ({ parsedInput: { playerName } }) => {
     const { isTracked, info } = await ensureTrackedOnTemple(playerName);
-    const resolution = await resolveAccountType(playerName, info);
+    const resolution = await resolveAccountType(info);
 
     return {
       isTracked,

@@ -8,6 +8,7 @@ import { fetchPlayerMeta } from '../../../data-sources/fetch-player-meta';
 import { ensureTrackedOnTemple } from '../../../data-sources/ensure-tracked-on-temple';
 import { AddPlayerSchema } from './add-player-schema';
 import { createNewPlayer, getPlayerByName } from '@/lib/db/player-operations';
+import { clientConstants } from '@/config/constants.client';
 import { resolveDeclaredAccountType } from '../../../utils/resolve-declared-account-type';
 import { resolveAccountType } from '../../../utils/resolve-account-type';
 
@@ -59,11 +60,11 @@ export const addPlayerAction = authActionClient
 
       const maybeFormattedPlayerName = playerMeta?.rsn ?? playerName;
 
-      // Game mode, from the sources that can assert one — Temple's reading,
-      // then the ironman hiscore boards. Only if neither can does the player's
-      // own answer come into it, and a claimed group is verified against the
-      // group hiscores rather than taken at face value.
-      const resolution = await resolveAccountType(playerName, tracking.info);
+      // Game mode, from the only source that can assert one: TempleOSRS.
+      // Only when Temple cannot does the player's own answer come into it,
+      // and a claimed group is confirmed back against Temple rather than
+      // taken at face value.
+      const resolution = await resolveAccountType(tracking.info);
 
       // Unresolved *and* undeclared means the question was never put to the
       // player — the form only asks when it has to. That is stored as null,
@@ -88,14 +89,14 @@ export const addPlayerAction = authActionClient
                 gimGroupName: null,
               } as const);
 
-      // A group we cannot find is never quietly downgraded to unranked — the
-      // player is told, and decides whether it was a typo or a genuinely
-      // unranked group.
-      if (declared.status === 'group-not-found') {
+      // A group Temple cannot see is never quietly downgraded to unranked —
+      // the player is told what to do about it, and decides whether their
+      // group is untracked or genuinely unranked.
+      if (declared.status === 'group-not-tracked') {
         returnValidationErrors(AddPlayerSchema, {
           gimGroupName: {
             _errors: [
-              `We couldn't find your group. No group called "${gimGroupNameInput}" lists ${maybeFormattedPlayerName} on the group hiscores. Check the spelling, or pick "Unranked group ironman" — unranked groups never appear there.`,
+              `Your group isn't being tracked on TempleOSRS yet, so Temple still reads ${maybeFormattedPlayerName} as a main. Add your group at ${clientConstants.temple.gimTrackingUrl} and try again — or pick "Unranked group ironman", which never appears there.`,
             ],
           },
         });
