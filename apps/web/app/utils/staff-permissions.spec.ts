@@ -1,6 +1,7 @@
 import {
   canAccessAdminDashboard,
   canAssignStaffRole,
+  canManageDiscordBan,
   canManageStaffRole,
   grantableStaffRoles,
   outranks,
@@ -201,5 +202,58 @@ describe('canAssignStaffRole', () => {
         nextRole: 'admin',
       }),
     ).toBe(false);
+  });
+});
+
+describe('canManageDiscordBan', () => {
+  /**
+   * The common case: whoever is being banned has no clan account at all, so
+   * no role, so they sit below every moderator.
+   */
+  it('lets an elevated account ban someone with no clan standing', () => {
+    expect(
+      canManageDiscordBan({ actorRole: 'admin', targetRole: null }),
+    ).toBe(true);
+  });
+
+  it('refuses to ban a member who outranks the actor', () => {
+    expect(
+      canManageDiscordBan({ actorRole: 'admin', targetRole: 'owner' }),
+    ).toBe(false);
+  });
+
+  it('refuses to ban a member of equal standing', () => {
+    expect(
+      canManageDiscordBan({
+        actorRole: 'deputy_owner',
+        targetRole: 'deputy_owner',
+      }),
+    ).toBe(false);
+  });
+
+  it('refuses to ban yourself', () => {
+    expect(
+      canManageDiscordBan({
+        actorRole: 'owner',
+        targetRole: 'owner',
+        isSelf: true,
+      }),
+    ).toBe(false);
+  });
+
+  /**
+   * A moderator is not an elevated account, so they never reach the dashboard
+   * — and must not be able to ban by calling the action directly either.
+   */
+  it('turns away a moderator', () => {
+    expect(
+      canManageDiscordBan({ actorRole: 'moderator', targetRole: null }),
+    ).toBe(false);
+  });
+
+  it('turns away a member with no staff role', () => {
+    expect(canManageDiscordBan({ actorRole: null, targetRole: null })).toBe(
+      false,
+    );
   });
 });

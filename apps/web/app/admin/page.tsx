@@ -3,7 +3,9 @@ import { auth } from '@/auth';
 import { NavBar } from '@/app/components/nav-bar';
 import { fetchPlayerAccounts } from '@/app/rank-calculator/data-sources/fetch-player-accounts';
 import { fetchAdminDashboard } from '@/app/data-sources/fetch-admin-dashboard';
+import { fetchDiscordBans } from '@/app/data-sources/fetch-discord-bans';
 import { StaffRoles } from './staff-roles';
+import { DiscordBans } from './discord-bans';
 import styles from './admin.module.css';
 
 export const metadata = {
@@ -24,7 +26,13 @@ export default async function AdminPage() {
     redirect('/');
   }
 
-  const result = await fetchAdminDashboard();
+  // Both are gated on the same elevated check, so they can go out together;
+  // only the roster decides whether the page renders at all. The ban list
+  // talks to Discord and is allowed to fail on its own — see the data source.
+  const [result, bansResult] = await Promise.all([
+    fetchAdminDashboard(),
+    fetchDiscordBans(),
+  ]);
 
   if (!result.success) {
     redirect('/dashboard');
@@ -42,6 +50,10 @@ export default async function AdminPage() {
           viewerPlayerName={viewerPlayerName}
           members={members}
           history={history}
+        />
+        <DiscordBans
+          bans={bansResult.success ? bansResult.data.bans : null}
+          error={bansResult.success ? null : bansResult.error}
         />
       </main>
     </div>

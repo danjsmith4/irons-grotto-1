@@ -107,6 +107,23 @@ export function canManageStaffRole({
   return outranks(actorRole, targetRole);
 }
 
+/**
+ * Whether `actor` may ban or lift the ban on this Discord account.
+ *
+ * The same ladder, for the same reason: a Discord ban is the most destructive
+ * thing the dashboard can do, so an admin must not be able to ban the owner
+ * out of the server, and nobody may ban themselves. Someone with no clan
+ * account has a null role and is below everyone — which is the common case,
+ * since most people worth banning were never members.
+ */
+export function canManageDiscordBan({
+  actorRole,
+  targetRole,
+  isSelf = false,
+}: ManageMemberInput) {
+  return canManageStaffRole({ actorRole, targetRole, isSelf });
+}
+
 type AssignStaffRoleInput = ManageMemberInput & {
   /** The role being written, or null to strip the member of their role. */
   nextRole: StaffRole | null;

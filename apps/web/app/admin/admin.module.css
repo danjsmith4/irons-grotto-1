@@ -238,11 +238,116 @@
   background: rgb(var(--ig-secondary) / 0.88);
 }
 
+/*
+ * The one destructive control on the page. Green is the accent everywhere
+ * else, so a ban gets the danger token instead — hairline, not a solid fill,
+ * because it sits in a table row and should not read as the primary action.
+ */
+.dangerButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid rgb(var(--ig-danger) / 0.45);
+  background: transparent;
+  color: rgb(var(--ig-danger));
+}
+
+.dangerButton:hover:not(:disabled) {
+  background: rgb(var(--ig-danger) / 0.12);
+  border-color: rgb(var(--ig-danger) / 0.7);
+}
+
 .manageButton:disabled,
 .primaryButton:disabled,
-.ghostButton:disabled {
+.ghostButton:disabled,
+.dangerButton:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* ---------- Discord bans ---------- */
+
+.discordIdentity {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.discordHandle {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  color: rgb(var(--ig-text-muted));
+}
+
+.discordClanNames {
+  font-size: 0.75rem;
+  color: rgb(var(--ig-text-muted));
+}
+
+.reasonCell {
+  color: rgb(var(--ig-text-muted));
+  max-width: 22rem;
+}
+
+.errorNote {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 1.25rem 1rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: rgb(var(--ig-danger));
+}
+
+.reasonField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin-top: 1rem;
+}
+
+.reasonLabel {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgb(var(--ig-text-muted));
+}
+
+.reasonField textarea {
+  width: 100%;
+  padding: 0.5rem 0.625rem;
+  border: 1px solid rgb(var(--ig-text-muted) / 0.16);
+  border-radius: 8px;
+  background: rgb(var(--ig-bg) / 0.5);
+  font: inherit;
+  font-size: 0.875rem;
+  color: rgb(var(--ig-text));
+  resize: vertical;
+}
+
+.reasonField textarea:focus {
+  outline: none;
+  border-color: rgb(var(--ig-secondary) / 0.6);
+}
+
+.reasonField textarea::placeholder {
+  color: rgb(var(--ig-text-muted) / 0.75);
+}
+
+.reasonHint {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: rgb(var(--ig-text-muted));
 }
 
 /* ---------- History ---------- */
