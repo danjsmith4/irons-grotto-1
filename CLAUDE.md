@@ -319,13 +319,32 @@ The clan runs a TempleOSRS competition a week, alternating **Skill of the Week**
 
 Those fields are still **rendered, locked** (`.lockedValue` — dashed hairline, not a disabled input): they are decisions already made, and staff should see what is about to be booked without opening Temple. The client sends `expectedType` alongside the metric so a form left open since before the last event was created is rejected rather than silently creating the wrong kind.
 
+### Creating a competition — two things Temple's docs do not say
+
+Both were found by calling the endpoint, and both broke it:
+
+- ⚠️ **`team-comp` must be absent, not `0`.** Temple checks whether the parameter is *present*, not what it holds, so `team-comp=0` routes the request down the **team** path and fails with `Invalid memberlist JSON!` — it is looking for `teams`. This is what broke the first real attempt to create an event.
+- ⚠️ **`participants` is required even with a linked, synced group.** Omitting it or sending `[]` fails with `Invalid memberlist!`. So `fetchTempleGroupMembers` sends the group's own roster — the only list that cannot introduce a non-member. Temple then applies the sync over the top: sending 268 names produced a 278-participant competition. **The list we send does not decide who competes**; do not "improve" it into a curated set.
+
+⚠️ **Temple rewrites the name it stores.** "Zulrah BOTW" is kept as `Zulrah Botw` (title case, punctuation flattened). The row records what Temple stored (`storedName`, read back after creation), not what was sent, or the site would show members a name that does not match the competition page.
+
+`competition_delete.php` takes `id` + `key`, which is what makes this endpoint safe to test live — create, verify, delete.
+
+**After creating, the competition is handed to the clan Discord bot** (`announceClanEvent`): `.sotw <url> <key>` / `.botw <url> <key>` into `clanEventAnnouncementChannelId`. That is the bot's syntax, not ours — it is a command, not a human announcement. ⚠️ **The message carries the edit key**, so anyone who can read that channel can edit or delete the competition. Failure is reported, not rolled back (`discord: 'sent' | 'failed' | 'skipped'`), matching the staff-role convention.
+
 **`clan_events.id` is Temple's competition id** (migration `0024`). A row only ever exists because a competition exists, so Temple is called *first* and the row is written from its reply — the reverse order leaves a row pointing at nothing whenever Temple refuses. `competition_key` is the edit password Temple hands out **once**; it is stored or it is gone. Standings are never stored: they are read live from `competition_info.php`, which is public.
 
 ⚠️ **Temple's dates carry no timezone** (`2026-08-21 14:00:00`, server time UTC) and V8 reads that form as *local*. `parseTempleUtcDate` in `app/schemas/clan-events.ts` normalises at ingestion; `starts_at`/`ends_at` are `timestamp with time zone`, unlike the older tables here, because an event *is* an exact instant.
 
 ⚠️ **`xp_gained` is Temple's name for it whatever the competition tracks** — for a boss week it is kill count. Parsed as `gained` so nothing downstream pretends a Vorkath kc is experience; `clanEventGainLabel` supplies the unit.
 
-**Metric ids are Temple's, and are recorded rather than derived.** Skills happen to match the OSRS hiscore order (Thieving 18); boss numbers are Temple's alone. Skills and bosses share **one id space**, which is what lets `clanEventTypeForMetric` classify an imported competition from its metric with nobody having to say which kind it was. Icons are wiki file names **verified to resolve** — several bosses have no article image under their own name (Zulrah is `Zulrah_(serpentine)`, Wintertodt is `Burnt_page`, Grotesque Guardians is `Dusk`) — so don't "simplify" them into `name.replaceAll(' ', '_')`.
+**Metric ids are Temple's, and are recorded rather than derived.** Skills happen to match the OSRS hiscore order (Thieving 18); boss numbers are Temple's alone. Skills and bosses share **one id space**, which is what lets `clanEventTypeForMetric` classify an imported competition from its metric with nobody having to say which kind it was.
+
+⚠️ **A metric missing from these lists fails quietly and twice**: the event renders no icon, *and* `clanEventTypeForMetric` cannot classify it, so importing that competition is refused outright. This bit — the first BOTW backfilled was Maggot King (122), which had been left out. When Temple adds content, add it here.
+
+Icons are wiki file names **verified to resolve**, not derived from the name — several have no article image under their own name (Zulrah is `Zulrah_(serpentine)`, Wintertodt is `Burnt_page`, Grotesque Guardians is `Dusk`, Shellbane Gryphon is `Shellbane_gryphon` with a lowercase g). Don't "simplify" them into `name.replaceAll(' ', '_')`; check a new one against `https://oldschool.runescape.wiki/images/thumb/<name>.png/64px-<name>.png` first. The picker renders them as a **searchable grid of icon tiles**, not a dropdown — a native `<select>` cannot show an icon, and staff recognise a boss by its face.
+
+**Skill of the Week excludes the six combat skills** (`combatSkillMetricIds` — Attack, Strength, Defence, Ranged, Magic, Hitpoints). A skilling competition on a combat skill is a bossing competition with worse scoring, and Hitpoints cannot be trained alone; combat belongs to BOTW. Spec'd so it cannot drift back.
 
 **Import bootstraps the alternation.** The next type follows the last event *recorded*, and the clan ran these long before there was a table — so `importClanEventAction` adopts an existing competition by id, reading its name, dates and type from Temple. Without one imported event, the first creation would guess.
 

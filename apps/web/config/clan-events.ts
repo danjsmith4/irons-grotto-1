@@ -28,6 +28,21 @@ export const clanEventGainLabel: Record<ClanEventType, string> = {
   botw: 'KC',
 };
 
+/**
+ * Where a newly created competition is handed to the clan Discord bot.
+ *
+ * ⚠️ The message carries the competition's **edit key**, so whoever can read
+ * this channel can edit or delete the competition. Point it somewhere staff
+ * already trust with that.
+ */
+export const clanEventAnnouncementChannelId = '1058503652672819260';
+
+/** The bot's command for each event type — its syntax, not ours. */
+export const clanEventBotCommand: Record<ClanEventType, string> = {
+  sotw: '.sotw',
+  botw: '.botw',
+};
+
 export interface ClanEventMetric {
   /**
    * TempleOSRS's own id for the skill or boss — the `skill` parameter of
@@ -50,34 +65,43 @@ export interface ClanEventMetric {
 }
 
 /**
- * The 23 skills. `Overall` and the EHP variants are deliberately absent: a
- * skill of the week is one skill.
+ * The skills a Skill of the Week can run on.
+ *
+ * **The six combat skills are deliberately absent** — Attack (1), Strength
+ * (3), Defence (2), Ranged (5), Magic (7) and Hitpoints (4). A skilling
+ * competition on a combat skill is really a bossing competition with worse
+ * scoring, and Hitpoints cannot be trained on its own at all. Boss of the Week
+ * is where combat belongs.
+ *
+ * `Overall`, `EHP` and its variants are absent for a different reason: a skill
+ * of the week is one skill.
  */
 export const sotwSkills: ClanEventMetric[] = [
-  { id: 1, name: 'Attack', icon: 'Attack_icon' },
   { id: 17, name: 'Agility', icon: 'Agility_icon' },
   { id: 23, name: 'Construction', icon: 'Construction_icon' },
   { id: 8, name: 'Cooking', icon: 'Cooking_icon' },
   { id: 13, name: 'Crafting', icon: 'Crafting_icon' },
-  { id: 2, name: 'Defence', icon: 'Defence_icon' },
   { id: 20, name: 'Farming', icon: 'Farming_icon' },
   { id: 12, name: 'Firemaking', icon: 'Firemaking_icon' },
   { id: 11, name: 'Fishing', icon: 'Fishing_icon' },
   { id: 10, name: 'Fletching', icon: 'Fletching_icon' },
   { id: 16, name: 'Herblore', icon: 'Herblore_icon' },
-  { id: 4, name: 'Hitpoints', icon: 'Hitpoints_icon' },
   { id: 22, name: 'Hunter', icon: 'Hunter_icon' },
-  { id: 7, name: 'Magic', icon: 'Magic_icon' },
   { id: 15, name: 'Mining', icon: 'Mining_icon' },
   { id: 6, name: 'Prayer', icon: 'Prayer_icon' },
-  { id: 5, name: 'Ranged', icon: 'Ranged_icon' },
   { id: 21, name: 'Runecraft', icon: 'Runecraft_icon' },
+  { id: 119, name: 'Sailing', icon: 'Sailing_icon' },
   { id: 19, name: 'Slayer', icon: 'Slayer_icon' },
   { id: 14, name: 'Smithing', icon: 'Smithing_icon' },
-  { id: 3, name: 'Strength', icon: 'Strength_icon' },
   { id: 18, name: 'Thieving', icon: 'Thieving_icon' },
   { id: 9, name: 'Woodcutting', icon: 'Woodcutting_icon' },
 ];
+
+/**
+ * Temple's ids for the six combat skills, kept so the exclusion above is
+ * checkable rather than a gap you have to notice.
+ */
+export const combatSkillMetricIds = [1, 2, 3, 4, 5, 7];
 
 /**
  * The bosses and boss-shaped content a Boss of the Week can be run on.
@@ -94,6 +118,7 @@ export const botwBosses: ClanEventMetric[] = [
   { id: 109, name: 'Araxxor', icon: 'Araxxor' },
   { id: 96, name: 'Artio', icon: 'Artio' },
   { id: 35, name: 'Barrows Chests', icon: 'Ahrim_the_Blighted' },
+  { id: 121, name: 'Brutus', icon: 'Brutus' },
   { id: 36, name: 'Bryophyta', icon: 'Bryophyta' },
   { id: 37, name: 'Callisto', icon: 'Callisto' },
   { id: 97, name: 'Calvarion', icon: "Calvar'ion" },
@@ -125,6 +150,8 @@ export const botwBosses: ClanEventMetric[] = [
   { id: 57, name: 'KreeArra', icon: "Kree'arra" },
   { id: 58, name: 'Kril Tsutsaroth', icon: "K'ril_Tsutsaroth" },
   { id: 106, name: 'Lunar Chests', icon: 'Blood_moon_helm' },
+  { id: 123, name: 'Mad Angel', icon: 'Mad_Angel' },
+  { id: 122, name: 'Maggot King', icon: 'Maggot_King' },
   { id: 59, name: 'Mimic', icon: 'Mimic' },
   { id: 89, name: 'Nex', icon: 'Nex' },
   { id: 82, name: 'Nightmare', icon: 'The_Nightmare' },
@@ -135,6 +162,7 @@ export const botwBosses: ClanEventMetric[] = [
   { id: 61, name: 'Sarachnis', icon: 'Sarachnis' },
   { id: 62, name: 'Scorpia', icon: 'Scorpia' },
   { id: 104, name: 'Scurrius', icon: 'Scurrius' },
+  { id: 120, name: 'Shellbane Gryphon', icon: 'Shellbane_gryphon' },
   { id: 63, name: 'Skotizo', icon: 'Skotizo' },
   { id: 107, name: 'Sol Heredit', icon: 'Sol_Heredit' },
   { id: 98, name: 'Spindel', icon: 'Spindel' },

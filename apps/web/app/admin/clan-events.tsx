@@ -59,6 +59,7 @@ function competitionUrl(id: number) {
 export function ClanEvents({ data, error }: ClanEventsProps) {
   const router = useRouter();
   const [metricId, setMetricId] = useState<number | null>(null);
+  const [metricQuery, setMetricQuery] = useState('');
   const [name, setName] = useState('');
   const [importId, setImportId] = useState('');
   const [importKey, setImportKey] = useState('');
@@ -69,6 +70,14 @@ export function ClanEvents({ data, error }: ClanEventsProps) {
     nextSlot && metricId !== null
       ? findClanEventMetric(nextSlot.type, metricId)
       : null;
+
+  const visibleMetrics = useMemo(() => {
+    const query = metricQuery.trim().toLowerCase();
+
+    return query
+      ? metrics.filter((option) => option.name.toLowerCase().includes(query))
+      : metrics;
+  }, [metrics, metricQuery]);
 
   // The name follows the chosen metric until somebody types over it.
   const resolvedName = useMemo(() => {
@@ -101,7 +110,17 @@ export function ClanEvents({ data, error }: ClanEventsProps) {
           );
         }
 
+        // The bot needs the command to set the event up on Discord. If it did
+        // not land, say so — nobody would otherwise find out until the event
+        // failed to appear there.
+        if (result.discord === 'failed') {
+          toast.warn(
+            'The competition was created, but the Discord command could not be sent. Post it in the events channel by hand.',
+          );
+        }
+
         setMetricId(null);
+        setMetricQuery('');
         setName('');
         router.refresh();
       },
@@ -217,38 +236,59 @@ export function ClanEvents({ data, error }: ClanEventsProps) {
         </p>
 
         <div className={styles.eventForm}>
-          <label className={styles.field}>
+          {/*
+            A grid of icons rather than a dropdown. This is the page's one real
+            decision, and staff recognise a boss by its face faster than by a
+            line of text — a native select cannot show either. The search box
+            earns its place at ~70 bosses; the 18 skills fit without scrolling.
+          */}
+          <div className={`${styles.field} ${styles.fieldWide}`}>
             <span className={styles.fieldLabel}>
-              {nextSlot.type === 'sotw' ? 'Skill' : 'Boss'}
+              {metricNoun === 'skill' ? 'Skill' : 'Boss'}
+              {metric && <span className={styles.chosen}>{metric.name}</span>}
             </span>
-            <div className={styles.metricPicker}>
-              {metric && (
-                <ItemImageWithFallback itemName={metric.icon} size={24} />
+
+            <input
+              className={styles.textInput}
+              value={metricQuery}
+              disabled={isBlocked || isCreating}
+              placeholder={`Search ${metrics.length} ${metricNoun}s…`}
+              aria-label={`Search ${metricNoun}s`}
+              onChange={(event) => setMetricQuery(event.target.value)}
+            />
+
+            <div
+              className={styles.metricGrid}
+              role="radiogroup"
+              aria-label={`Choose a ${metricNoun}`}
+            >
+              {visibleMetrics.map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={metricId === option.id}
+                  disabled={isBlocked || isCreating}
+                  className={`${styles.metricTile} ${
+                    metricId === option.id ? styles.metricTileActive : ''
+                  }`}
+                  onClick={() => setMetricId(option.id)}
+                >
+                  <ItemImageWithFallback itemName={option.icon} size={28} />
+                  <span className={styles.metricName}>{option.name}</span>
+                </button>
+              ))}
+              {visibleMetrics.length === 0 && (
+                <p className={styles.empty}>
+                  No {metricNoun} matches “{metricQuery}”.
+                </p>
               )}
-              <select
-                className={styles.select}
-                value={metricId ?? ''}
-                disabled={isBlocked || isCreating}
-                onChange={(event) =>
-                  setMetricId(
-                    event.target.value ? Number(event.target.value) : null,
-                  )
-                }
-              >
-                <option value="">
-                  Choose a {nextSlot.type === 'sotw' ? 'skill' : 'boss'}…
-                </option>
-                {metrics.map((option) => (
-                  <option key={option.id} value={option.id}>
-                    {option.name}
-                  </option>
-                ))}
-              </select>
             </div>
+
             <span className={styles.fieldHint}>
               The only thing here that is yours to decide.
             </span>
-          </label>
+          </div>
 
           {/*
             Locked, but shown. These are not inputs the site is withholding —

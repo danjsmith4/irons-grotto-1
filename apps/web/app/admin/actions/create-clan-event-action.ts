@@ -20,6 +20,7 @@ import {
 } from '@/lib/db/clan-event-operations';
 import { nextClanEventWindow } from '@/app/utils/clan-event-schedule';
 import { createTempleCompetition } from '@/app/data-sources/create-temple-competition';
+import { announceClanEvent } from '../utils/announce-clan-event';
 
 const CreateClanEventSchema = z.object({
   /**
@@ -125,13 +126,20 @@ export const createClanEventAction = authActionClient
           type: existing.type,
           alreadyRecorded: true,
           hasCompetitionKey: !!existing.competitionKey,
+          // Not re-sent: the bot was handed this competition when it was first
+          // recorded, and a second command would have it set the event up twice.
+          discord: 'skipped' as const,
         };
       }
 
       const event = await insertClanEvent({
         id: created.competitionId,
         type,
-        name: competitionName,
+        // Temple normalises what it stores — "Thieving SOTW" comes back as
+        // "Thieving Sotw" — so the name it settled on is recorded rather than
+        // the one we asked for, or the site would show members a name that
+        // does not match the competition page.
+        name: created.storedName ?? competitionName,
         metricId: metric.id,
         metricName: metric.name,
         startsAt,
@@ -139,6 +147,15 @@ export const createClanEventAction = authActionClient
         competitionKey: created.competitionKey,
         createdByPlayerName: actorPlayerName,
         createdByDiscordId: userId,
+      });
+
+      // The competition exists and is recorded; handing it to the Discord bot
+      // is the last step and is reported rather than rolled back, matching the
+      // staff-role convention. A failed command can be re-sent by hand.
+      const discord = await announceClanEvent({
+        type,
+        competitionId: event.id,
+        competitionKey: event.competitionKey,
       });
 
       revalidatePath('/admin');
@@ -150,6 +167,7 @@ export const createClanEventAction = authActionClient
         type: event.type,
         alreadyRecorded: false,
         hasCompetitionKey: !!event.competitionKey,
+        discord,
       };
     },
   );

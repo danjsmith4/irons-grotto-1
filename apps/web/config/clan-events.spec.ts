@@ -1,6 +1,7 @@
 import {
   botwBosses,
   clanEventMetrics,
+  combatSkillMetricIds,
   clanEventTypeForMetric,
   clanEventTypes,
   defaultClanEventName,
@@ -25,8 +26,52 @@ describe('nextClanEventType', () => {
 });
 
 describe('metric lists', () => {
-  it('covers all 23 skills', () => {
-    expect(sotwSkills).toHaveLength(23);
+  /**
+   * Combat is what Boss of the Week is for, and Hitpoints cannot be trained on
+   * its own at all — so the six combat skills are not offered.
+   */
+  it('offers no combat skill', () => {
+    const offered = sotwSkills.filter(({ id }) =>
+      combatSkillMetricIds.includes(id),
+    );
+
+    expect(offered).toEqual([]);
+  });
+
+  it.each(['Attack', 'Strength', 'Defence', 'Ranged', 'Magic', 'Hitpoints'])(
+    'does not offer %s',
+    (name) => {
+      expect(sotwSkills.map((skill) => skill.name)).not.toContain(name);
+    },
+  );
+
+  it('offers the non-combat skills', () => {
+    expect(sotwSkills.map(({ name }) => name)).toEqual(
+      expect.arrayContaining([
+        'Agility',
+        'Farming',
+        'Runecraft',
+        'Slayer',
+        'Thieving',
+        'Woodcutting',
+      ]),
+    );
+  });
+
+  /**
+   * The metric of the first BOTW backfilled. It was missing at first, which
+   * left that event with no icon and made it un-importable through the UI —
+   * `clanEventTypeForMetric` could not classify it.
+   */
+  it('covers the newer bosses Temple lists', () => {
+    expect(botwBosses.map(({ name }) => name)).toEqual(
+      expect.arrayContaining([
+        'Maggot King',
+        'Brutus',
+        'Mad Angel',
+        'Shellbane Gryphon',
+      ]),
+    );
   });
 
   /**
