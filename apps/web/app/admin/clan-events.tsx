@@ -21,6 +21,7 @@ import {
 import type { ClanEventsAdminData } from '@/app/data-sources/fetch-clan-events';
 import { createClanEventAction } from './actions/create-clan-event-action';
 import { importClanEventAction } from './actions/import-clan-event-action';
+import { pickEventDutyAction } from './actions/pick-event-duty-action';
 import styles from './admin.module.css';
 
 interface ClanEventsProps {
@@ -130,6 +131,30 @@ export function ClanEvents({ data, error }: ClanEventsProps) {
     },
   );
 
+  const { execute: pickDuty, isExecuting: isPickingDuty } = useAction(
+    pickEventDutyAction,
+    {
+      onSuccess({ data: result }) {
+        if (!result) {
+          return;
+        }
+
+        toast.success(`${result.playerName} is on event duty.`);
+
+        if (result.discord === 'failed') {
+          toast.warn(
+            `${result.playerName} is recorded as on duty, but the clan chat could not be posted to — tell them yourself.`,
+          );
+        }
+
+        router.refresh();
+      },
+      onError({ error: actionError }) {
+        toast.error(actionError.serverError ?? 'Could not pick anyone.');
+      },
+    },
+  );
+
   const { execute: importEvent, isExecuting: isImporting } = useAction(
     importClanEventAction,
     {
@@ -234,6 +259,41 @@ export function ClanEvents({ data, error }: ClanEventsProps) {
             </span>
           )}
         </p>
+
+        {/*
+          Who is actually going to do it. Staff kept forgetting whose turn it
+          was, so the site rolls someone and says so in the clan chat — the
+          message carries the deadline and the pick, so being volunteered does
+          not mean coming back here to find out what for.
+        */}
+        <div className={styles.dutyRow}>
+          <span className={styles.dutyText}>
+            {data.duty ? (
+              <>
+                <PlayerNameButton
+                  name={data.duty.playerName}
+                  className={styles.pickerName}
+                />{' '}
+                is on duty for this one
+                {data.duty.rolledByPlayerName
+                  ? `, rolled by ${data.duty.rolledByPlayerName}`
+                  : ''}
+                .
+              </>
+            ) : (
+              <>Nobody is on duty for the next event yet.</>
+            )}
+          </span>
+          <button
+            type="button"
+            className={styles.ghostButton}
+            disabled={isBlocked || isPickingDuty}
+            onClick={() => pickDuty({})}
+          >
+            {isPickingDuty && <Spinner size="1" />}
+            {data.duty ? 'Re-roll staff' : 'Pick staff'}
+          </button>
+        </div>
 
         <div className={styles.eventForm}>
           {/*

@@ -37,6 +37,14 @@ export const clanEventGainLabel: Record<ClanEventType, string> = {
  */
 export const clanEventAnnouncementChannelId = '1058503652672819260';
 
+/**
+ * Where the "you have been rolled onto event duty" message goes.
+ *
+ * A general clan channel, not the bot's command channel: the point is that
+ * everyone sees who is on the hook, which is most of what makes the rota work.
+ */
+export const clanEventDutyChannelId = '697877519730213010';
+
 /** The bot's command for each event type — its syntax, not ours. */
 export const clanEventBotCommand: Record<ClanEventType, string> = {
   sotw: '.sotw',

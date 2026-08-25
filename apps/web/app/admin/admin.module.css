@@ -472,6 +472,23 @@
   opacity: 0.5;
 }
 
+/* Whose turn it is, and the button that decides. */
+.dutyRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgb(var(--ig-text-muted) / 0.07);
+}
+
+.dutyText {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: rgb(var(--ig-text-muted));
+}
+
 /*
  * The metric picker: a scrollable grid of icon tiles, not a dropdown. Staff
  * recognise a boss by its face faster than by a line of text, and this is the

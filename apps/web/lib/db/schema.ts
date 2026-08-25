@@ -683,6 +683,14 @@ export const clanEventWinsRelations = relations(clanEventWins, ({ one }) => ({
 export const syncMetadata = pgTable('sync_metadata', {
   id: varchar('id', { length: 50 }).primaryKey(),
   lastRunAt: timestamp('last_run_at').notNull().defaultNow(),
+  /**
+   * Optional payload for keys that need to remember *what* happened, not only
+   * when — currently the staff member rolled onto event-setup duty.
+   *
+   * JSON in a text column, parsed by whoever wrote it. Nullable, so every
+   * existing "when did this last run" row is untouched and keeps working.
+   */
+  value: text('value'),
 });
 
 export type SyncMetadata = typeof syncMetadata.$inferSelect;

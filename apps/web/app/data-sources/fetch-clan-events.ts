@@ -14,6 +14,7 @@ import {
   getClanEventWinCounts,
   getLatestClanEvent,
 } from '@/lib/db/clan-event-operations';
+import { getClanEventDuty } from '@/lib/db/clan-event-duty-operations';
 import {
   clanEventPhase,
   nextClanEventWindow,
@@ -63,11 +64,24 @@ export interface NextClanEventSlot {
   blockedReason: string | null;
 }
 
+/** Who was rolled onto setting the next event up. */
+export interface ClanEventDutySummary {
+  playerName: string;
+  rolledAt: string;
+  rolledByPlayerName: string | null;
+}
+
 export interface ClanEventsAdminData {
   events: AdminClanEvent[];
   nextSlot: NextClanEventSlot;
   picker: ClanEventPickerResult;
   winCounts: { playerName: string; wins: number; isActiveMember: boolean }[];
+  /**
+   * Null when nobody has been rolled, or when the roll was for an earlier
+   * slot — a name against last week's event is worse than no name, so a stale
+   * assignment expires rather than lingering.
+   */
+  duty: ClanEventDutySummary | null;
 }
 
 /**
@@ -99,10 +113,11 @@ export async function fetchClanEvents(): Promise<
 
     await syncClanEventResults(now);
 
-    const [events, latest, winCounts] = await Promise.all([
+    const [events, latest, winCounts, duty] = await Promise.all([
       getClanEvents(20),
       getLatestClanEvent(),
       getClanEventWinCounts(),
+      getClanEventDuty(),
     ]);
 
     const type = nextClanEventType(latest?.type ?? null);
@@ -143,6 +158,16 @@ export async function fetchClanEvents(): Promise<
         },
         picker: selectClanEventPicker(events, type, now),
         winCounts,
+        // Tied to the slot it was rolled for: once the calendar moves on, the
+        // assignment is spent and the pane offers a fresh roll.
+        duty:
+          duty && duty.startsAt === startsAt.toISOString()
+            ? {
+                playerName: duty.playerName,
+                rolledAt: duty.rolledAt.toISOString(),
+                rolledByPlayerName: duty.rolledByPlayerName,
+              }
+            : null,
       },
     };
   } catch (error) {
