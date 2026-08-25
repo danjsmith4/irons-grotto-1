@@ -29,6 +29,7 @@ import {
   type CollectionLogScan,
   type TempleScan,
 } from './scan-types';
+import { collectValidationErrors } from './utils/collect-validation-errors';
 import {
   canPassCollectionLogGate,
   resolveCollectionLogState,
@@ -320,8 +321,13 @@ export function JoinExperience({ members, stats }: JoinExperienceProps) {
         : {}),
     });
 
-    const groupNameErrors =
-      created?.validationErrors?.gimGroupName?._errors?.join(' ');
+    const validationErrors = created?.validationErrors;
+
+    // The group-name failure gets its own slot, because it belongs beside the
+    // field it is about and carries instructions the player has to follow.
+    const groupNameErrors = collectValidationErrors(
+      validationErrors?.gimGroupName ? { gimGroupName: validationErrors.gimGroupName } : null,
+    );
 
     if (groupNameErrors) {
       setGimGroupError(groupNameErrors);
@@ -330,10 +336,12 @@ export function JoinExperience({ members, stats }: JoinExperienceProps) {
       return;
     }
 
-    const nameErrors = created?.validationErrors?.playerName?._errors?.join(' ');
+    // Everything else the server refused, whichever field it came from. Never
+    // fall through to a generic message while a specific one is in hand.
+    const otherErrors = collectValidationErrors(validationErrors);
 
-    if (nameErrors) {
-      setSubmitError(nameErrors);
+    if (otherErrors) {
+      setSubmitError(otherErrors);
       setPhase('confirm');
 
       return;
