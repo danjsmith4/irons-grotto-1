@@ -15,10 +15,10 @@ import {
   type PlayerAchievementDiary,
 } from './schema';
 import { getCategoryFromItemName } from './item-mapping-utils';
-import { calculatePlayerPoints } from '@/app/rank-calculator/utils/calculate-player-points';
+import { calculatePlayerPoints } from '@/app/player/utils/calculate-player-points';
 import { upsertItemOverrides } from './item-override-operations';
 import { syncPlayerAccomplishments } from './accomplishment-operations';
-import type { PlayerDetailsResponse } from '@/app/rank-calculator/data-sources/fetch-player-details/fetch-player-details';
+import type { PlayerDetailsResponse } from '@/app/player/data-sources/fetch-player-details/fetch-player-details';
 import { TempleOSRSCollectionLogItem } from '@/app/schemas/temple-api';
 import type { AccountType } from '@/app/schemas/staff';
 

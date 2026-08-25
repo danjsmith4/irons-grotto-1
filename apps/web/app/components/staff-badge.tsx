@@ -1,6 +1,6 @@
 import Image from 'next/image';
-import { getRankImageUrl } from '@/app/rank-calculator/utils/get-rank-image-url';
-import { getRankName } from '@/app/rank-calculator/utils/get-rank-name';
+import { getRankImageUrl } from '@/app/player/utils/get-rank-image-url';
+import { getRankName } from '@/app/player/utils/get-rank-name';
 import { StaffRole, staffRoleRanks } from '@/app/schemas/staff';
 import styles from './staff-badge.module.css';
 

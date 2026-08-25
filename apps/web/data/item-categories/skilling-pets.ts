@@ -1,6 +1,6 @@
-import { petEhcRates } from '@/app/rank-calculator/config/efficiency-rates';
-import { calculateXpOrTimeBasedItemPoints } from '@/app/rank-calculator/utils/calculate-xp-or-time-based-item-points';
-import { formatWikiImageUrl } from '@/app/rank-calculator/utils/format-wiki-url';
+import { petEhcRates } from '@/app/player/config/efficiency-rates';
+import { calculateXpOrTimeBasedItemPoints } from '@/app/player/utils/calculate-xp-or-time-based-item-points';
+import { formatWikiImageUrl } from '@/app/player/utils/format-wiki-url';
 import { Item, ItemCategory } from '@/app/schemas/items';
 import { CollectionLogItemName } from '@/app/schemas/osrs';
 import { singleItem } from '../utils/item-builders';

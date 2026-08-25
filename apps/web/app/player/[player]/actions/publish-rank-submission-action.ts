@@ -1,0 +1,431 @@
+'use server';
+
+import { z } from 'zod';
+import { formatNumber } from '@/app/player/utils/format-number';
+import { randomUUID } from 'crypto';
+import { sendDiscordMessage } from '@/app/player/utils/send-discord-message';
+import { clientConstants } from '@/config/constants.client';
+import { serverConstants } from '@/config/constants.server';
+import { format } from 'date-fns';
+import { authActionClient } from '@/app/safe-action';
+import {
+  AchievementDiaryMap,
+  RankSubmissionDiff,
+} from '@/app/schemas/rank-calculator';
+import { discordBotClient } from '@/discord';
+import { ChannelType, Routes } from 'discord-api-types/v10';
+import { Rank } from '@/config/enums';
+import { canApplyForRank } from '@/config/ranks';
+import { PlayerName } from '@/app/schemas/player';
+import { ActionError } from '@/app/action-error';
+import { isEmpty, pickBy } from 'lodash';
+import {
+  CombatAchievementTier,
+  DiaryLocation,
+  DiaryTier,
+} from '@/app/schemas/osrs';
+import { itemList } from '@/data/item-list';
+import {
+  isCollectionLogItem,
+  isCombatAchievementItem,
+  isQuestItem,
+  Item,
+} from '@/app/schemas/items';
+import * as Sentry from '@sentry/nextjs';
+import { getRankName } from '../../utils/get-rank-name';
+import { accountTypeLabels } from '@/app/schemas/staff';
+import { getRankImageUrl } from '../../utils/get-rank-image-url';
+import { fetchPlayerDetails } from '../../data-sources/fetch-player-details/fetch-player-details';
+import { stripEntityName } from '../../utils/strip-entity-name';
+import { approveSubmission } from '@/app/submissions/[submissionId]/utils/approve-submission';
+import { createRankSubmission } from '@/lib/db/submission-operations';
+import dedent from 'dedent';
+export const publishRankSubmissionAction = authActionClient
+  .metadata({ actionName: 'publish-rank-submission' })
+  .bindArgsSchemas<
+    [currentRank: Zod.ZodOptional<typeof Rank>, playerName: typeof PlayerName]
+  >([Rank.optional(), PlayerName])
+  .schema(z.object({ rank: Rank, totalPoints: z.number().nonnegative() }))
+  .action(
+    async ({
+      ctx: { userId },
+      bindArgsParsedInputs: [currentRank, playerName],
+      parsedInput: { totalPoints, rank },
+    }) => {
+      console.log('🚀 publishRankSubmissionAction started', {
+        userId,
+        currentRank,
+        playerName,
+        totalPoints,
+        rank,
+      });
+
+      if (rank === currentRank) {
+        console.log('❌ Same rank error:', rank, currentRank);
+        throw new ActionError('You already have this rank!');
+      }
+
+      console.log('✅ Fetching player details...');
+      const playerDetails = await fetchPlayerDetails(playerName, userId);
+
+      if (!playerDetails.success) {
+        console.log('❌ Failed to fetch player details:', playerDetails);
+        throw new Error(
+          'Failed to retrieve player details. Please try again later.',
+        );
+      }
+
+      // `savedData` is what the player claims. It used to be the Redis draft;
+      // since the calculator autosaves, the claim *is* the stored record, and
+      // `fetchPlayerDetails` returns it already blended with whatever the
+      // sources could confirm.
+      const savedData = playerDetails.data;
+
+      const {
+        accountType,
+        joinDate,
+        hasTemplePlayerStats,
+        hasTempleCollectionLog,
+        hasWikiSyncData,
+        isTempleCollectionLogOutdated,
+      } = playerDetails.data;
+
+      // ...and this is what the sources say on their own. Diffing the blend
+      // against itself could only ever report agreement, which is what made
+      // the checks below stop catching unverified claims.
+      const {
+        acquiredItems: sourceAcquiredItemNames,
+        achievementDiaries,
+        combatAchievementTier,
+        collectionLogCount,
+        totalLevel,
+        tzhaarCape,
+        hasBloodTorva,
+        hasDizanasQuiver,
+        hasAchievementDiaryCape,
+      } = playerDetails.data.sourceValues ?? {
+        acquiredItems: [],
+        achievementDiaries: null,
+        combatAchievementTier: null,
+        collectionLogCount: 0,
+        totalLevel: 0,
+        tzhaarCape: 'None' as const,
+        hasBloodTorva: false,
+        hasDizanasQuiver: false,
+        hasAchievementDiaryCape: false,
+      };
+
+      // The item diff below asks "does a source account for this tick?", which
+      // was a lookup into the blended map. Against the source list it is a set.
+      const acquiredItems = Object.fromEntries(
+        sourceAcquiredItemNames.map((name) => [name, true]),
+      ) as Record<string, boolean>;
+
+      // Mains are welcome to keep a sheet, but approving an application
+      // assigns a real in-game and Discord clan rank off the ironman ladder,
+      // which they are not on. Checked here rather than only in the UI: the
+      // client is not what decides who gets a rank.
+      if (!canApplyForRank(accountType)) {
+        throw new ActionError(
+          'Main accounts cannot apply for clan ranks. Your calculator stays available for tracking your own progress.',
+        );
+      }
+
+      const { channelId, reviewRoleId } = serverConstants.discord;
+      const submissionId = randomUUID();
+      const { id: discordMessageId } = await sendDiscordMessage(
+        {
+          embeds: [
+            {
+              title: `${playerName} rank application`,
+              thumbnail: { url: getRankImageUrl(rank, true) },
+              fields: [
+                { name: 'Rank', value: getRankName(rank), inline: true },
+                {
+                  name: 'Account type',
+                  value: accountType
+                    ? accountTypeLabels[accountType]
+                    : 'Unresolved',
+                  inline: true,
+                },
+                {
+                  name: 'Total points',
+                  value: formatNumber(totalPoints),
+                  inline: true,
+                },
+                {
+                  name: 'Join date',
+                  value: format(joinDate, 'dd MMM yyyy'),
+                  inline: true,
+                },
+                { name: 'User', value: `<@${userId}>`, inline: true },
+                {
+                  name: 'View link',
+                  value: `[Click to view submission](${clientConstants.publicUrl}/submissions/${submissionId})`,
+                },
+              ],
+            },
+          ],
+        },
+        channelId,
+      );
+
+      await discordBotClient.post(Routes.threads(channelId, discordMessageId), {
+        body: {
+          name: `${playerName} - ${getRankName(rank)}`,
+          type: ChannelType.PublicThread,
+        },
+      });
+
+      try {
+        await sendDiscordMessage(
+          {
+            content: dedent`
+      <@${userId}>, thanks for the application!
+
+      ${reviewRoleId ? `Someone from <@&${reviewRoleId}> will check shortly.` : 'Someone will check shortly.'}
+    `,
+          },
+          discordMessageId,
+        );
+      } catch (error) {
+        Sentry.captureException(error);
+      }
+
+      const itemMap = Object.values(itemList)
+        .flatMap(({ items }) => items)
+        .reduce<Record<string, Item>>(
+          (acc, item) => ({ ...acc, [stripEntityName(item.name)]: item }),
+          {},
+        );
+
+      const submissionDiff = {
+        achievementDiaries:
+          hasWikiSyncData && savedData.achievementDiaries && achievementDiaries
+            ? (
+                Object.entries(achievementDiaries) as [
+                  DiaryLocation,
+                  DiaryTier,
+                ][]
+              ).reduce<AchievementDiaryMap>(
+                (acc, [diaryLocation, diaryTier]) => {
+                  if (
+                    DiaryTier._def.values.indexOf(
+                      achievementDiaries[diaryLocation] ?? 'None',
+                    ) <
+                    DiaryTier._def.values.indexOf(
+                      savedData.achievementDiaries[diaryLocation] ?? 'None',
+                    )
+                  ) {
+                    return { ...acc, [diaryLocation]: diaryTier };
+                  }
+
+                  return acc;
+                },
+                {},
+              )
+            : null,
+        acquiredItems: [
+          ...new Set<string>([
+            ...(hasWikiSyncData
+              ? z.array(z.string()).parse(
+                  Object.values(
+                    pickBy(Object.keys(savedData.acquiredItems), (key) => {
+                      if (
+                        isQuestItem(itemMap[key]) ||
+                        isCombatAchievementItem(itemMap[key])
+                      ) {
+                        return !acquiredItems[key];
+                      }
+
+                      return false;
+                    }),
+                  ),
+                )
+              : []),
+            ...(hasTempleCollectionLog
+              ? z.array(z.string()).parse(
+                  Object.values(
+                    pickBy(Object.keys(savedData.acquiredItems), (key) => {
+                      if (isCollectionLogItem(itemMap[key])) {
+                        return !acquiredItems[key];
+                      }
+
+                      return false;
+                    }),
+                  ),
+                )
+              : []),
+          ]),
+        ],
+        combatAchievementTier:
+          hasWikiSyncData &&
+          CombatAchievementTier._def.values.indexOf(
+            combatAchievementTier ?? 'None',
+          ) <
+            CombatAchievementTier._def.values.indexOf(
+              savedData.combatAchievementTier,
+            )
+            ? (combatAchievementTier ?? 'None')
+            : null,
+        collectionLogCount:
+          hasTemplePlayerStats &&
+          collectionLogCount < savedData.collectionLogCount
+            ? collectionLogCount
+            : null,
+        totalLevel:
+          hasTemplePlayerStats && totalLevel < savedData.totalLevel
+            ? totalLevel
+            : null,
+        tzhaarCape:
+          hasTempleCollectionLog && tzhaarCape !== savedData.tzhaarCape
+            ? tzhaarCape
+            : null,
+        hasBloodTorva:
+          hasWikiSyncData && hasBloodTorva !== savedData.hasBloodTorva
+            ? !!hasBloodTorva
+            : null,
+        hasDizanasQuiver:
+          hasTempleCollectionLog &&
+          hasDizanasQuiver !== savedData.hasDizanasQuiver
+            ? !!hasDizanasQuiver
+            : null,
+        hasAchievementDiaryCape:
+          hasWikiSyncData &&
+          hasAchievementDiaryCape !== savedData.hasAchievementDiaryCape
+            ? !!hasAchievementDiaryCape
+            : null,
+      } satisfies RankSubmissionDiff;
+
+      const isAutoApprovalAvailable =
+        hasTempleCollectionLog &&
+        !isTempleCollectionLogOutdated &&
+        hasWikiSyncData &&
+        hasTemplePlayerStats &&
+        isEmpty(pickBy(submissionDiff, (val) => !isEmpty(val)));
+
+      console.log('🔍 Auto-approval check:', {
+        accountType,
+        hasTempleCollectionLog,
+        isTempleCollectionLogOutdated,
+        isTempleCollectionLogCurrent: !isTempleCollectionLogOutdated,
+        hasWikiSyncData,
+        hasTemplePlayerStats,
+        hasNoDiff: isEmpty(pickBy(submissionDiff, (val) => !isEmpty(val))),
+        isAutoApprovalAvailable,
+      });
+
+      // The snapshot is the sheet as submitted, taken from the player record.
+      // `sourceValues` and the response's own metadata flags are stripped: this
+      // is evidence of what a member claimed, not a diagnostic bundle.
+      const {
+        sourceValues: _sourceValues,
+        rawCollectionLogItems: _rawCollectionLogItems,
+        currentRank: _currentRank,
+        hasTemplePlayerStats: _hasTemplePlayerStats,
+        hasTempleCollectionLog: _hasTempleCollectionLog,
+        hasWikiSyncData: _hasWikiSyncData,
+        hasThirdPartyData: _hasThirdPartyData,
+        isTempleCollectionLogOutdated: _isTempleCollectionLogOutdated,
+        isMobileOnly: _isMobileOnly,
+        discordMembership: _discordMembership,
+        ...submissionSnapshot
+      } = savedData;
+
+      try {
+        await createRankSubmission({
+          id: submissionId,
+          playerName,
+          submittedByDiscordId: userId,
+          rank,
+          previousRank: currentRank ?? null,
+          totalPoints,
+          discordMessageId,
+          hasTemplePlayerStats,
+          hasTempleCollectionLog,
+          hasWikiSyncData,
+          isTempleCollectionLogOutdated,
+          snapshot: submissionSnapshot,
+          diff: submissionDiff,
+        });
+      } catch (error) {
+        // The Discord message is posted before the row exists, so a failed
+        // write leaves an application announced but unreviewable. Take the
+        // message back down rather than leaving that.
+        Sentry.captureException(error);
+
+        await discordBotClient.delete(
+          Routes.channelMessage(channelId, discordMessageId),
+        );
+
+        return { success: false };
+      }
+
+      if (isAutoApprovalAvailable) {
+        try {
+          await approveSubmission({
+            submissionId,
+            isAutomatic: true,
+          });
+        } catch (error) {
+          // If auto-approval fails, it can still be manually approved later,
+          // so we just log the error and continue.
+          Sentry.captureException(error);
+        }
+      }
+
+      const reasons: string[] = [];
+
+      if (!hasTempleCollectionLog) {
+        reasons.push("User's Temple OSRS collection log is unavailable.");
+      }
+
+      if (isTempleCollectionLogOutdated) {
+        reasons.push("User's Temple OSRS collection log is out of date.");
+      }
+
+      if (!hasWikiSyncData) {
+        reasons.push("User's Wiki sync data is unavailable.");
+      }
+
+      if (!hasTemplePlayerStats) {
+        reasons.push("User's Temple OSRS player stats are unavailable.");
+      }
+
+      const diffReasons = Object.entries(submissionDiff)
+        .filter(([, value]) => !isEmpty(value))
+        .map(
+          ([key, value]) =>
+            `Submission diff observed in ${key}: ${JSON.stringify(value)}`,
+        );
+
+      reasons.push(...diffReasons);
+
+      const reasonMessage =
+        reasons.length > 0
+          ? `Moderation required for the following reasons:\n- ${reasons.join('\n- ')}`
+          : 'Moderation required for unspecified reasons.';
+
+      console.log('🔍 Moderation reason message:', reasonMessage);
+
+      if (!isAutoApprovalAvailable) {
+        try {
+          await sendDiscordMessage(
+            {
+              content: dedent`
+                <@${userId}>, your rank submission requires moderation.
+
+                ${reasonMessage}
+              `,
+            },
+            discordMessageId,
+          );
+        } catch (error) {
+          Sentry.captureException(error);
+        }
+      }
+
+      console.log('✅ publishRankSubmissionAction completed successfully');
+      return { success: true };
+    },
+  );

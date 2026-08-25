@@ -1,6 +1,6 @@
 import { sub } from 'date-fns';
 import { CommonPointCalculatorData } from '@/app/schemas/rank-calculator';
-import { RankCalculatorSchema } from '@/app/rank-calculator/[player]/submit-rank-calculator-validation';
+import { RankCalculatorSchema } from '@/app/player/[player]/submit-rank-calculator-validation';
 
 type ScalingFixtureMap<T extends CommonPointCalculatorData> = Record<
   | 'fullScaling'

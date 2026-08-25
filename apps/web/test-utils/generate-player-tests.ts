@@ -1,4 +1,4 @@
-import { RankCalculatorSchema } from '@/app/rank-calculator/[player]/submit-rank-calculator-validation';
+import { RankCalculatorSchema } from '@/app/player/[player]/submit-rank-calculator-validation';
 
 interface FormDataMap {
   earlyGamePlayer: Omit<RankCalculatorSchema, 'rank' | 'points'>;

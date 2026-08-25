@@ -1,4 +1,4 @@
-import { formatWikiImageUrl } from '@/app/rank-calculator/utils/format-wiki-url';
+import { formatWikiImageUrl } from '@/app/player/utils/format-wiki-url';
 import {
   CollectionLogItem,
   RequiredItem,

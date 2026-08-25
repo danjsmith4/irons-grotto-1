@@ -4,7 +4,7 @@ import {
   PointsCategoryKey,
   pointsCategoryKeys,
   pointsCategoryLabels,
-} from '@/app/rank-calculator/utils/build-points-breakdown';
+} from '@/app/player/utils/build-points-breakdown';
 
 export interface ComparisonSideValue {
   points: number;

@@ -8,12 +8,12 @@ import {
   Routes,
 } from 'discord-api-types/v10';
 import { NextRequest, NextResponse } from 'next/server';
-import { fetchPlayerDetails } from '@/app/rank-calculator/data-sources/fetch-player-details/fetch-player-details';
-import { calculatePlayerPoints } from '@/app/rank-calculator/utils/calculate-player-points';
-import { getRankName } from '@/app/rank-calculator/utils/get-rank-name';
-import { isRankUp } from '@/app/rank-calculator/utils/is-rank-up';
+import { fetchPlayerDetails } from '@/app/player/data-sources/fetch-player-details/fetch-player-details';
+import { calculatePlayerPoints } from '@/app/player/utils/calculate-player-points';
+import { getRankName } from '@/app/player/utils/get-rank-name';
+import { isRankUp } from '@/app/player/utils/is-rank-up';
 import { canApplyForRank } from '@/config/ranks';
-import { sendDiscordMessage } from '@/app/rank-calculator/utils/send-discord-message';
+import { sendDiscordMessage } from '@/app/player/utils/send-discord-message';
 import { clientConstants } from '@/config/constants.client';
 import { rankUpMessagesKey } from '@/config/redis';
 import { discordBotClient } from '@/discord';
@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
                 components: [
                   {
                     label: 'Apply for rank',
-                    url: `${clientConstants.publicUrl}/rank-calculator/${encodeURIComponent(player)}`,
+                    url: `${clientConstants.publicUrl}/player/${encodeURIComponent(player)}`,
                     style: ButtonStyle.Link,
                     type: ComponentType.Button,
                   },

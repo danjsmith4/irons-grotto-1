@@ -1,12 +1,12 @@
 describe('Player details', () => {
   it('displays the player name', () => {
-    cy.visit('/rank-calculator/riftletics');
+    cy.visit('/player/riftletics');
     cy.findByLabelText(/^player name$/i).should('have.text', 'Riftletics');
 
-    cy.visit('/rank-calculator/cousinofkos');
+    cy.visit('/player/cousinofkos');
     cy.findByLabelText(/^player name$/i).should('have.text', 'CousinOfKos');
 
-    cy.visit('/rank-calculator/clogging');
+    cy.visit('/player/clogging');
     cy.findByLabelText(/^player name$/i).should('have.text', 'Clogging');
   });
 });

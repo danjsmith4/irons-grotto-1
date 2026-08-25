@@ -1,7 +1,7 @@
 import type {
   PointsBreakdown,
   PointsBreakdownLine,
-} from '@/app/rank-calculator/utils/build-points-breakdown';
+} from '@/app/player/utils/build-points-breakdown';
 import {
   buildPointsComparison,
   splitRowsByDirection,
