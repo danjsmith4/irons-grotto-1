@@ -562,6 +562,120 @@ export const rankSubmissions = pgTable(
 export type RankSubmission = typeof rankSubmissions.$inferSelect;
 export type NewRankSubmission = typeof rankSubmissions.$inferInsert;
 
+/**
+ * The clan's recurring TempleOSRS competitions — Skill of the Week and Boss of
+ * the Week, which alternate.
+ *
+ * The row is a *record* of a competition Temple owns, not a second copy of it:
+ * standings are always read live from `competition_info.php`. What is stored
+ * here is the alternation history (so the site can say which type is next
+ * without asking anyone), the schedule, and the edit key Temple hands out
+ * exactly once.
+ */
+export const clanEventTypeEnum = pgEnum('clan_event_type', ['sotw', 'botw']);
+
+export const clanEvents = pgTable(
+  'clan_events',
+  {
+    /**
+     * TempleOSRS's own competition id, used as the primary key.
+     *
+     * A row only ever exists because a competition exists on Temple, and there
+     * is exactly one of ours per competition, so a surrogate id would buy
+     * nothing but a second thing to join on.
+     */
+    id: integer('id').primaryKey(),
+
+    type: clanEventTypeEnum('type').notNull(),
+    /** The competition's name on Temple, e.g. "Thieving SOTW". */
+    name: varchar('name', { length: 120 }).notNull(),
+
+    /** Temple's skill/boss id, and the display name it echoes back for it. */
+    metricId: integer('metric_id').notNull(),
+    metricName: varchar('metric_name', { length: 60 }).notNull(),
+
+    /**
+     * Stored with a timezone, unlike the older tables here. Every event is
+     * defined by an exact UTC instant (Friday 14:00 UTC), and a bare
+     * `timestamp` would let the host's offset decide what that meant.
+     */
+    startsAt: timestamp('starts_at', { withTimezone: true }).notNull(),
+    endsAt: timestamp('ends_at', { withTimezone: true }).notNull(),
+
+    /**
+     * The competition's edit password. Temple returns it once, on creation,
+     * and never again — so it is persisted here or the competition can never
+     * be changed from this side. Null for events imported after the fact,
+     * where whoever created them still has the key.
+     */
+    competitionKey: varchar('competition_key', { length: 64 }),
+
+    createdByPlayerName: varchar('created_by_player_name', { length: 12 }),
+    createdByDiscordId: varchar('created_by_discord_id', { length: 20 }),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => ({
+    // Every query here is "what is running / what is next / what came last",
+    // all of which order by the start.
+    startsAtIdx: index('clan_events_starts_at_idx').on(table.startsAt),
+  }),
+);
+
+export type ClanEventRow = typeof clanEvents.$inferSelect;
+export type NewClanEventRow = typeof clanEvents.$inferInsert;
+
+/**
+ * Who won each event.
+ *
+ * Keyed on the event and the member together, so a member accumulates one row
+ * per event they win and the same win can never be recorded twice — the
+ * results sync re-reads finished events freely.
+ */
+export const clanEventWins = pgTable(
+  'clan_event_wins',
+  {
+    eventId: integer('event_id').notNull(),
+    playerName: varchar('player_name', { length: 12 }).notNull(),
+
+    /** 1 is the winner. Recorded so a podium can be stored later without a migration. */
+    placement: integer('placement').notNull().default(1),
+
+    /**
+     * What they gained over the event — experience for a skill week, kill
+     * count for a boss week. Temple calls both `xp_gained`.
+     */
+    gained: integer('gained').notNull().default(0),
+
+    recordedAt: timestamp('recorded_at').defaultNow().notNull(),
+  },
+  (table) => ({
+    clanEventWinPk: primaryKey({
+      columns: [table.eventId, table.playerName],
+    }),
+    playerNameIdx: index('clan_event_wins_player_name_idx').on(
+      table.playerName,
+    ),
+  }),
+);
+
+export type ClanEventWin = typeof clanEventWins.$inferSelect;
+export type NewClanEventWin = typeof clanEventWins.$inferInsert;
+
+export const clanEventsRelations = relations(clanEvents, ({ many }) => ({
+  wins: many(clanEventWins),
+}));
+
+export const clanEventWinsRelations = relations(clanEventWins, ({ one }) => ({
+  event: one(clanEvents, {
+    fields: [clanEventWins.eventId],
+    references: [clanEvents.id],
+  }),
+  player: one(players, {
+    fields: [clanEventWins.playerName],
+    references: [players.playerName],
+  }),
+}));
+
 // Singleton bookkeeping for scheduled-ish jobs that are triggered by page
 // traffic rather than a server cron (there is no long-running server). Each
 // job keeps one row keyed by a stable id and records when it last ran, so a

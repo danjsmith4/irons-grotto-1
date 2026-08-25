@@ -25,6 +25,7 @@ import { isRankUp } from '@/app/rank-calculator/utils/is-rank-up';
 import { canAccessAdminDashboard } from '@/app/utils/staff-permissions';
 import { canApplyForRank } from '@/config/ranks';
 import { useViewerStaffRole } from './use-viewer-staff-role';
+import { EventStatus } from './event-status';
 import styles from './nav-bar.module.css';
 
 interface NavBarProps {
@@ -237,6 +238,11 @@ export function NavBar({
         <div className={styles.spacer} />
 
         <div className={styles.actions}>
+          {/* Renders nothing unless an event is running or queued — see the
+              component. It sits before the page's own actions because it is
+              about the clan, not about this page. */}
+          <EventStatus />
+
           {additionalButtons}
 
           {/* There is no Save button — changes persist as they are made, see

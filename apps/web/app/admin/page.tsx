@@ -4,6 +4,7 @@ import { NavBar } from '@/app/components/nav-bar';
 import { fetchPlayerAccounts } from '@/app/rank-calculator/data-sources/fetch-player-accounts';
 import { fetchAdminDashboard } from '@/app/data-sources/fetch-admin-dashboard';
 import { fetchDiscordBans } from '@/app/data-sources/fetch-discord-bans';
+import { fetchClanEvents } from '@/app/data-sources/fetch-clan-events';
 import { AdminPanes } from './admin-panes';
 import styles from './admin.module.css';
 
@@ -25,12 +26,14 @@ export default async function AdminPage() {
     redirect('/');
   }
 
-  // Both are gated on the same elevated check, so they can go out together;
-  // only the roster decides whether the page renders at all. The ban list
-  // talks to Discord and is allowed to fail on its own — see the data source.
-  const [result, bansResult] = await Promise.all([
+  // All three are gated on the same elevated check, so they can go out
+  // together; only the roster decides whether the page renders at all. The ban
+  // list talks to Discord and the events pane talks to TempleOSRS — both are
+  // allowed to fail on their own, and render the failure in their own pane.
+  const [result, bansResult, eventsResult] = await Promise.all([
     fetchAdminDashboard(),
     fetchDiscordBans(),
+    fetchClanEvents(),
   ]);
 
   if (!result.success) {
@@ -51,6 +54,8 @@ export default async function AdminPage() {
           history={history}
           bans={bansResult.success ? bansResult.data.bans : null}
           bansError={bansResult.success ? null : bansResult.error}
+          events={eventsResult.success ? eventsResult.data : null}
+          eventsError={eventsResult.success ? null : eventsResult.error}
         />
       </main>
     </div>

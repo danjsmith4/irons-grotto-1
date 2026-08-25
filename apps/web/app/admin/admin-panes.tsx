@@ -12,13 +12,18 @@ import type {
   StaffRoleChangeEntry,
 } from '@/lib/db/staff-operations';
 import type { DiscordBanEntry } from '@/app/data-sources/fetch-discord-bans';
+import type { ClanEventsAdminData } from '@/app/data-sources/fetch-clan-events';
 import { StaffRoles } from './staff-roles';
 import { DiscordBans } from './discord-bans';
+import { ClanEvents } from './clan-events';
 import styles from './admin.module.css';
 
-type AdminPane = 'staff' | 'bans';
+type AdminPane = 'events' | 'staff' | 'bans';
 
+// Events lead, and are the default: they are the only thing here staff do on a
+// schedule. Roles and bans are occasional.
 const panes = [
+  { id: 'events', label: 'Events' },
   { id: 'staff', label: 'Staff ranks' },
   { id: 'bans', label: 'Discord bans' },
 ] as const satisfies readonly { id: AdminPane; label: string }[];
@@ -30,15 +35,18 @@ interface AdminPanesProps {
   history: StaffRoleChangeEntry[];
   bans: DiscordBanEntry[] | null;
   bansError: string | null;
+  events: ClanEventsAdminData | null;
+  eventsError: string | null;
 }
 
 /**
  * The admin page's sub-menu.
  *
- * Two unrelated jobs live here — who is staff, and who is banned from the
- * Discord — and stacking every panel from both on one column made a page you
- * had to scroll past one job to reach the other. This swaps which set is
- * mounted instead.
+ * Three unrelated jobs live here — running the weekly events, who is staff,
+ * and who is banned from the Discord — and stacking every panel from all of
+ * them on one column made a page you had to scroll past two jobs to reach the
+ * third. This swaps which set is mounted instead. Events lead and are the
+ * default: they are the only one of the three staff do on a schedule.
  *
  * Deliberately not routes. Both sets of data are already fetched and handed
  * down by the server component, so a route per pane would buy a URL at the
@@ -53,9 +61,12 @@ export function AdminPanes({
   history,
   bans,
   bansError,
+  events,
+  eventsError,
 }: AdminPanesProps) {
-  const [active, setActive] = useState<AdminPane>('staff');
+  const [active, setActive] = useState<AdminPane>('events');
   const tabRefs = useRef<Record<AdminPane, HTMLButtonElement | null>>({
+    events: null,
     staff: null,
     bans: null,
   });
@@ -65,16 +76,18 @@ export function AdminPanes({
     [viewerRole],
   );
 
-  const subtitle =
-    active === 'staff'
-      ? `Signed in as ${viewerPlayerName ?? 'staff'}. You can assign any role below your own — ${
-          grantable.length
-            ? grantable
-                .map((role) => getRankName(staffRoleRanks[role]))
-                .join(' and ')
-            : 'which, as an administrator, is none'
-        }.`
-      : 'Bans are placed and lifted in the clan Discord. You can act on anyone whose role is below your own.';
+  const subtitles: Record<AdminPane, string> = {
+    events:
+      'Skill and Boss of the Week run on a fixed Friday slot and alternate, so the only thing left to choose is the skill or the boss.',
+    staff: `Signed in as ${viewerPlayerName ?? 'staff'}. You can assign any role below your own — ${
+      grantable.length
+        ? grantable
+            .map((role) => getRankName(staffRoleRanks[role]))
+            .join(' and ')
+        : 'which, as an administrator, is none'
+    }.`,
+    bans: 'Bans are placed and lifted in the clan Discord. You can act on anyone whose role is below your own.',
+  };
 
   /**
    * A tablist is expected to move between its tabs with the arrow keys, so Tab
@@ -101,7 +114,7 @@ export function AdminPanes({
     <>
       <SectionHeader
         title="Clan administration"
-        subtitle={subtitle}
+        subtitle={subtitles[active]}
         icon={<LockClosedIcon />}
         actions={<StaffBadge role={viewerRole} />}
       />
@@ -138,15 +151,17 @@ export function AdminPanes({
         id={`admin-pane-${active}`}
         aria-labelledby={`admin-tab-${active}`}
       >
-        {active === 'staff' ? (
+        {active === 'events' && (
+          <ClanEvents data={events} error={eventsError} />
+        )}
+        {active === 'staff' && (
           <StaffRoles
             viewerRole={viewerRole}
             members={members}
             history={history}
           />
-        ) : (
-          <DiscordBans bans={bans} error={bansError} />
         )}
+        {active === 'bans' && <DiscordBans bans={bans} error={bansError} />}
       </div>
     </>
   );
