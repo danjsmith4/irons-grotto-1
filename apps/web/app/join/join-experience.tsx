@@ -700,6 +700,26 @@ export function JoinExperience({ members, stats }: JoinExperienceProps) {
                       {gimGroupError && (
                         <p className={styles.fieldError}>{gimGroupError}</p>
                       )}
+                      {/*
+                        A real link, always — not a bare URL inside the error
+                        text. Getting the group onto Temple's GIM tracking is
+                        the only thing that lets Temple tell a group ironman
+                        from a main, so it is the one action this step can ask
+                        for, and it should be one click rather than a copy and
+                        paste.
+                      */}
+                      <p className={styles.cardNote}>
+                        Your group has to be on{' '}
+                        <a
+                          className={styles.inlineLink}
+                          href={clientConstants.temple.gimTrackingUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          TempleOSRS group tracking
+                        </a>{' '}
+                        before Temple can tell you apart from a main.
+                      </p>
                     </>
                   )}
                 </div>

@@ -536,6 +536,23 @@
   text-underline-offset: 3px;
 }
 
+/* An anchor sitting inside a sentence, rather than a button dressed as a link. */
+.inlineLink {
+  color: rgb(var(--ig-tertiary));
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.inlineLink:hover {
+  color: rgb(var(--ig-secondary));
+}
+
+.inlineLink:focus-visible {
+  outline: 2px solid rgb(var(--ig-secondary));
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
 .primary:disabled,
 .ghost:disabled {
   opacity: 0.45;

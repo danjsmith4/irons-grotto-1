@@ -8,7 +8,6 @@ import { fetchPlayerMeta } from '@/app/player/data-sources/fetch-player-meta';
 import { ensureTrackedOnTemple } from '@/app/player/data-sources/ensure-tracked-on-temple';
 import { AddPlayerSchema } from './add-player-schema';
 import { createNewPlayer, getPlayerByName } from '@/lib/db/player-operations';
-import { clientConstants } from '@/config/constants.client';
 import { resolveDeclaredAccountType } from '@/app/player/utils/resolve-declared-account-type';
 import { resolveAccountType } from '@/app/player/utils/resolve-account-type';
 
@@ -93,10 +92,14 @@ export const addPlayerAction = authActionClient
       // the player is told what to do about it, and decides whether their
       // group is untracked or genuinely unranked.
       if (declared.status === 'group-not-tracked') {
+        // The URL is deliberately *not* pasted into this message. A validation
+        // error renders as plain text, so a bare address here is something the
+        // player has to select and copy; the form puts a real link next to the
+        // group-name field instead.
         returnValidationErrors(AddPlayerSchema, {
           gimGroupName: {
             _errors: [
-              `Your group isn't being tracked on TempleOSRS yet, so Temple still reads ${maybeFormattedPlayerName} as a main. Add your group at ${clientConstants.temple.gimTrackingUrl} and try again — or pick "Unranked group ironman", which never appears there.`,
+              `Your group isn't being tracked on TempleOSRS yet, so Temple still reads ${maybeFormattedPlayerName} as a main. Add your group to Temple's GIM tracking and try again — or pick "Unranked group ironman", which never appears there.`,
             ],
           },
         });
