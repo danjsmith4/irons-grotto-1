@@ -1,0 +1,792 @@
+/*
+ * Onboarding.
+ *
+ * Tokens only — every colour here is an `--ig-*` from globals.css, so the app
+ * re-themes from that one block as promised. Structure is hairline borders and
+ * type; green is reserved for the things that actually resolved.
+ */
+
+.shell {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.25rem 4rem;
+  background:
+    radial-gradient(
+      120% 80% at 50% -10%,
+      rgb(var(--ig-primary) / 0.28),
+      transparent 60%
+    ),
+    rgb(var(--ig-bg));
+}
+
+.stage {
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.stageWide {
+  max-width: 760px;
+}
+
+/* ---------- shared type ---------- */
+
+.eyebrow {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgb(var(--ig-text-muted));
+  margin: 0;
+}
+
+.title {
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(2.1rem, 6vw, 3.1rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.04;
+  color: rgb(var(--ig-text));
+  margin: 0;
+  text-wrap: balance;
+}
+
+.subtitle {
+  font-size: 1.02rem;
+  line-height: 1.6;
+  color: rgb(var(--ig-text-muted));
+  margin: 0;
+  max-width: 46ch;
+}
+
+/*
+ * The scanned player's name, with their game-mode badge in front of it — the
+ * order the game itself uses. The badge is inline rather than in a reserved
+ * slot: a main never gets one, and holding an empty gap open in front of a
+ * lone name looks like a missing image.
+ */
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-family: var(--font-display), sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: rgb(var(--ig-text));
+  margin: 0;
+}
+
+.nameBadge {
+  display: flex;
+  align-items: center;
+  flex: none;
+  animation: pop 0.36s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+
+.sectionTitle {
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: rgb(var(--ig-text));
+  margin: 0;
+}
+
+.mono {
+  font-family: var(--font-mono), monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- welcome ---------- */
+
+.welcome {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  animation: rise 0.5s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+.crest {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.crestMark {
+  border-radius: 12px;
+}
+
+.glance {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  gap: 1px;
+  background: rgb(var(--ig-text-muted) / 0.12);
+  border: 1px solid rgb(var(--ig-text-muted) / 0.12);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.glanceCell {
+  background: rgb(var(--ig-surface));
+  padding: 0.8rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.glanceValue {
+  font-family: var(--font-mono), monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: rgb(var(--ig-text));
+  line-height: 1.1;
+}
+
+.glanceLabel {
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  color: rgb(var(--ig-text-muted));
+}
+
+/* ---------- rsn field ---------- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.fieldShell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.35rem 0.35rem 0.35rem 1rem;
+  border: 1px solid rgb(var(--ig-text-muted) / 0.22);
+  border-radius: 12px;
+  background: rgb(var(--ig-surface));
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.fieldShell:focus-within {
+  border-color: rgb(var(--ig-secondary) / 0.65);
+  box-shadow: 0 0 0 4px rgb(var(--ig-secondary) / 0.12);
+}
+
+.fieldShellError {
+  border-color: rgb(var(--ig-danger) / 0.7);
+}
+
+.fieldInput {
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: 0;
+  outline: none;
+  color: rgb(var(--ig-text));
+  font-family: var(--font-mono), monospace;
+  font-size: 1.05rem;
+  letter-spacing: 0.01em;
+  padding: 0.7rem 0;
+}
+
+.fieldInput::placeholder {
+  color: rgb(var(--ig-text-muted) / 0.55);
+  letter-spacing: 0.02em;
+}
+
+.fieldHint {
+  font-size: 0.82rem;
+  color: rgb(var(--ig-text-muted));
+  margin: 0;
+}
+
+.fieldError {
+  font-size: 0.82rem;
+  color: rgb(var(--ig-danger));
+  margin: 0;
+}
+
+/* ---------- suggestions ---------- */
+
+.suggestions {
+  list-style: none;
+  margin: 0;
+  padding: 0.3rem;
+  border: 1px solid rgb(var(--ig-text-muted) / 0.16);
+  border-radius: 10px;
+  background: rgb(var(--ig-surface));
+  max-height: 240px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.suggestion {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.5rem 0.65rem;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: rgb(var(--ig-text));
+  font: inherit;
+  font-size: 0.92rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.suggestion:hover,
+.suggestion[data-active='true'] {
+  background: rgb(var(--ig-secondary) / 0.12);
+}
+
+.suggestion:focus-visible {
+  outline: 2px solid rgb(var(--ig-secondary));
+  outline-offset: -2px;
+}
+
+.suggestionBadge {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.suggestionMeta {
+  margin-left: auto;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  color: rgb(var(--ig-text-muted));
+}
+
+/* ---------- scan ---------- */
+
+.scan {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  animation: rise 0.45s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgb(var(--ig-text-muted) / 0.12);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.8rem 1rem;
+  background: rgb(var(--ig-surface));
+  border-bottom: 1px solid rgb(var(--ig-text-muted) / 0.1);
+}
+
+.step:last-child {
+  border-bottom: 0;
+}
+
+.stepLabel {
+  font-size: 0.92rem;
+  color: rgb(var(--ig-text));
+}
+
+.stepPending .stepLabel,
+.stepWaiting .stepLabel {
+  color: rgb(var(--ig-text-muted));
+}
+
+.stepNote {
+  margin-left: auto;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.74rem;
+  color: rgb(var(--ig-text-muted));
+  text-align: right;
+}
+
+/* the spinner that becomes a tick or a cross */
+.indicator {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.indicatorRing {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid rgb(var(--ig-text-muted) / 0.25);
+  border-top-color: rgb(var(--ig-secondary));
+  animation: spin 0.7s linear infinite;
+}
+
+.indicatorIdle {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgb(var(--ig-text-muted) / 0.35);
+}
+
+.indicatorMark {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pop 0.32s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+
+.indicatorOk {
+  background: rgb(var(--ig-secondary) / 0.16);
+  color: rgb(var(--ig-secondary));
+}
+
+.indicatorWarn {
+  background: rgb(var(--ig-warning) / 0.16);
+  color: rgb(var(--ig-warning));
+}
+
+.indicatorFail {
+  background: rgb(var(--ig-danger) / 0.16);
+  color: rgb(var(--ig-danger));
+}
+
+/* ---------- achievement wall ---------- */
+
+.trophies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.trophy {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  border: 1px solid rgb(var(--ig-text-muted) / 0.14);
+  background: rgb(var(--ig-surface));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* A broken wiki image must not push the row around. */
+  overflow: hidden;
+  transition:
+    border-color 0.35s ease,
+    background 0.35s ease;
+}
+
+/*
+ * The locked state.
+ *
+ * These icons are already dark, so crushing the brightness turned them into
+ * unreadable blobs against the navy surface. Lifting them instead reads as the
+ * silhouette of the item — you can still tell a cape from a helmet, which is
+ * the point of showing what there is to get.
+ */
+.trophy img {
+  filter: grayscale(1) brightness(1.45) contrast(0.85);
+  opacity: 0.34;
+  transition:
+    filter 0.5s ease,
+    opacity 0.5s ease;
+}
+
+.trophyEarned {
+  border-color: rgb(var(--ig-secondary) / 0.45);
+  background: rgb(var(--ig-secondary) / 0.1);
+  animation: pop 0.4s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+
+.trophyEarned img {
+  filter: none;
+  opacity: 1;
+}
+
+.trophyCaption {
+  font-size: 0.78rem;
+  color: rgb(var(--ig-text-muted));
+  margin: 0;
+}
+
+/* ---------- fact cards ---------- */
+
+.card {
+  border: 1px solid rgb(var(--ig-text-muted) / 0.14);
+  border-radius: 10px;
+  background: rgb(var(--ig-surface));
+  padding: 1.1rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.cardHead {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
+.cardValue {
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: rgb(var(--ig-text));
+}
+
+.cardNote {
+  font-size: 0.85rem;
+  color: rgb(var(--ig-text-muted));
+  margin: 0;
+  line-height: 1.55;
+}
+
+.cardActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.warnCard {
+  border-color: rgb(var(--ig-warning) / 0.4);
+  background: rgb(var(--ig-warning) / 0.07);
+}
+
+.steps + .trophies {
+  margin-top: 0;
+}
+
+/* ---------- buttons ---------- */
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.primary,
+.ghost,
+.link {
+  font: inherit;
+  font-size: 0.94rem;
+  font-weight: 500;
+  border-radius: 9px;
+  padding: 0.6rem 1.1rem;
+  cursor: pointer;
+  transition:
+    background 0.16s ease,
+    border-color 0.16s ease,
+    opacity 0.16s ease;
+}
+
+.primary {
+  border: 1px solid transparent;
+  background: rgb(var(--ig-secondary));
+  color: rgb(var(--ig-on-accent));
+}
+
+.primary:hover:not(:disabled) {
+  background: rgb(var(--ig-lime));
+}
+
+.ghost {
+  border: 1px solid rgb(var(--ig-text-muted) / 0.28);
+  background: none;
+  color: rgb(var(--ig-text));
+}
+
+.ghost:hover:not(:disabled) {
+  border-color: rgb(var(--ig-text-muted) / 0.5);
+}
+
+.link {
+  border: 0;
+  background: none;
+  color: rgb(var(--ig-tertiary));
+  padding: 0.6rem 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.primary:disabled,
+.ghost:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.primary:focus-visible,
+.ghost:focus-visible,
+.link:focus-visible,
+.suggestion:focus-visible {
+  outline: 2px solid rgb(var(--ig-secondary));
+  outline-offset: 2px;
+}
+
+/* ---------- account type ---------- */
+
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.choice {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid rgb(var(--ig-text-muted) / 0.18);
+  border-radius: 9px;
+  background: rgb(var(--ig-surface));
+  color: rgb(var(--ig-text));
+  font: inherit;
+  font-size: 0.92rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.choiceSelected {
+  border-color: rgb(var(--ig-secondary) / 0.6);
+  background: rgb(var(--ig-secondary) / 0.1);
+}
+
+.textInput {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border-radius: 9px;
+  border: 1px solid rgb(var(--ig-text-muted) / 0.22);
+  background: rgb(var(--ig-bg));
+  color: rgb(var(--ig-text));
+  font-family: var(--font-mono), monospace;
+  font-size: 0.95rem;
+}
+
+.textInput:focus {
+  outline: none;
+  border-color: rgb(var(--ig-secondary) / 0.65);
+}
+
+/* ---------- reveal ---------- */
+
+.reveal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.revealBadge {
+  position: relative;
+  width: 148px;
+  height: 148px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.revealHalo {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgb(var(--ig-secondary) / 0.3),
+    transparent 68%
+  );
+  animation: halo 2.6s ease-in-out infinite;
+}
+
+.revealRing {
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  border: 1px solid rgb(var(--ig-secondary) / 0.35);
+  animation: sweep 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.revealCrest {
+  position: relative;
+  animation: crest 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.revealRank {
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(2.4rem, 8vw, 3.6rem);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  color: rgb(var(--ig-text));
+  margin: 0;
+  animation: rise 0.7s 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.revealLead {
+  animation: rise 0.7s 0.12s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.revealPoints {
+  font-family: var(--font-mono), monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 1rem;
+  color: rgb(var(--ig-secondary));
+  margin: 0;
+  animation: rise 0.7s 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.revealNote {
+  font-size: 0.9rem;
+  color: rgb(var(--ig-text-muted));
+  margin: 0;
+  max-width: 44ch;
+  line-height: 1.6;
+  animation: rise 0.7s 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.revealActions {
+  animation: rise 0.7s 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.meter {
+  width: min(380px, 100%);
+  height: 6px;
+  border-radius: 3px;
+  background: rgb(var(--ig-text-muted) / 0.16);
+  overflow: hidden;
+  animation: rise 0.7s 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.meterFill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(
+    90deg,
+    rgb(var(--ig-secondary)),
+    rgb(var(--ig-teal))
+  );
+  transition: width 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ---------- motion ---------- */
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pop {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes rise {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes crest {
+  from {
+    transform: scale(0.55) rotate(-8deg);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) rotate(0);
+    opacity: 1;
+  }
+}
+
+@keyframes sweep {
+  from {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes halo {
+  0%,
+  100% {
+    opacity: 0.65;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .welcome,
+  .scan,
+  .revealCrest,
+  .revealRank,
+  .revealLead,
+  .revealPoints,
+  .revealNote,
+  .revealActions,
+  .revealRing,
+  .meter,
+  .indicatorMark,
+  .nameBadge,
+  .trophyEarned {
+    animation: none;
+  }
+
+  .revealHalo {
+    animation: none;
+    opacity: 0.8;
+  }
+
+  .indicatorRing {
+    animation-duration: 2s;
+  }
+
+  .meterFill {
+    transition: none;
+  }
+}

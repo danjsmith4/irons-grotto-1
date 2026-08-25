@@ -1,0 +1,731 @@
+'use client';
+
+import Image from 'next/image';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { format } from 'date-fns';
+import { AccountTypeBadge } from '@/app/components/account-type-badge';
+import type { ClanStats } from '@/app/data-sources/fetch-clan-stats';
+import type { DirectoryMember } from '@/app/data-sources/fetch-member-directory';
+import {
+  AccountTypeChoice,
+  accountTypeChoiceLabels,
+} from '@/app/schemas/staff';
+import { clientConstants } from '@/config/constants.client';
+import { addPlayerAction } from './actions/add-player-action';
+import { revealRankAction, type RankReveal } from './actions/reveal-rank-action';
+import { scanAchievementsAction } from './actions/scan-achievements-action';
+import { scanClanRecordAction } from './actions/scan-clan-record-action';
+import { scanCollectionLogAction } from './actions/scan-collection-log-action';
+import { scanHiscoresAction } from './actions/scan-hiscores-action';
+import { scanTempleAction } from './actions/scan-temple-action';
+import { RankReveal as RankRevealScene } from './components/rank-reveal';
+import { RsnSearch } from './components/rsn-search';
+import { StatusIndicator, type StepStatus } from './components/status-indicator';
+import { TrophyWall } from './components/trophy-wall';
+import {
+  type AchievementScan,
+  type ClanRecordScan,
+  type CollectionLogScan,
+  type TempleScan,
+} from './scan-types';
+import {
+  canPassCollectionLogGate,
+  resolveCollectionLogState,
+} from './utils/resolve-collection-log-state';
+import { resolveEarnedAchievements } from './utils/resolve-earned-achievements';
+import styles from './join.module.css';
+
+interface JoinExperienceProps {
+  members: DirectoryMember[];
+  stats: ClanStats | null;
+}
+
+type Phase = 'welcome' | 'scanning' | 'confirm' | 'creating' | 'reveal';
+
+type StepKey =
+  | 'hiscores'
+  | 'temple'
+  | 'collectionLog'
+  | 'achievements'
+  | 'clanRecord';
+
+/**
+ * The order the rows tick over in, which is also the order they read in: who
+ * are you, are we tracking you, what have you logged, what have you done, and
+ * when did you join us.
+ */
+const stepOrder: StepKey[] = [
+  'hiscores',
+  'temple',
+  'collectionLog',
+  'achievements',
+  'clanRecord',
+];
+
+const stepLabels: Record<StepKey, string> = {
+  hiscores: 'Finding you on the hiscores',
+  temple: 'Reading your TempleOSRS profile',
+  collectionLog: 'Syncing your collection log',
+  achievements: 'Checking your combat achievements',
+  clanRecord: 'Looking up your clan record',
+};
+
+/**
+ * How long a row stays spinning at minimum.
+ *
+ * The requests are real and run in parallel, so several of them are already
+ * resolved by the time their row's turn comes round. Without a floor they would
+ * all tick in the same frame and the sequence — the thing that tells the player
+ * what is being checked — would be invisible.
+ */
+const minimumDwellMs = 520;
+
+const idleSteps: Record<StepKey, StepStatus> = {
+  hiscores: 'idle',
+  temple: 'idle',
+  collectionLog: 'idle',
+  achievements: 'idle',
+  clanRecord: 'idle',
+};
+
+const compact = new Intl.NumberFormat('en', {
+  notation: 'compact',
+  maximumFractionDigits: 1,
+});
+
+const glanceValue = (n: number) =>
+  n >= 10000 ? compact.format(n) : n.toLocaleString();
+
+const wait = (ms: number) =>
+  new Promise((resolve) => {
+    window.setTimeout(resolve, ms);
+  });
+
+export function JoinExperience({ members, stats }: JoinExperienceProps) {
+  const router = useRouter();
+
+  const [phase, setPhase] = useState<Phase>('welcome');
+  const [rsn, setRsn] = useState('');
+  const [nameError, setNameError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const [steps, setSteps] = useState<Record<StepKey, StepStatus>>(idleSteps);
+  const [temple, setTemple] = useState<TempleScan | null>(null);
+  const [collectionLog, setCollectionLog] = useState<CollectionLogScan | null>(
+    null,
+  );
+  const [achievements, setAchievements] = useState<AchievementScan | null>(null);
+  const [clanRecord, setClanRecord] = useState<ClanRecordScan | null>(null);
+  const [revealedSources, setRevealedSources] = useState<Set<string>>(
+    new Set(),
+  );
+
+  const [joinDate, setJoinDate] = useState<Date>(new Date());
+  const [isJoinDateKnown, setIsJoinDateKnown] = useState(false);
+  const [isEditingJoinDate, setIsEditingJoinDate] = useState(false);
+
+  const [isMobileOnly, setIsMobileOnly] = useState(false);
+  const [isRecheckingLog, setIsRecheckingLog] = useState(false);
+
+  const [accountTypeChoice, setAccountTypeChoice] =
+    useState<AccountTypeChoice | null>(null);
+  const [gimGroupName, setGimGroupName] = useState('');
+  const [gimGroupError, setGimGroupError] = useState<string | null>(null);
+
+  const [reveal, setReveal] = useState<RankReveal | null>(null);
+
+  /** The name the scan actually ran for — never the raw input afterwards. */
+  const scannedName = useRef('');
+
+  const setStep = useCallback((key: StepKey, status: StepStatus) => {
+    setSteps((current) => ({ ...current, [key]: status }));
+  }, []);
+
+  /**
+   * Runs the scan.
+   *
+   * Everything that can start immediately does. The collection log deliberately
+   * waits for the Temple step, because that step is what *registers* an account
+   * Temple has never seen — asking for a log before that has happened would
+   * reliably get nothing back and report it as a missing log.
+   */
+  const runScan = useCallback(
+    async (name: string) => {
+      const trimmed = name.trim();
+
+      if (!trimmed) {
+        setNameError('Enter your RuneScape name to get started.');
+
+        return;
+      }
+
+      scannedName.current = trimmed;
+      setNameError(null);
+      setSubmitError(null);
+      setSteps(idleSteps);
+      setRevealedSources(new Set());
+      setPhase('scanning');
+
+      const hiscoresPromise = scanHiscoresAction({ playerName: trimmed });
+      const templePromise = scanTempleAction({ playerName: trimmed });
+      const achievementsPromise = scanAchievementsAction({
+        playerName: trimmed,
+      });
+      const clanRecordPromise = scanClanRecordAction({ playerName: trimmed });
+
+      // --- hiscores -------------------------------------------------------
+      setStep('hiscores', 'running');
+      const [hiscores] = await Promise.all([
+        hiscoresPromise,
+        wait(minimumDwellMs),
+      ]);
+
+      if (hiscores?.data && !hiscores.data.exists) {
+        setStep('hiscores', 'fail');
+        await wait(700);
+        setPhase('welcome');
+        setNameError(
+          `The hiscores have never heard of "${trimmed}". Check the spelling and spacing against the game.`,
+        );
+
+        return;
+      }
+
+      setStep('hiscores', 'ok');
+
+      // --- temple ---------------------------------------------------------
+      setStep('temple', 'running');
+      const [templeResult] = await Promise.all([
+        templePromise,
+        wait(minimumDwellMs),
+      ]);
+      const templeData = templeResult?.data ?? null;
+
+      setTemple(templeData);
+      setStep('temple', templeData?.isTracked ? 'ok' : 'warn');
+      setRevealedSources((current) => new Set(current).add('temple'));
+
+      // --- collection log -------------------------------------------------
+      setStep('collectionLog', 'running');
+      const [collectionLogResult] = await Promise.all([
+        scanCollectionLogAction({ playerName: trimmed }),
+        wait(minimumDwellMs),
+      ]);
+      const collectionLogData = collectionLogResult?.data ?? null;
+
+      setCollectionLog(collectionLogData);
+      setStep(
+        'collectionLog',
+        collectionLogData?.hasCollectionLog ? 'ok' : 'warn',
+      );
+      setRevealedSources((current) => new Set(current).add('collectionLog'));
+
+      // --- combat achievements --------------------------------------------
+      setStep('achievements', 'running');
+      const [achievementsResult] = await Promise.all([
+        achievementsPromise,
+        wait(minimumDwellMs),
+      ]);
+      const achievementsData = achievementsResult?.data ?? null;
+
+      setAchievements(achievementsData);
+      setStep('achievements', achievementsData?.hasWikiSync ? 'ok' : 'warn');
+      setRevealedSources((current) => new Set(current).add('achievements'));
+
+      // --- clan record ----------------------------------------------------
+      setStep('clanRecord', 'running');
+      const [clanRecordResult] = await Promise.all([
+        clanRecordPromise,
+        wait(minimumDwellMs),
+      ]);
+      const clanRecordData = clanRecordResult?.data ?? null;
+
+      setClanRecord(clanRecordData);
+      setStep('clanRecord', clanRecordData?.isClanMember ? 'ok' : 'warn');
+
+      if (clanRecordData?.joinDate) {
+        setJoinDate(new Date(clanRecordData.joinDate));
+        setIsJoinDateKnown(true);
+      } else {
+        setJoinDate(new Date());
+        setIsJoinDateKnown(false);
+      }
+
+      // The clan list's casing is the canonical one.
+      if (clanRecordData?.rsn) {
+        scannedName.current = clanRecordData.rsn;
+        setRsn(clanRecordData.rsn);
+      }
+
+      await wait(650);
+      setPhase('confirm');
+    },
+    [setStep],
+  );
+
+  /** Which headline achievements have been settled *and* revealed. */
+  const earnedAchievements = useMemo(
+    () =>
+      resolveEarnedAchievements(
+        { temple, collectionLog, achievements },
+        revealedSources,
+      ),
+    [revealedSources, temple, collectionLog, achievements],
+  );
+
+  const collectionLogState = resolveCollectionLogState(temple, collectionLog);
+
+  /** Temple could not settle the game mode, so the player has to say. */
+  const needsAccountType = phase !== 'welcome' && temple?.accountType == null;
+
+  const isAccountTypeAnswered =
+    !needsAccountType ||
+    (accountTypeChoice !== null &&
+      (accountTypeChoice !== 'group_ironman' || gimGroupName.trim().length > 0));
+
+  const canContinue =
+    canPassCollectionLogGate(collectionLogState, isMobileOnly) &&
+    isAccountTypeAnswered;
+
+  async function recheckCollectionLog() {
+    setIsRecheckingLog(true);
+    setStep('collectionLog', 'running');
+
+    const result = await scanCollectionLogAction({
+      playerName: scannedName.current,
+    });
+
+    setCollectionLog(result?.data ?? null);
+    setStep('collectionLog', result?.data?.hasCollectionLog ? 'ok' : 'warn');
+    setIsRecheckingLog(false);
+  }
+
+  async function createAccount() {
+    setPhase('creating');
+    setSubmitError(null);
+    setGimGroupError(null);
+
+    const created = await addPlayerAction({
+      playerName: scannedName.current,
+      joinDate,
+      isMobileOnly,
+      ...(needsAccountType && accountTypeChoice
+        ? {
+            accountType: accountTypeChoice,
+            ...(accountTypeChoice === 'group_ironman'
+              ? { gimGroupName: gimGroupName.trim() }
+              : {}),
+          }
+        : {}),
+    });
+
+    const groupNameErrors =
+      created?.validationErrors?.gimGroupName?._errors?.join(' ');
+
+    if (groupNameErrors) {
+      setGimGroupError(groupNameErrors);
+      setPhase('confirm');
+
+      return;
+    }
+
+    const nameErrors = created?.validationErrors?.playerName?._errors?.join(' ');
+
+    if (nameErrors) {
+      setSubmitError(nameErrors);
+      setPhase('confirm');
+
+      return;
+    }
+
+    if (created?.serverError || !created?.data) {
+      setSubmitError(
+        created?.serverError ??
+          'Something went wrong setting up your account. Try again in a moment.',
+      );
+      setPhase('confirm');
+
+      return;
+    }
+
+    const playerName = created.data.playerName;
+
+    scannedName.current = playerName;
+
+    const revealResult = await revealRankAction({ playerName });
+
+    if (!revealResult?.data) {
+      // The account exists either way — the reveal is the celebration, not the
+      // outcome, so a failure here goes straight to the calculator rather than
+      // stranding a member who has just signed up.
+      router.push(`/player/${encodeURIComponent(playerName)}`);
+
+      return;
+    }
+
+    setReveal(revealResult.data);
+    setPhase('reveal');
+  }
+
+  // ---------------------------------------------------------------- welcome
+
+  if (phase === 'welcome') {
+    return (
+      <main className={styles.shell}>
+        <div className={styles.stage}>
+          <section className={styles.welcome}>
+            <div className={styles.crest}>
+              <Image
+                className={styles.crestMark}
+                src="/L1.png"
+                alt=""
+                width={44}
+                height={44}
+              />
+              <p className={styles.eyebrow}>Irons&apos; Grotto</p>
+            </div>
+
+            <div>
+              <h1 className={styles.title}>Welcome to the Grotto.</h1>
+              <p className={styles.subtitle} style={{ marginTop: '0.9rem' }}>
+                Tell us your RuneScape name and we&apos;ll pull the rest
+                together — your stats, your collection log, and the rank
+                they add up to.
+              </p>
+            </div>
+
+            {stats && (
+              <div className={styles.glance}>
+                <div className={styles.glanceCell}>
+                  <span className={styles.glanceValue}>
+                    {glanceValue(stats.memberCount)}
+                  </span>
+                  <span className={styles.glanceLabel}>Members</span>
+                </div>
+                <div className={styles.glanceCell}>
+                  <span className={styles.glanceValue}>
+                    {glanceValue(stats.totalClogSlots)}
+                  </span>
+                  <span className={styles.glanceLabel}>Clog slots</span>
+                </div>
+                <div className={styles.glanceCell}>
+                  <span className={styles.glanceValue}>
+                    {glanceValue(stats.totalPets)}
+                  </span>
+                  <span className={styles.glanceLabel}>Pets</span>
+                </div>
+                <div className={styles.glanceCell}>
+                  <span className={styles.glanceValue}>
+                    {glanceValue(stats.infernalCount)}
+                  </span>
+                  <span className={styles.glanceLabel}>Infernals</span>
+                </div>
+              </div>
+            )}
+
+            <RsnSearch
+              members={members}
+              value={rsn}
+              onChange={(value) => {
+                setRsn(value);
+                setNameError(null);
+              }}
+              onSubmit={runScan}
+              error={nameError}
+            />
+
+            <div className={styles.actions}>
+              <button
+                type="button"
+                className={styles.primary}
+                onClick={() => runScan(rsn)}
+                disabled={!rsn.trim()}
+              >
+                Look me up
+              </button>
+              <button
+                type="button"
+                className={styles.link}
+                onClick={() => router.push('/dashboard')}
+              >
+                Back to dashboard
+              </button>
+            </div>
+          </section>
+        </div>
+      </main>
+    );
+  }
+
+  // ----------------------------------------------------------------- reveal
+
+  if (phase === 'reveal' && reveal) {
+    return (
+      <main className={styles.shell}>
+        <div className={styles.stage}>
+          <RankRevealScene
+            playerName={scannedName.current}
+            reveal={reveal}
+            onContinue={() =>
+              router.push(`/player/${encodeURIComponent(scannedName.current)}`)
+            }
+          />
+        </div>
+      </main>
+    );
+  }
+
+  // --------------------------------------------------- scanning / confirming
+
+  const isConfirming = phase === 'confirm' || phase === 'creating';
+
+  return (
+    <main className={styles.shell}>
+      <div className={`${styles.stage} ${styles.stageWide}`}>
+        <section className={styles.scan}>
+          <div>
+            <p className={styles.eyebrow}>
+              {isConfirming ? 'Here’s what we found' : 'Looking you up'}
+            </p>
+            {/*
+              The game-mode badge leads the name, exactly as it does in game
+              and on the leaderboard. It appears when the Temple step resolves,
+              which is the moment we learn what kind of account this is — the
+              name settling across is the feedback, not a layout jump.
+            */}
+            <h1 className={styles.nameRow}>
+              {temple?.accountType && (
+                <span className={styles.nameBadge}>
+                  <AccountTypeBadge accountType={temple.accountType} size={26} />
+                </span>
+              )}
+              {scannedName.current || rsn}
+            </h1>
+          </div>
+
+          <div className={styles.steps}>
+            {stepOrder.map((key) => (
+              <div
+                key={key}
+                className={`${styles.step} ${
+                  steps[key] === 'idle' ? styles.stepPending : ''
+                }`}
+              >
+                <StatusIndicator status={steps[key]} />
+                <span className={styles.stepLabel}>{stepLabels[key]}</span>
+                <span className={styles.stepNote}>
+                  {key === 'temple' &&
+                    steps.temple !== 'idle' &&
+                    steps.temple !== 'running' &&
+                    (temple?.didRegister
+                      ? 'added to Temple'
+                      : temple?.isTracked
+                        ? 'tracked'
+                        : 'not tracked')}
+                  {key === 'collectionLog' &&
+                    collectionLog?.clogSlots != null &&
+                    `${collectionLog.clogSlots} slots`}
+                  {key === 'achievements' &&
+                    achievements?.combatAchievementTier &&
+                    achievements.combatAchievementTier}
+                  {key === 'clanRecord' &&
+                    steps.clanRecord !== 'idle' &&
+                    steps.clanRecord !== 'running' &&
+                    (clanRecord?.isClanMember ? 'in the clan' : 'no record')}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <TrophyWall
+            earned={earnedAchievements}
+            settledSources={revealedSources.size}
+          />
+
+          {isConfirming && (
+            <>
+              {/* ---------------- join date, as a finding ---------------- */}
+              <div className={styles.card}>
+                <p className={styles.eyebrow}>Joined the clan</p>
+                <div className={styles.cardHead}>
+                  <span className={styles.cardValue}>
+                    {format(joinDate, 'd MMMM yyyy')}
+                  </span>
+                </div>
+                <p className={styles.cardNote}>
+                  {isJoinDateKnown
+                    ? 'From the clan member list. Your points scale from this date, so it is worth being right.'
+                    : 'The clan list has no record of you yet, so we have assumed today. Change it if you joined earlier.'}
+                </p>
+                {isEditingJoinDate ? (
+                  <div className={styles.cardActions}>
+                    <input
+                      type="date"
+                      className={styles.textInput}
+                      style={{ maxWidth: '200px' }}
+                      aria-label="Join date"
+                      max={format(new Date(), 'yyyy-MM-dd')}
+                      value={format(joinDate, 'yyyy-MM-dd')}
+                      onChange={(event) => {
+                        const next = new Date(event.target.value);
+
+                        if (!Number.isNaN(next.getTime())) {
+                          setJoinDate(next);
+                          setIsJoinDateKnown(false);
+                        }
+                      }}
+                    />
+                    <button
+                      type="button"
+                      className={styles.ghost}
+                      onClick={() => setIsEditingJoinDate(false)}
+                    >
+                      Done
+                    </button>
+                  </div>
+                ) : (
+                  <div className={styles.cardActions}>
+                    <button
+                      type="button"
+                      className={styles.link}
+                      onClick={() => setIsEditingJoinDate(true)}
+                    >
+                      That&apos;s not right
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* -------------- collection log gate (blocking) -------------- */}
+              {(collectionLogState.status === 'missing' ||
+                collectionLogState.status === 'behind') && (
+                <div className={`${styles.card} ${styles.warnCard}`}>
+                  <p className={styles.eyebrow}>
+                    {collectionLogState.status === 'behind'
+                      ? 'Your collection log is out of date'
+                      : 'We can’t see your collection log'}
+                  </p>
+                  <p className={styles.cardNote}>
+                    In game, open your <strong>collection log</strong> and press
+                    the <strong>TempleOSRS sync button</strong> in the top-right
+                    of the interface. That uploads your log to TempleOSRS, which
+                    is where every collection log point on this site comes from.
+                    {collectionLogState.status === 'behind' && (
+                      <>
+                        {' '}
+                        Temple has {collectionLogState.templeSlots} slots for
+                        you; the hiscores say {collectionLogState.hiscoresSlots}.
+                      </>
+                    )}
+                  </p>
+                  <div className={styles.cardActions}>
+                    <button
+                      type="button"
+                      className={styles.primary}
+                      onClick={recheckCollectionLog}
+                      disabled={isRecheckingLog}
+                    >
+                      {isRecheckingLog ? 'Checking…' : 'I’ve synced — check again'}
+                    </button>
+                    <a
+                      className={styles.link}
+                      href={`${clientConstants.temple.baseUrl}/player/collection-log.php?player=${encodeURIComponent(scannedName.current)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      View on TempleOSRS
+                    </a>
+                  </div>
+                  <label className={styles.cardNote}>
+                    <input
+                      type="checkbox"
+                      checked={isMobileOnly}
+                      onChange={(event) =>
+                        setIsMobileOnly(event.target.checked)
+                      }
+                      style={{ marginRight: '0.5rem' }}
+                    />
+                    I play on mobile only, so I can&apos;t sync — set my account
+                    up without it.
+                  </label>
+                </div>
+              )}
+
+              {/* ---------------- account type, only if needed ------------- */}
+              {needsAccountType && (
+                <div className={styles.card}>
+                  <p className={styles.eyebrow}>What kind of account is this?</p>
+                  <p className={styles.cardNote}>
+                    TempleOSRS can&apos;t tell a group ironman from a main until
+                    the group is tracked there, so we have to ask.
+                  </p>
+                  <div className={styles.choices}>
+                    {AccountTypeChoice.options.map((option) => (
+                      <button
+                        key={option}
+                        type="button"
+                        className={`${styles.choice} ${
+                          accountTypeChoice === option
+                            ? styles.choiceSelected
+                            : ''
+                        }`}
+                        aria-pressed={accountTypeChoice === option}
+                        onClick={() => setAccountTypeChoice(option)}
+                      >
+                        {accountTypeChoiceLabels[option]}
+                      </button>
+                    ))}
+                  </div>
+                  {accountTypeChoice === 'group_ironman' && (
+                    <>
+                      <input
+                        className={styles.textInput}
+                        maxLength={12}
+                        placeholder="Group name"
+                        aria-label="Group name"
+                        value={gimGroupName}
+                        onChange={(event) =>
+                          setGimGroupName(event.target.value)
+                        }
+                      />
+                      {gimGroupError && (
+                        <p className={styles.fieldError}>{gimGroupError}</p>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+
+              {submitError && <p className={styles.fieldError}>{submitError}</p>}
+
+              <div className={styles.actions}>
+                <button
+                  type="button"
+                  className={styles.primary}
+                  onClick={createAccount}
+                  disabled={!canContinue || phase === 'creating'}
+                >
+                  {phase === 'creating'
+                    ? 'Setting things up…'
+                    : 'Set up my account'}
+                </button>
+                <button
+                  type="button"
+                  className={styles.link}
+                  onClick={() => {
+                    setPhase('welcome');
+                    setSteps(idleSteps);
+                  }}
+                  disabled={phase === 'creating'}
+                >
+                  Use a different name
+                </button>
+              </div>
+            </>
+          )}
+        </section>
+      </div>
+    </main>
+  );
+}

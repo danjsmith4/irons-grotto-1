@@ -105,7 +105,9 @@ const itemColumns: {
   },
   {
     key: 'hasQuiver',
-    src: "Blessed_dizana's_quiver",
+    // `Blessed_dizana's_quiver` 404s on the wiki — the file is
+    // `Dizana's_quiver`. This column had been rendering its alt text.
+    src: "Dizana's_quiver",
     alt: 'Quiver',
     title: "Blessed Dizana's Quiver",
   },
