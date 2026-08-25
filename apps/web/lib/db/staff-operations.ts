@@ -1,4 +1,4 @@
-import { and, desc, eq, isNotNull, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNotNull, sql } from 'drizzle-orm';
 import { db } from './index';
 import { players, staffRoleChanges } from './schema';
 import type { StaffRole } from '@/app/schemas/staff';
@@ -57,6 +57,64 @@ export async function getStaffIdentityForDiscordUser(
     },
     { role: null, playerName: null },
   );
+}
+
+export interface ClanIdentity {
+  /** Every account this Discord user tracks here, active or not. */
+  playerNames: string[];
+  /** The highest role held on an **active** account, null if none. */
+  staffRole: StaffRole | null;
+}
+
+/**
+ * Who these Discord accounts are in the clan, in one query.
+ *
+ * Used by the ban panes, where most ids belong to nobody and the rest may
+ * belong to someone who left. Names are collected from every row, including
+ * soft-deleted ones — knowing a banned account used to be a member is exactly
+ * the context a moderator wants — but the staff role is read only from active
+ * rows, because that is what standing means everywhere else in this file.
+ */
+export async function getClanIdentitiesForDiscordUsers(
+  discordUserIds: string[],
+): Promise<Map<string, ClanIdentity>> {
+  const identities = new Map<string, ClanIdentity>();
+
+  if (discordUserIds.length === 0) {
+    return identities;
+  }
+
+  const rows = await db
+    .select({
+      discordUserId: players.discordUserId,
+      playerName: players.playerName,
+      staffRole: players.staffRole,
+      isActive: players.isActive,
+    })
+    .from(players)
+    .where(inArray(players.discordUserId, [...new Set(discordUserIds)]));
+
+  rows.forEach(({ discordUserId, playerName, staffRole, isActive }) => {
+    const existing = identities.get(discordUserId) ?? {
+      playerNames: [],
+      staffRole: null,
+    };
+
+    existing.playerNames.push(playerName);
+
+    if (
+      isActive &&
+      staffRole &&
+      (!existing.staffRole ||
+        staffRoleOrder[staffRole] > staffRoleOrder[existing.staffRole])
+    ) {
+      existing.staffRole = staffRole;
+    }
+
+    identities.set(discordUserId, existing);
+  });
+
+  return identities;
 }
 
 export interface StaffDirectoryEntry {

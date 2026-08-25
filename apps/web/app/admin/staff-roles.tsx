@@ -7,11 +7,9 @@ import { toast } from 'react-toastify';
 import { Dialog, DropdownMenu, Spinner } from '@radix-ui/themes';
 import {
   ChevronDownIcon,
-  LockClosedIcon,
   MagnifyingGlassIcon,
   PersonIcon,
 } from '@radix-ui/react-icons';
-import { SectionHeader } from '@/app/components/section-header';
 import { StaffBadge } from '@/app/components/staff-badge';
 import { AccountTypeBadge } from '@/app/components/account-type-badge';
 import { PlayerNameButton } from '@/app/components/player-name-button';
@@ -34,7 +32,6 @@ import styles from './admin.module.css';
 
 interface StaffRolesProps {
   viewerRole: StaffRole;
-  viewerPlayerName: string | null;
   members: StaffDirectoryEntry[];
   history: StaffRoleChangeEntry[];
 }
@@ -49,15 +46,17 @@ const roleLabel = (role: StaffRole | null) =>
   role ? getRankName(staffRoleRanks[role]) : 'No role';
 
 /**
- * Staff role administration.
+ * Staff role administration — the admin page's default pane.
  *
  * Every control here is also enforced server-side — this decides what is worth
  * offering, not what is allowed. See `app/utils/staff-permissions.ts` for the
  * one rule behind all of it: you may only assign a role below your own.
+ *
+ * The page heading belongs to `AdminPanes`, not here: it names the page rather
+ * than this pane, and stays put while the pane under it swaps.
  */
 export function StaffRoles({
   viewerRole,
-  viewerPlayerName,
   members,
   history,
 }: StaffRolesProps) {
@@ -243,17 +242,6 @@ export function StaffRoles({
 
   return (
     <>
-      <SectionHeader
-        title="Clan administration"
-        subtitle={`Signed in as ${viewerPlayerName ?? 'staff'}. You can assign any role below your own — ${
-          grantable.length
-            ? grantable.map(roleLabel).join(' and ')
-            : 'which, as an administrator, is none'
-        }.`}
-        icon={<LockClosedIcon />}
-        actions={<StaffBadge role={viewerRole} />}
-      />
-
       <section className={styles.panel} aria-labelledby="staff-heading">
         <div className={styles.panelHead}>
           <h3 className={styles.panelTitle} id="staff-heading">
