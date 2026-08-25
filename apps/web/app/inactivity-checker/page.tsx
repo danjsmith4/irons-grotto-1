@@ -7,7 +7,7 @@ import { serverConstants } from '@/config/constants.server';
 import { GroupMemberInfoResponse } from '@/app/schemas/temple-api';
 import * as Sentry from '@sentry/nextjs';
 import { ClanMember, ClanMemberList } from '../schemas/inactivity-checker';
-import { getRankImageUrl } from '../rank-calculator/utils/get-rank-image-url';
+import { getRankImageUrl } from '../player/utils/get-rank-image-url';
 import { PlayerNameButton } from '../components/player-name-button';
 
 async function getGroupMemberInfo(): Promise<GroupMemberInfoResponse> {

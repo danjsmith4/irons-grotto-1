@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { players } from '@/lib/db/schema';
-import { fetchPlayerDetails } from '@/app/rank-calculator/data-sources/fetch-player-details/fetch-player-details';
-import { syncPlayerAccountType } from '@/app/rank-calculator/utils/sync-player-account-type';
+import { fetchPlayerDetails } from '@/app/player/data-sources/fetch-player-details/fetch-player-details';
+import { syncPlayerAccountType } from '@/app/player/utils/sync-player-account-type';
 
 export const dynamic = 'force-dynamic';
 

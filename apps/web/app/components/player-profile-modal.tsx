@@ -3,10 +3,10 @@
 import { useEffect, useState } from 'react';
 import { Dialog, VisuallyHidden } from '@radix-ui/themes';
 import Image from 'next/image';
-import { getRankImageUrl } from '@/app/rank-calculator/utils/get-rank-image-url';
-import { getRankName } from '@/app/rank-calculator/utils/get-rank-name';
+import { getRankImageUrl } from '@/app/player/utils/get-rank-image-url';
+import { getRankName } from '@/app/player/utils/get-rank-name';
 import { Rank } from '@/config/enums';
-import { formatWikiImageUrl } from '../rank-calculator/utils/format-wiki-url';
+import { formatWikiImageUrl } from '../player/utils/format-wiki-url';
 import { StaffBadge } from './staff-badge';
 import { AccountTypeBadge } from './account-type-badge';
 import { formatXpInMillions } from '@/app/utils/format-number';

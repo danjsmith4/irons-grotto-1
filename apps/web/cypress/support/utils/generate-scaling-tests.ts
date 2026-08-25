@@ -20,7 +20,7 @@ export const generateScalingTests = <T extends CommonPointCalculatorData>(
   };
 
   it('Calculates the correct points - Full scaling (100%)', () => {
-    cy.visit(`/rank-calculator/${player}`);
+    cy.visit(`/player/${player}`);
     cy.setJoinDate(
       sub(new Date(), {
         days: 180,
@@ -33,7 +33,7 @@ export const generateScalingTests = <T extends CommonPointCalculatorData>(
   });
 
   it('Calculates the correct points - Four month scaling (70%)', () => {
-    cy.visit(`/rank-calculator/${player}`);
+    cy.visit(`/player/${player}`);
     cy.setJoinDate(
       sub(new Date(), {
         days: 120,
@@ -46,7 +46,7 @@ export const generateScalingTests = <T extends CommonPointCalculatorData>(
   });
 
   it('Calculates the correct points - Two month scaling (40%)', () => {
-    cy.visit(`/rank-calculator/${player}`);
+    cy.visit(`/player/${player}`);
     cy.setJoinDate(
       sub(new Date(), {
         days: 60,
@@ -59,7 +59,7 @@ export const generateScalingTests = <T extends CommonPointCalculatorData>(
   });
 
   it('Calculates the correct points - Three week scaling (17.50%)', () => {
-    cy.visit(`/rank-calculator/${player}`);
+    cy.visit(`/player/${player}`);
     cy.setJoinDate(
       sub(new Date(), {
         days: 21,
@@ -72,7 +72,7 @@ export const generateScalingTests = <T extends CommonPointCalculatorData>(
   });
 
   it('Calculates the correct points - No scaling (10%)', () => {
-    cy.visit(`/rank-calculator/${player}`);
+    cy.visit(`/player/${player}`);
     cy.setJoinDate(new Date(), '10.00%');
 
     openCategoryModal();

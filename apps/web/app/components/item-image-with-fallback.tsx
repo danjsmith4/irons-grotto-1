@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { Avatar } from '@radix-ui/themes';
-import { formatWikiImageUrl } from '@/app/rank-calculator/utils/format-wiki-url';
+import { formatWikiImageUrl } from '@/app/player/utils/format-wiki-url';
 
 interface ItemImageWithFallbackProps {
   /**

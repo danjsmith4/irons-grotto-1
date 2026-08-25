@@ -4,7 +4,7 @@ import { Inter } from 'next/font/google';
 import { fetchRecentRankUps } from '@/app/data-sources/fetch-recent-rank-ups';
 import { fetchRecentClogUpdates } from '@/app/data-sources/fetch-recent-clog-updates';
 import { fetchRecentAccomplishments } from '@/app/data-sources/fetch-recent-accomplishments';
-import { fetchPlayerAccounts } from '@/app/rank-calculator/data-sources/fetch-player-accounts';
+import { fetchPlayerAccounts } from '@/app/player/data-sources/fetch-player-accounts';
 import { fetchLeaderboard } from '@/app/data-sources/fetch-leaderboard';
 import { RecentRankUpsTable } from '@/app/components/recent-rank-ups-table';
 import { RecentClogUpdatesTable } from '@/app/components/recent-clog-updates-table';

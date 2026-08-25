@@ -1,4 +1,4 @@
-import { RankProgress } from '@/app/rank-calculator/utils/calculators/calculate-rank-progress';
+import { RankProgress } from '@/app/player/utils/calculators/calculate-rank-progress';
 import { Rank } from '@/config/enums';
 import { CategoryFixture } from '@/cypress/support/types';
 

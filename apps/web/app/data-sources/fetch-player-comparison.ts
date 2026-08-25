@@ -17,15 +17,15 @@ import {
   TzHaarCape,
 } from '@/app/schemas/osrs';
 import { AchievementDiaryMap } from '@/app/schemas/rank-calculator';
-import { isItemAcquired } from '@/app/rank-calculator/data-sources/fetch-player-details/utils/is-item-acquired';
+import { isItemAcquired } from '@/app/player/data-sources/fetch-player-details/utils/is-item-acquired';
 import {
   fetchItemDropRates,
   generateRequiredItemList,
-} from '@/app/rank-calculator/data-sources/fetch-dropped-item-info';
-import { buildNotableItemList } from '@/app/rank-calculator/utils/build-notable-item-list';
+} from '@/app/player/data-sources/fetch-dropped-item-info';
+import { buildNotableItemList } from '@/app/player/utils/build-notable-item-list';
 import { getDerivedItemsForPlayers } from '@/lib/db/derived-item-operations';
-import { buildPointsBreakdown } from '@/app/rank-calculator/utils/build-points-breakdown';
-import { stripEntityName } from '@/app/rank-calculator/utils/strip-entity-name';
+import { buildPointsBreakdown } from '@/app/player/utils/build-points-breakdown';
+import { stripEntityName } from '@/app/player/utils/strip-entity-name';
 import {
   buildPointsComparison,
   PointsComparison,

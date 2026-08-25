@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { NavBar } from '@/app/components/nav-bar';
-import { fetchPlayerAccounts } from '@/app/rank-calculator/data-sources/fetch-player-accounts';
+import { fetchPlayerAccounts } from '@/app/player/data-sources/fetch-player-accounts';
 import { fetchAdminDashboard } from '@/app/data-sources/fetch-admin-dashboard';
 import { fetchDiscordBans } from '@/app/data-sources/fetch-discord-bans';
 import { fetchClanEvents } from '@/app/data-sources/fetch-clan-events';

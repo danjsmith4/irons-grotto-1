@@ -10,10 +10,10 @@ import {
   MagnifyingGlassIcon,
 } from '@radix-ui/react-icons';
 import Image from 'next/image';
-import { getRankImageUrl } from '@/app/rank-calculator/utils/get-rank-image-url';
-import { getRankName } from '@/app/rank-calculator/utils/get-rank-name';
+import { getRankImageUrl } from '@/app/player/utils/get-rank-image-url';
+import { getRankName } from '@/app/player/utils/get-rank-name';
 import { Rank } from '@/config/enums';
-import { formatWikiImageUrl } from '../rank-calculator/utils/format-wiki-url';
+import { formatWikiImageUrl } from '../player/utils/format-wiki-url';
 import { StaffBadge } from './staff-badge';
 import { AccountTypeBadge } from './account-type-badge';
 import type { AccountType, StaffRole } from '../schemas/staff';
@@ -105,7 +105,9 @@ const itemColumns: {
   },
   {
     key: 'hasQuiver',
-    src: "Blessed_dizana's_quiver",
+    // `Blessed_dizana's_quiver` 404s on the wiki — the file is
+    // `Dizana's_quiver`. This column had been rendering its alt text.
+    src: "Dizana's_quiver",
     alt: 'Quiver',
     title: "Blessed Dizana's Quiver",
   },

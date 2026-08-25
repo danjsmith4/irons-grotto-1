@@ -223,6 +223,23 @@ export const TempleOSRSPlayerCollectionLog = z.object({
   data: z.object({
     total_collections_available: z.number().nonnegative(),
     total_collections_finished: z.number().nonnegative(),
+    /**
+     * Efficient hours collected — the time the collection log represents.
+     *
+     * `ehc_im` is the ironman rate, the one that applies to almost everyone
+     * here, and is the counterpart to `Im_ehp` / `Im_ehb` on the stats
+     * endpoint. Unlike those two there is no `Primary_ehc` pointer telling us
+     * which to use, so the caller picks on account type.
+     *
+     * ⚠️ **Optional on purpose.** Everything the calculator scores from the
+     * collection log flows through this parse, and a failed parse is caught and
+     * turned into `null` — indistinguishable from "this player has no log".
+     * Making a display-only number required would let a change at Temple's end
+     * wipe every member's collection log points. Same hazard `bosses=1` guards
+     * against on `fetchTemplePlayerStats`.
+     */
+    ehc: z.number().nonnegative().optional(),
+    ehc_im: z.number().nonnegative().optional(),
     items: z.array(TempleOSRSCollectionLogItem),
   }),
 });

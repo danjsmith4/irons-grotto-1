@@ -1,4 +1,4 @@
-import { CollectionLogAndCluesPointCalculatorData } from '@/app/rank-calculator/hooks/point-calculator/collection-log-and-clues/use-collection-log-and-clues-point-calculator';
+import { CollectionLogAndCluesPointCalculatorData } from '@/app/player/hooks/point-calculator/collection-log-and-clues/use-collection-log-and-clues-point-calculator';
 import { CategoryFixture } from '@/cypress/support/types';
 
 export const collectionLogAndCluesExpectedValues = {

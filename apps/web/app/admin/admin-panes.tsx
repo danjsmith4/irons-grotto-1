@@ -4,7 +4,7 @@ import { useMemo, useRef, useState } from 'react';
 import { LockClosedIcon } from '@radix-ui/react-icons';
 import { SectionHeader } from '@/app/components/section-header';
 import { StaffBadge } from '@/app/components/staff-badge';
-import { getRankName } from '@/app/rank-calculator/utils/get-rank-name';
+import { getRankName } from '@/app/player/utils/get-rank-name';
 import { staffRoleRanks, type StaffRole } from '@/app/schemas/staff';
 import { grantableStaffRoles } from '@/app/utils/staff-permissions';
 import type {

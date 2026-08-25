@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
-import { getRankImageUrl } from '@/app/rank-calculator/utils/get-rank-image-url';
-import { getRankName } from '@/app/rank-calculator/utils/get-rank-name';
+import { getRankImageUrl } from '@/app/player/utils/get-rank-image-url';
+import { getRankName } from '@/app/player/utils/get-rank-name';
 import { Rank } from '@/config/enums';
 import type { ViewerAccount } from '@/app/data-sources/fetch-viewer-accounts';
 import { splitRowsByDirection } from '@/app/utils/build-points-comparison';

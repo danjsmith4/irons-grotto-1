@@ -2,9 +2,9 @@ import {
   estimatedHoursToAcquireMageArena2Cape,
   eternalGloryDropRate,
   gloriesChargedPerHour,
-} from '@/app/rank-calculator/config/efficiency-rates';
-import { calculateXpOrTimeBasedItemPoints } from '@/app/rank-calculator/utils/calculate-xp-or-time-based-item-points';
-import { formatWikiImageUrl } from '@/app/rank-calculator/utils/format-wiki-url';
+} from '@/app/player/config/efficiency-rates';
+import { calculateXpOrTimeBasedItemPoints } from '@/app/player/utils/calculate-xp-or-time-based-item-points';
+import { formatWikiImageUrl } from '@/app/player/utils/format-wiki-url';
 import { ItemCategory } from '@/app/schemas/items';
 import { questItem, compoundItem, singleItem } from '../utils/item-builders';
 

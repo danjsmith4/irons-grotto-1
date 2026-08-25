@@ -6,6 +6,44 @@ export default withSentryConfig<NextConfig>(
     experimental: {
       webpackMemoryOptimizations: true,
     },
+    /**
+     * `/rank-calculator` became `/player`, and the moderator submission view
+     * moved out from under it to `/submissions`.
+     *
+     * These are permanent because the old URLs are not ours to expire: a
+     * submission link is embedded in a Discord thread forever, and the
+     * "Apply for rank" button in every auto-rank DM ever sent points at
+     * `/rank-calculator/<rsn>`. A 404 on a two-year-old approval link is a
+     * real regression, so the old paths keep resolving rather than dying with
+     * the rename.
+     *
+     * Order matters: `/rank-calculator/view/:id` and the two `players/*`
+     * paths must be matched before the catch-all, which would otherwise
+     * swallow them into `/player/view/:id`.
+     */
+    redirects: () =>
+      Promise.resolve([
+        {
+          source: '/rank-calculator/view/:submissionId',
+          destination: '/submissions/:submissionId',
+          permanent: true,
+        },
+        {
+          source: '/rank-calculator/players/add',
+          destination: '/join',
+          permanent: true,
+        },
+        {
+          source: '/rank-calculator/players/edit/:player',
+          destination: '/player/:player/edit',
+          permanent: true,
+        },
+        {
+          source: '/rank-calculator/:path*',
+          destination: '/player/:path*',
+          permanent: true,
+        },
+      ]),
     images: {
       remotePatterns: [
         {

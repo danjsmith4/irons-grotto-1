@@ -13,7 +13,7 @@ import {
 import { StaffBadge } from '@/app/components/staff-badge';
 import { AccountTypeBadge } from '@/app/components/account-type-badge';
 import { PlayerNameButton } from '@/app/components/player-name-button';
-import { getRankName } from '@/app/rank-calculator/utils/get-rank-name';
+import { getRankName } from '@/app/player/utils/get-rank-name';
 import { formatNumber } from '@/app/utils/format-number';
 import { formatTimeAgo } from '@/app/utils/format-time-ago';
 import { staffRoleRanks, type StaffRole } from '@/app/schemas/staff';

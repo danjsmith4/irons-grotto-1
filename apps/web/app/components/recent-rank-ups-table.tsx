@@ -2,8 +2,8 @@
 
 import Image from 'next/image';
 import { ArrowUpIcon } from '@radix-ui/react-icons';
-import { getRankImageUrl } from '@/app/rank-calculator/utils/get-rank-image-url';
-import { getRankName } from '@/app/rank-calculator/utils/get-rank-name';
+import { getRankImageUrl } from '@/app/player/utils/get-rank-image-url';
+import { getRankName } from '@/app/player/utils/get-rank-name';
 import { Rank } from '@/config/enums';
 import { formatTimeAgo } from '@/app/utils/format-time-ago';
 import { SectionHeader } from './section-header';

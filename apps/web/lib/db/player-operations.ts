@@ -15,10 +15,10 @@ import {
   type PlayerAchievementDiary,
 } from './schema';
 import { getCategoryFromItemName } from './item-mapping-utils';
-import { calculatePlayerPoints } from '@/app/rank-calculator/utils/calculate-player-points';
+import { calculatePlayerPoints } from '@/app/player/utils/calculate-player-points';
 import { upsertItemOverrides } from './item-override-operations';
 import { syncPlayerAccomplishments } from './accomplishment-operations';
-import type { PlayerDetailsResponse } from '@/app/rank-calculator/data-sources/fetch-player-details/fetch-player-details';
+import type { PlayerDetailsResponse } from '@/app/player/data-sources/fetch-player-details/fetch-player-details';
 import { TempleOSRSCollectionLogItem } from '@/app/schemas/temple-api';
 import type { AccountType } from '@/app/schemas/staff';
 
@@ -113,6 +113,35 @@ export async function getPlayerByName(
     .limit(1);
 
   return player || null;
+}
+
+/**
+ * Finds whoever has already registered a name, if anyone.
+ *
+ * ⚠️ **Case-insensitive on purpose, because the constraint is.** The unique
+ * index is on `lower(player_name)`, so `getPlayerByName` — which compares the
+ * name exactly — can report a name as free that the database will then refuse.
+ * Signup used to find out that way: the insert failed with a raw `23505` and
+ * the member got a generic "a player with this name already exists" after
+ * sitting through the whole scan.
+ *
+ * Returns the owner's Discord id so the caller can tell the two cases apart.
+ * "You already have this account" ends with a link to it; "somebody else has
+ * it" is a different problem needing a different answer.
+ */
+export async function findPlayerRegistration(
+  playerName: string,
+): Promise<{ playerName: string; discordUserId: string } | null> {
+  const [player] = await db
+    .select({
+      playerName: players.playerName,
+      discordUserId: players.discordUserId,
+    })
+    .from(players)
+    .where(sql`lower(${players.playerName}) = lower(${playerName})`)
+    .limit(1);
+
+  return player ?? null;
 }
 
 /**

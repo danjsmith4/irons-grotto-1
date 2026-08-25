@@ -3,7 +3,7 @@ import {
   altRarityItems,
   rarityOverrides,
   rollOverrides,
-} from '@/app/rank-calculator/config/item-point-map';
+} from '@/app/player/config/item-point-map';
 import {
   CollectionLogItemName,
   CombatAchievementTier,

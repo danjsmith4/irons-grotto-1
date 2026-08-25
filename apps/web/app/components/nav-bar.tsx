@@ -13,15 +13,15 @@ import { useState, useTransition } from 'react';
 import { useFormContext, useFormState } from 'react-hook-form';
 import { useAction } from 'next-safe-action/hooks';
 import { toast } from 'react-toastify';
-import { RankCalculatorSchema } from '@/app/rank-calculator/[player]/submit-rank-calculator-validation';
-import { publishRankSubmissionAction } from '@/app/rank-calculator/[player]/actions/publish-rank-submission-action';
-import { useRankCalculator } from '@/app/rank-calculator/hooks/point-calculator/use-rank-calculator';
-import { deletePlayerAccountAction } from '@/app/rank-calculator/actions/delete-player-account-action';
-import { DeleteSubmissionDataDialog } from '@/app/rank-calculator/components/delete-submission-data-dialog';
-import { handleToastUpdates } from '@/app/rank-calculator/utils/handle-toast-updates';
-import { useCurrentPlayer } from '@/app/rank-calculator/contexts/current-player-context';
-import { getRankName } from '@/app/rank-calculator/utils/get-rank-name';
-import { isRankUp } from '@/app/rank-calculator/utils/is-rank-up';
+import { RankCalculatorSchema } from '@/app/player/[player]/submit-rank-calculator-validation';
+import { publishRankSubmissionAction } from '@/app/player/[player]/actions/publish-rank-submission-action';
+import { useRankCalculator } from '@/app/player/hooks/point-calculator/use-rank-calculator';
+import { deletePlayerAccountAction } from '@/app/player/actions/delete-player-account-action';
+import { DeleteSubmissionDataDialog } from '@/app/player/components/delete-submission-data-dialog';
+import { handleToastUpdates } from '@/app/player/utils/handle-toast-updates';
+import { useCurrentPlayer } from '@/app/player/contexts/current-player-context';
+import { getRankName } from '@/app/player/utils/get-rank-name';
+import { isRankUp } from '@/app/player/utils/is-rank-up';
 import { canAccessAdminDashboard } from '@/app/utils/staff-permissions';
 import { canApplyForRank } from '@/config/ranks';
 import { useViewerStaffRole } from './use-viewer-staff-role';
@@ -198,7 +198,7 @@ export function NavBar({
                   {accounts.map((player) => (
                     <DropdownMenu.Item key={player.rsn} asChild>
                       <Link
-                        href={`/rank-calculator/${encodeURIComponent(player.rsn)}`}
+                        href={`/player/${encodeURIComponent(player.rsn)}`}
                       >
                         {player.rsn}
                         <span className={styles.menuMeta}>
@@ -211,7 +211,7 @@ export function NavBar({
                 </>
               )}
               <DropdownMenu.Item asChild>
-                <Link href="/rank-calculator/players/add">
+                <Link href="/join">
                   <PlusIcon />
                   New account
                 </Link>
