@@ -17,10 +17,11 @@ export interface PlayerStat {
  * same one `player_derived_items` exists to protect elsewhere; here it costs
  * nothing to get right.
  *
- * All three efficiency figures are **ironman** rates, which is how the scans
- * hand them over. This is an ironman clan and the ladder scores everyone on
- * ironman EHB, so a main shown their main-rate hours would be reading a
- * different unit from the one their rank is measured in.
+ * The efficiency figures arrive already resolved to whichever rate TempleOSRS
+ * actually computed for the account — ironman where Temple knows the account is
+ * one, which is most of this clan. That resolution happens in the scans, since
+ * it needs fields this function never sees; the two notes worth reading are on
+ * `scan-temple-action.ts` and `pickCollectedHours`.
  */
 export function buildPlayerStats(
   temple: Pick<TempleScan, 'totalLevel' | 'ehb' | 'ehp'> | null,

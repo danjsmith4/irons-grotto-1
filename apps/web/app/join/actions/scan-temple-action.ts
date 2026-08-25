@@ -6,6 +6,7 @@ import { PlayerName } from '@/app/schemas/player';
 import { maximumTotalLevel } from '@/app/schemas/osrs';
 import { ensureTrackedOnTemple } from '@/app/player/data-sources/ensure-tracked-on-temple';
 import { fetchTemplePlayerStats } from '@/app/player/data-sources/fetch-temple-player-stats';
+import { calculateEfficiencyData } from '@/app/player/data-sources/fetch-player-details/utils/calculate-efficiency-data';
 import { resolveAccountType } from '@/app/player/utils/resolve-account-type';
 import type { TempleScan } from '../scan-types';
 
@@ -32,14 +33,25 @@ export const scanTempleAction = authActionClient
       : null;
 
     /*
-     * The ironman rates, read directly rather than through
-     * `calculateEfficiencyData` — that follows Temple's `Primary_ehb` /
-     * `Primary_ehp` pointers to whichever rate suits the account's own game
-     * mode, which is right for the stored record but wrong on this screen.
-     * Every other efficiency number on the site is an ironman figure, so a main
-     * shown their main-rate hours here would be reading a different unit from
-     * the one their rank is scored in.
+     * ⚠️ **Via `Primary_ehb` / `Primary_ehp`, never `Im_ehb` / `Im_ehp`
+     * directly.**
+     *
+     * Temple computes one rate per account — the one matching the `Game mode`
+     * it has recorded — and leaves the others at a literal `0`. Reading `Im_*`
+     * unconditionally therefore reports **zero hours for every group ironman
+     * and every main**, because Temple files a GIM under `Game mode 0` (it
+     * appears on no individual ironman board — the same ambiguity that makes
+     * `resolveAccountType` refuse to infer a main). Verified against
+     * `EclipseGoon`, a GIM: `Ehb 99.58 / Im_ehb 0`.
+     *
+     * Following the pointer also keeps this honest in the other direction: for
+     * an account Temple *does* know is an ironman, `Primary_ehb` **is**
+     * `Im_ehb`, so ironman figures are shown wherever ironman figures exist.
+     * And it is the same value `calculateEfficiencyData` stores on the player
+     * record, which is what `calculateEhbPoints` scores from — so the number
+     * here is the number their rank is actually computed from.
      */
+    const { ehb, ehp } = calculateEfficiencyData(stats);
     const totalLevel = stats?.Overall_level ?? null;
 
     return {
@@ -51,8 +63,8 @@ export const scanTempleAction = authActionClient
       isMaxed: totalLevel === maximumTotalLevel,
       // The same rule the calculator uses: a single Zuk kill is the cape.
       hasInfernal: (stats?.['TzKal-Zuk'] ?? 0) > 0,
-      ehb: stats?.Im_ehb ?? null,
-      ehp: stats?.Im_ehp ?? null,
+      ehb,
+      ehp,
       hiscoresClogSlots: stats?.Collections ?? null,
     };
   });

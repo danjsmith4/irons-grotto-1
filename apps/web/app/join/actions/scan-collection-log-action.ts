@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { authActionClient } from '@/app/safe-action';
 import { PlayerName } from '@/app/schemas/player';
 import { fetchTemplePlayerCollectionLog } from '@/app/player/data-sources/fetch-player-details/fetch-temple-collection-log';
+import { pickCollectedHours } from '../utils/pick-collected-hours';
 import type { CollectionLogScan } from '../scan-types';
 
 /**
@@ -29,8 +30,9 @@ export const scanCollectionLogAction = authActionClient
         clogTotal: log?.total_collections_available ?? null,
         hasFangKit:
           log?.items.some(({ name }) => name === 'Cursed phalanx') ?? false,
-        // The ironman rate, matching the EHB and EHP shown beside it.
-        ehc: log?.ehc_im ?? null,
+        // The ironman rate where Temple has computed one — see the note on
+        // `pickCollectedHours` for why that cannot simply be `ehc_im`.
+        ehc: pickCollectedHours(log?.ehc, log?.ehc_im),
       };
     },
   );
