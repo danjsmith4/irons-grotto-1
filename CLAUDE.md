@@ -304,6 +304,70 @@ Staff standing is **metadata on a player, not a rank**: `players.staff_role` (en
 
 This replaced the old `RankStructure` concept (a user-selectable Standard/Main/Admin/Moderator/Owner dropdown that switched which rank table applied). Don't reintroduce it.
 
+## Clan events — SOTW / BOTW
+
+The clan runs a TempleOSRS competition a week, alternating **Skill of the Week** and **Boss of the Week**. `/admin`'s **Events** pane (the default) creates them; a nav-bar indicator shows the one running.
+
+**The only decision a moderator makes is the skill or the boss.** Everything else is a rule, and the rules are enforced server-side in `create-clan-event-action.ts` — the form's copy of them is only what it draws:
+
+| | rule | lives in |
+|---|---|---|
+| type | alternates; never chosen | `nextClanEventType` (`config/clan-events.ts`) |
+| dates | Friday 14:00 UTC → the next Friday 10:00 UTC | `nextClanEventWindow` (`app/utils/clan-event-schedule.ts`) |
+| entrants | linked group + `group-sync`, never a pasted list | `create-temple-competition.ts` |
+| how many | one queued beyond the one running | `getUpcomingClanEvent` |
+
+Those fields are still **rendered, locked** (`.lockedValue` — dashed hairline, not a disabled input): they are decisions already made, and staff should see what is about to be booked without opening Temple. The client sends `expectedType` alongside the metric so a form left open since before the last event was created is rejected rather than silently creating the wrong kind.
+
+### Creating a competition — two things Temple's docs do not say
+
+Both were found by calling the endpoint, and both broke it:
+
+- ⚠️ **`team-comp` must be absent, not `0`.** Temple checks whether the parameter is *present*, not what it holds, so `team-comp=0` routes the request down the **team** path and fails with `Invalid memberlist JSON!` — it is looking for `teams`. This is what broke the first real attempt to create an event.
+- ⚠️ **`participants` is required even with a linked, synced group.** Omitting it or sending `[]` fails with `Invalid memberlist!`. So `fetchTempleGroupMembers` sends the group's own roster — the only list that cannot introduce a non-member. Temple then applies the sync over the top: sending 268 names produced a 278-participant competition. **The list we send does not decide who competes**; do not "improve" it into a curated set.
+
+⚠️ **Temple rewrites the name it stores.** "Zulrah BOTW" is kept as `Zulrah Botw` (title case, punctuation flattened). The row records what Temple stored (`storedName`, read back after creation), not what was sent, or the site would show members a name that does not match the competition page.
+
+`competition_delete.php` takes `id` + `key`, which is what makes this endpoint safe to test live — create, verify, delete.
+
+**After creating, the competition is handed to the clan Discord bot** (`announceClanEvent`): `.sotw <url> <key>` / `.botw <url> <key>` into `clanEventAnnouncementChannelId`. That is the bot's syntax, not ours — it is a command, not a human announcement. ⚠️ **The message carries the edit key**, so anyone who can read that channel can edit or delete the competition. Failure is reported, not rolled back (`discord: 'sent' | 'failed' | 'skipped'`), matching the staff-role convention.
+
+**`clan_events.id` is Temple's competition id** (migration `0024`). A row only ever exists because a competition exists, so Temple is called *first* and the row is written from its reply — the reverse order leaves a row pointing at nothing whenever Temple refuses. `competition_key` is the edit password Temple hands out **once**; it is stored or it is gone. Standings are never stored: they are read live from `competition_info.php`, which is public.
+
+⚠️ **Temple's dates carry no timezone** (`2026-08-21 14:00:00`, server time UTC) and V8 reads that form as *local*. `parseTempleUtcDate` in `app/schemas/clan-events.ts` normalises at ingestion; `starts_at`/`ends_at` are `timestamp with time zone`, unlike the older tables here, because an event *is* an exact instant.
+
+⚠️ **`xp_gained` is Temple's name for it whatever the competition tracks** — for a boss week it is kill count. Parsed as `gained` so nothing downstream pretends a Vorkath kc is experience; `clanEventGainLabel` supplies the unit.
+
+**Metric ids are Temple's, and are recorded rather than derived.** Skills happen to match the OSRS hiscore order (Thieving 18); boss numbers are Temple's alone. Skills and bosses share **one id space**, which is what lets `clanEventTypeForMetric` classify an imported competition from its metric with nobody having to say which kind it was.
+
+⚠️ **A metric missing from these lists fails quietly and twice**: the event renders no icon, *and* `clanEventTypeForMetric` cannot classify it, so importing that competition is refused outright. This bit — the first BOTW backfilled was Maggot King (122), which had been left out. When Temple adds content, add it here.
+
+Icons are wiki file names **verified to resolve**, not derived from the name — several have no article image under their own name (Zulrah is `Zulrah_(serpentine)`, Wintertodt is `Burnt_page`, Grotesque Guardians is `Dusk`, Shellbane Gryphon is `Shellbane_gryphon` with a lowercase g). Don't "simplify" them into `name.replaceAll(' ', '_')`; check a new one against `https://oldschool.runescape.wiki/images/thumb/<name>.png/64px-<name>.png` first. The picker renders them as a **searchable grid of icon tiles**, not a dropdown — a native `<select>` cannot show an icon, and staff recognise a boss by its face.
+
+**Skill of the Week excludes the six combat skills** (`combatSkillMetricIds` — Attack, Strength, Defence, Ranged, Magic, Hitpoints). A skilling competition on a combat skill is a bossing competition with worse scoring, and Hitpoints cannot be trained alone; combat belongs to BOTW. Spec'd so it cannot drift back.
+
+**Import bootstraps the alternation.** The next type follows the last event *recorded*, and the clan ran these long before there was a table — so `importClanEventAction` adopts an existing competition by id, reading its name, dates and type from Temple. Without one imported event, the first creation would guess.
+
+**Wins.** `clan_event_wins` is keyed on `(event_id, player_name)`. `syncClanEventResults` is stateless in the same way accomplishment detection is: it asks Temple for finished events with no winner recorded and writes what is missing, so re-running is free and a missed run is caught up. It runs off the two page loads that already read event data (the admin pane, the status endpoint) — there is no cron. A win is only recorded for a **tracked member** (`resolveClanPlayerName` matches case-insensitively), because the linked Temple group can contain accounts this site has never seen, and an all-zero table crowns nobody.
+
+**Who sets it up — "Pick staff".** Staff kept forgetting whose turn it was, so the pane rolls one for them. `pickEventDutyStaff` (pure, spec'd) draws from the **elevated** accounts — the only ones who can reach `/admin` and therefore act on it — and **excludes whoever is already on duty** so that pressing the button again actually rerolls; with a handful of staff a plain random pick lands on the same person too often to look deliberate. A pool of one keeps them.
+
+The assignment lives in **`sync_metadata`**, whose `value` column (migration `0025`, nullable) was added for it — that table is the singleton-bookkeeping store, and this is one row that needs to remember *what* as well as *when*. It is **keyed to the slot it was rolled for**: once the calendar moves past it, the assignment is spent and the pane offers a fresh roll, rather than showing a name against an event that has already happened.
+
+`buildEventDutyMessage` (pure, spec'd) is what lands in `clanEventDutyChannelId`. It carries the deadline, the event type and who to ask for the pick — **including when that person has left the clan**, which would otherwise be a dead end for whoever was just volunteered. The jokes are free; the facts are on their own lines so they survive being skimmed.
+
+⚠️ `getClanEventDuty` **never throws**. `fetchClanEvents` turns any exception into a pane showing nothing but an error, and whose turn it is is the least important thing on it — so an unreadable record (or a deploy that lands ahead of `0025`) reads as "nobody on duty" instead of taking event creation down with it.
+
+**Who picks.** The clan's rule is that the next event's skill or boss is chosen by **the last winner of that same event type** — a boss week's boss comes from whoever won the previous *boss* week. `selectClanEventPicker` (pure, spec'd) is the rule; the create pane names them.
+
+⚠️ **Not "last week's winner".** This was written that way first and it is wrong: the two types alternate, so whoever is winning the event running right now is playing the *other* type and picks the *other* type. For the same reason there is no "current leader" fallback — the type being created is never the type running, so a running event has nothing provisional to offer. Only finished events with a recorded winner count.
+
+**Winners leave.** A third of the roster is `is_active = false`, and the first BOTW backfilled was won by one of them. `selectClanEventPicker` returns **both** `winner` (whoever the rule names, in the clan or not) and `standIn` (the most recent winner of that type still here, only when the winner has gone) — and the pane says both out loud. It deliberately does **not** silently skip a departed winner: a moderator who cannot tell a stand-in from the rule's real answer has no way to know the rule was overridden. A stand-in is never taken from the other event type.
+
+Wins themselves are **never** filtered by `is_active` — not in `clan_event_wins`, not in `getClanEventWinCounts`, not in the events table. A win is a historical fact; dropping someone the day they leave rewrites the record and silently shifts everyone else's tally. Departed members are marked (`.departedTag`) instead. This is the one place the usual "filter to `players.isActive`" data-source convention does not apply.
+
+**The nav indicator is the one thing in the bar allowed to move.** `EventStatus` (`app/components/event-status.tsx`) renders **nothing** when no event is running or queued — a nav item reading "no event" is noise — and pulses only while one is live. The modal's standings put first place in display type and the accent; the rest of the table stays flat, because the point is that one name stands out, not that five sizes do. A Temple outage shows "standings unknown", never an empty table.
+
 ## Admin dashboard (`/admin`) — the only place staff roles are granted
 
 A staff role is the one thing on this site that grants **elevated access**, so it is never requested through the rank calculator (points ranks are; staff standing isn't on the points ladder at all). It is granted from `/admin` by someone who already outranks you.
@@ -316,7 +380,7 @@ A staff role is the one thing on this site that grants **elevated access**, so i
 - `canManageStaffRole` additionally refuses **self-service**: you cannot act on a member whose row shares your Discord id, or the whole ladder has a blind spot at the top.
 - Revoking (`nextRole: null`) uses the same outranking rule. A role-granting screen with no undo is a trap, so revoke is included even though the brief said "promote".
 
-**Layering.** `app/admin/page.tsx` (server) → `fetchAdminDashboard` → `StaffRoles` (client). The access check lives in the **data source**, not just the page, so nothing gets the roster by importing around it. `middleware.ts` gates `/admin` on being signed in only — the staff ladder is invisible to a Discord session, so the page redirects non-elevated users to `/dashboard` rather than erroring (its existence isn't something they need to know about).
+**Layering.** `app/admin/page.tsx` (server) → `fetchAdminDashboard` → `StaffRoles` (client). The page has three panes (`admin-panes.tsx`) — Events, Staff ranks, Discord bans — swapped client-side, not routed, because the server component already fetched all three. The access check lives in the **data source**, not just the page, so nothing gets the roster by importing around it. `middleware.ts` gates `/admin` on being signed in only — the staff ladder is invisible to a Discord session, so the page redirects non-elevated users to `/dashboard` rather than erroring (its existence isn't something they need to know about).
 
 **The client is never trusted.** `setStaffRoleAction` re-reads the actor's own role from the database against their Discord session, and `setPlayerStaffRole` checks the ladder a **second time inside its transaction** against the target's role *now* — the dashboard checked against a copy that may be minutes old, and two deputies acting at once must not walk each other up. The client only says what it wants, never who it is.
 

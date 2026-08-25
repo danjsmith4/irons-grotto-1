@@ -5,6 +5,7 @@ import type { StaffRole } from '@/app/schemas/staff';
 import {
   canAssignStaffRole,
   canManageStaffRole,
+  elevatedStaffRoles,
   staffRoleOrder,
 } from '@/app/utils/staff-permissions';
 
@@ -315,4 +316,35 @@ export async function getStaffRoleChanges(
     .from(staffRoleChanges)
     .orderBy(desc(staffRoleChanges.createdAt))
     .limit(limit);
+}
+
+/**
+ * Everyone eligible for event-setup duty: the elevated staff, who are exactly
+ * the accounts that can reach `/admin` and therefore the only ones who can act
+ * on being rolled.
+ *
+ * Ordered by name so the pool is stable — the randomness should come from the
+ * roll, not from whatever order Postgres feels like returning rows in.
+ */
+export async function getElevatedStaffCandidates(): Promise<
+  { playerName: string; discordUserId: string; staffRole: StaffRole }[]
+> {
+  const rows = await db
+    .select({
+      playerName: players.playerName,
+      discordUserId: players.discordUserId,
+      staffRole: players.staffRole,
+    })
+    .from(players)
+    .where(
+      and(
+        eq(players.isActive, true),
+        inArray(players.staffRole, [...elevatedStaffRoles]),
+      ),
+    )
+    .orderBy(players.playerName);
+
+  return rows.flatMap(({ playerName, discordUserId, staffRole }) =>
+    staffRole ? [{ playerName, discordUserId, staffRole }] : [],
+  );
 }

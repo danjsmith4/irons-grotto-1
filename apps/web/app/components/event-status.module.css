@@ -1,0 +1,287 @@
+/* ==========================================================================
+   Live event indicator
+
+   The one thing in the nav bar allowed to move. Everything else there is
+   permanent; a competition is running for a week and then it is gone, so it
+   gets a pulse and the accent — and only while it is actually live. A queued
+   event uses the same shape with the motion and the colour taken away.
+   ========================================================================== */
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  height: 32px;
+  padding: 0 0.7rem;
+  border: 1px solid rgb(var(--ig-text-muted) / 0.16);
+  border-radius: 999px;
+  background: rgb(var(--ig-surface-2) / 0.5);
+  font: inherit;
+  font-size: 12px;
+  color: rgb(var(--ig-text-muted));
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.trigger:hover {
+  color: rgb(var(--ig-text));
+  border-color: rgb(var(--ig-secondary) / 0.4);
+}
+
+.trigger:focus-visible {
+  outline: 2px solid rgb(var(--ig-secondary) / 0.6);
+  outline-offset: 2px;
+}
+
+.triggerLive {
+  border-color: rgb(var(--ig-secondary) / 0.35);
+  background: rgb(var(--ig-secondary) / 0.08);
+  color: rgb(var(--ig-text));
+}
+
+.triggerLabel {
+  font-weight: 500;
+}
+
+.triggerMeta {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgb(var(--ig-text-muted));
+}
+
+/* The name is the first thing to go on a narrow screen; the dot and the
+   short meta still say an event is on. */
+@media (max-width: 900px) {
+  .triggerLabel {
+    display: none;
+  }
+}
+
+.pulse {
+  position: relative;
+  width: 7px;
+  height: 7px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: rgb(var(--ig-text-muted));
+}
+
+.triggerLive .pulse {
+  background: rgb(var(--ig-secondary));
+}
+
+/* The halo is a second, expanding copy — animating the dot itself would move
+   the text next to it. */
+.triggerLive .pulse::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: rgb(var(--ig-secondary) / 0.45);
+  animation: eventPulse 2s ease-out infinite;
+}
+
+@keyframes eventPulse {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.8;
+  }
+
+  100% {
+    transform: scale(2.1);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .triggerLive .pulse::after {
+    animation: none;
+    opacity: 0.35;
+  }
+}
+
+/* -- modal ---------------------------------------------------------------- */
+
+.dialog {
+  background: rgb(var(--ig-surface)) !important;
+  border: 1px solid rgb(var(--ig-text-muted) / 0.12);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-bottom: 0.875rem;
+  border-bottom: 1px solid rgb(var(--ig-text-muted) / 0.1);
+}
+
+.headerText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: rgb(var(--ig-text));
+}
+
+.subtitle {
+  font-size: 0.8125rem;
+  color: rgb(var(--ig-text-muted));
+}
+
+.note {
+  margin: 1rem 0 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: rgb(var(--ig-text-muted));
+}
+
+/* -- standings ------------------------------------------------------------ */
+
+.standings {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+}
+
+.standing {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgb(var(--ig-text-muted) / 0.07);
+}
+
+.standing:last-child {
+  border-bottom: none;
+}
+
+/*
+ * First place is bigger and green. The rest of the table stays flat — the
+ * point is that one name stands out, not that five sizes do.
+ */
+.standingLeader {
+  padding: 0.75rem 0;
+}
+
+.position {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  flex-shrink: 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  color: rgb(var(--ig-text-muted));
+}
+
+.standingLeader .position {
+  font-size: 14px;
+  color: rgb(var(--ig-secondary));
+}
+
+.standingName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+  font-size: 0.875rem;
+  color: rgb(var(--ig-text));
+}
+
+.standingLeader .standingName {
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: rgb(var(--ig-secondary));
+}
+
+.standingName:hover {
+  color: rgb(var(--ig-secondary));
+}
+
+.gained {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  flex-shrink: 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8125rem;
+  color: rgb(var(--ig-text-light));
+}
+
+.standingLeader .gained {
+  font-size: 0.9375rem;
+  color: rgb(var(--ig-text));
+}
+
+.gainedUnit {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: rgb(var(--ig-text-muted));
+}
+
+/* -- footer --------------------------------------------------------------- */
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.875rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgb(var(--ig-text-muted) / 0.1);
+}
+
+.footerMeta {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgb(var(--ig-text-muted));
+}
+
+.footerLink {
+  font-size: 0.8125rem;
+  color: rgb(var(--ig-secondary));
+  text-decoration: none;
+}
+
+.footerLink:hover {
+  text-decoration: underline;
+}
+
+.nextUp {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 0.875rem 0 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgb(var(--ig-text-muted) / 0.1);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: rgb(var(--ig-text-muted));
+}
+
+.nextUpLabel {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgb(var(--ig-text-muted) / 0.8);
+}

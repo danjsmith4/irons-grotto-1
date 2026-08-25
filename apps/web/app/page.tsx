@@ -121,9 +121,9 @@ export default async function HomePage() {
               fontSize: '14px',
             }}
           >
-            <p style={{ margin: '0.3rem 0' }}>Owner: Aceriwyn</p>
+            <p style={{ margin: '0.3rem 0' }}>Owners: Avios, Aceriwyn</p>
             <p style={{ margin: '0.3rem 0' }}>
-              Deputies: Dead Player, Hoagie, ciaran258, Avios, Gods, Rewind
+              Deputies: Dead Player, Hoagie, ciaran258, Gods, Rewind, vivibtw
             </p>
           </div>
         </div>
