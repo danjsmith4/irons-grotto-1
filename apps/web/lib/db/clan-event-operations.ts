@@ -16,7 +16,16 @@ import {
  */
 
 export interface ClanEventWithWinner extends ClanEventRow {
-  winner: { playerName: string; gained: number } | null;
+  winner: {
+    playerName: string;
+    gained: number;
+    /**
+     * Whether they are still in the clan. A win is a historical fact and is
+     * kept whatever happens afterwards, but a member who has left cannot be
+     * asked to choose the next boss — see `selectClanEventPicker`.
+     */
+    isActiveMember: boolean;
+  } | null;
 }
 
 /** Newest first — the order the admin pane lists them in. */
@@ -28,6 +37,7 @@ export async function getClanEvents(
       event: clanEvents,
       winnerName: clanEventWins.playerName,
       winnerGained: clanEventWins.gained,
+      winnerIsActive: players.isActive,
     })
     .from(clanEvents)
     .leftJoin(
@@ -37,13 +47,21 @@ export async function getClanEvents(
         eq(clanEventWins.placement, 1),
       ),
     )
+    // Left, not inner: a winner who has since been deleted outright still has
+    // a win row, and losing the event from the list because of it would be
+    // worse than showing the name without a player behind it.
+    .leftJoin(players, eq(players.playerName, clanEventWins.playerName))
     .orderBy(desc(clanEvents.startsAt))
     .limit(limit);
 
-  return rows.map(({ event, winnerName, winnerGained }) => ({
+  return rows.map(({ event, winnerName, winnerGained, winnerIsActive }) => ({
     ...event,
     winner: winnerName
-      ? { playerName: winnerName, gained: winnerGained ?? 0 }
+      ? {
+          playerName: winnerName,
+          gained: winnerGained ?? 0,
+          isActiveMember: winnerIsActive ?? false,
+        }
       : null,
   }));
 }
@@ -179,16 +197,24 @@ export async function resolveClanPlayerName(
   return row?.playerName ?? null;
 }
 
-/** How many events each member has won, most wins first. */
+/**
+ * How many events each member has won, most wins first.
+ *
+ * Members who have left are **kept and flagged**, not filtered out. This is a
+ * record of who won what; dropping someone the day they leave would rewrite it
+ * and quietly change other people's standings in the tally.
+ */
 export async function getClanEventWinCounts(
   limit = 10,
-): Promise<{ playerName: string; wins: number }[]> {
+): Promise<{ playerName: string; wins: number; isActiveMember: boolean }[]> {
   return db
     .select({
       playerName: clanEventWins.playerName,
       wins: sql<number>`count(*)::int`,
+      isActiveMember: sql<boolean>`coalesce(bool_or(${players.isActive}), false)`,
     })
     .from(clanEventWins)
+    .leftJoin(players, eq(players.playerName, clanEventWins.playerName))
     .where(eq(clanEventWins.placement, 1))
     .groupBy(clanEventWins.playerName)
     .orderBy(desc(sql`count(*)`))

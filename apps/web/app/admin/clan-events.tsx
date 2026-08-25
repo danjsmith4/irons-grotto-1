@@ -140,6 +140,8 @@ export function ClanEvents({ data, error }: ClanEventsProps) {
   }
 
   const isBlocked = !!nextSlot.blockedReason;
+  const { picker } = data;
+  const metricNoun = nextSlot.type === 'sotw' ? 'skill' : 'boss';
 
   return (
     <>
@@ -154,46 +156,65 @@ export function ClanEvents({ data, error }: ClanEventsProps) {
         </div>
 
         {/*
-          Who picks. The clan's rule is that the last winner chooses, and while
-          an event is still running that is not settled — so the leader is
-          offered instead, said out loud as provisional rather than presented
-          as the answer.
+          Who picks: the last winner of *this same kind* of event. Not last
+          week's winner — the two types alternate, so whoever is winning right
+          now is playing the other one and picks the other one.
+
+          When that winner has left the clan the site does not quietly skip to
+          the next name: it says who the rule points at, that they are gone,
+          and who to ask instead. Silently substituting would leave a moderator
+          unable to tell a stand-in from the real answer.
         */}
-        {data.picker ? (
-          <p className={styles.pickerNote}>
-            <PersonIcon />
+        <p className={styles.pickerNote}>
+          <PersonIcon />
+          {picker.winner ? (
             <span>
-              {data.picker.basis === 'winner' ? (
+              {picker.winner.isActiveMember ? (
                 <>
                   Ask{' '}
                   <PlayerNameButton
-                    name={data.picker.playerName}
+                    name={picker.winner.playerName}
                     className={styles.pickerName}
                   />{' '}
-                  for the pick — they won “{data.picker.eventName}”.
+                  for the {metricNoun} — they won the last {nextSlot.typeLabel},
+                  “{picker.winner.eventName}”.
                 </>
               ) : (
                 <>
                   <PlayerNameButton
-                    name={data.picker.playerName}
+                    name={picker.winner.playerName}
                     className={styles.pickerName}
                   />{' '}
-                  is leading “{data.picker.eventName}”. If that holds, theirs is
-                  the pick to ask for.
+                  won the last {nextSlot.typeLabel} (“{picker.winner.eventName}
+                  ”) but has{' '}
+                  <strong className={styles.departed}>
+                    left the clan
+                  </strong>.{' '}
+                  {picker.standIn ? (
+                    <>
+                      Ask{' '}
+                      <PlayerNameButton
+                        name={picker.standIn.playerName}
+                        className={styles.pickerName}
+                      />{' '}
+                      instead — they won “{picker.standIn.eventName}”.
+                    </>
+                  ) : (
+                    <>
+                      No earlier {nextSlot.typeLabel} winner is still here, so
+                      choose the {metricNoun} with the rest of staff.
+                    </>
+                  )}
                 </>
               )}
             </span>
-          </p>
-        ) : (
-          <p className={styles.pickerNote}>
-            <PersonIcon />
+          ) : (
             <span>
-              No winner recorded yet, so there is nobody to ask — choose the{' '}
-              {nextSlot.type === 'sotw' ? 'skill' : 'boss'} with the rest of
-              staff.
+              No previous {nextSlot.typeLabel} has a winner recorded, so there
+              is nobody to ask — choose the {metricNoun} with the rest of staff.
             </span>
-          </p>
-        )}
+          )}
+        </p>
 
         <div className={styles.eventForm}>
           <label className={styles.field}>
@@ -380,10 +401,20 @@ export function ClanEvents({ data, error }: ClanEventsProps) {
                     </td>
                     <td className={styles.roleCell}>
                       {event.winner ? (
-                        <PlayerNameButton
-                          name={event.winner.playerName}
-                          className={styles.name}
-                        />
+                        <span className={styles.nameCell}>
+                          <PlayerNameButton
+                            name={event.winner.playerName}
+                            className={styles.name}
+                          />
+                          {!event.winner.isActiveMember && (
+                            <span
+                              className={styles.departedTag}
+                              title="No longer in the clan"
+                            >
+                              left
+                            </span>
+                          )}
+                        </span>
                       ) : (
                         <span className={styles.noAction}>—</span>
                       )}
@@ -423,6 +454,17 @@ export function ClanEvents({ data, error }: ClanEventsProps) {
                       name={entry.playerName}
                       className={styles.name}
                     />
+                    {/* Kept, not filtered — the tally is a record of who won
+                        what, and dropping someone the day they leave would
+                        rewrite it. */}
+                    {!entry.isActiveMember && (
+                      <span
+                        className={styles.departedTag}
+                        title="No longer in the clan"
+                      >
+                        left
+                      </span>
+                    )}
                   </span>
                 </div>
                 <span className={styles.historyTime}>

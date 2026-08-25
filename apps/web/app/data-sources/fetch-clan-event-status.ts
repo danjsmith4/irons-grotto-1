@@ -7,9 +7,7 @@ import {
 import {
   getActiveClanEvent,
   getUpcomingClanEvent,
-  getClanEvents,
 } from '@/lib/db/clan-event-operations';
-import { clanEventPhase } from '@/app/utils/clan-event-schedule';
 import type { ClanEventRow } from '@/lib/db/schema';
 import { fetchTempleCompetition } from './fetch-temple-competition';
 import { syncClanEventResults } from './sync-clan-event-results';
@@ -45,12 +43,6 @@ export interface ActiveClanEvent extends ClanEventSummary {
 export interface ClanEventStatus {
   active: ActiveClanEvent | null;
   next: ClanEventSummary | null;
-  /** Who won the last finished event, for the "ask them" line. */
-  lastWinner: {
-    playerName: string;
-    eventName: string;
-    type: ClanEventType;
-  } | null;
 }
 
 /** How many standings rows the modal shows. */
@@ -86,15 +78,10 @@ export async function fetchClanEventStatus(): Promise<
     // to be hit shortly after an event ends.
     await syncClanEventResults(now);
 
-    const [activeRow, nextRow, recent] = await Promise.all([
+    const [activeRow, nextRow] = await Promise.all([
       getActiveClanEvent(now),
       getUpcomingClanEvent(now),
-      getClanEvents(5),
     ]);
-
-    const lastFinished = recent.find(
-      (event) => clanEventPhase(event, now) === 'finished' && event.winner,
-    );
 
     let active: ActiveClanEvent | null = null;
 
@@ -121,13 +108,6 @@ export async function fetchClanEventStatus(): Promise<
       data: {
         active,
         next: nextRow ? toClanEventSummary(nextRow) : null,
-        lastWinner: lastFinished?.winner
-          ? {
-              playerName: lastFinished.winner.playerName,
-              eventName: lastFinished.name,
-              type: lastFinished.type,
-            }
-          : null,
       },
     };
   } catch (error) {

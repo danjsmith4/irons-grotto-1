@@ -523,6 +523,29 @@
   font-weight: 500;
 }
 
+/*
+ * A member who has left. Muted rather than alarming — it is a fact about the
+ * roster, not an error, and it appears next to names that are otherwise fine
+ * to click through to.
+ */
+.departedTag {
+  flex-shrink: 0;
+  padding: 0.05rem 0.35rem;
+  border: 1px solid rgb(var(--ig-text-muted) / 0.25);
+  border-radius: 999px;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgb(var(--ig-text-muted));
+}
+
+/* Inline in the picker sentence, where it is the load-bearing word. */
+.departed {
+  color: rgb(var(--ig-warning));
+  font-weight: 600;
+}
+
 .panelActions {
   display: flex;
   justify-content: flex-end;

@@ -18,8 +18,13 @@ import {
   clanEventPhase,
   nextClanEventWindow,
 } from '@/app/utils/clan-event-schedule';
-import { fetchTempleCompetition } from './fetch-temple-competition';
+import {
+  selectClanEventPicker,
+  type ClanEventPickerResult,
+} from '@/app/utils/select-clan-event-picker';
 import { syncClanEventResults } from './sync-clan-event-results';
+
+export type { ClanEventPickerResult };
 
 export interface AdminClanEvent {
   id: number;
@@ -33,7 +38,11 @@ export interface AdminClanEvent {
   /** Whether Temple's edit key for this competition was captured. */
   hasCompetitionKey: boolean;
   createdBy: string | null;
-  winner: { playerName: string; gained: number } | null;
+  winner: {
+    playerName: string;
+    gained: number;
+    isActiveMember: boolean;
+  } | null;
 }
 
 /**
@@ -54,19 +63,11 @@ export interface NextClanEventSlot {
   blockedReason: string | null;
 }
 
-/** Who decides this event's skill or boss. */
-export interface ClanEventPicker {
-  playerName: string;
-  /** 'winner' — a finished event they won. 'leading' — the event still running. */
-  basis: 'winner' | 'leading';
-  eventName: string;
-}
-
 export interface ClanEventsAdminData {
   events: AdminClanEvent[];
   nextSlot: NextClanEventSlot;
-  picker: ClanEventPicker | null;
-  winCounts: { playerName: string; wins: number }[];
+  picker: ClanEventPickerResult;
+  winCounts: { playerName: string; wins: number; isActiveMember: boolean }[];
 }
 
 /**
@@ -140,7 +141,7 @@ export async function fetchClanEvents(): Promise<
             ? `“${queued.name}” is already queued for ${queued.startsAt.toUTCString()}. Only one event can be scheduled ahead of the one running.`
             : null,
         },
-        picker: await resolvePicker(events, now),
+        picker: selectClanEventPicker(events, type, now),
         winCounts,
       },
     };
@@ -149,49 +150,4 @@ export async function fetchClanEvents(): Promise<
 
     return { success: false, error: String(error) };
   }
-}
-
-/**
- * Who the moderator should be asking for the skill or boss.
- *
- * The clan's rule is that the previous winner picks, so the answer is the
- * winner of the event immediately before the one being created. While an event
- * is still running that winner is not decided yet — so the current leader is
- * offered instead, clearly labelled as provisional, because that is the person
- * a moderator creating next week's event actually needs to talk to.
- */
-async function resolvePicker(
-  events: Awaited<ReturnType<typeof getClanEvents>>,
-  now: Date,
-): Promise<ClanEventPicker | null> {
-  const running = events.find(
-    (event) => clanEventPhase(event, now) === 'active',
-  );
-
-  if (running) {
-    const competition = await fetchTempleCompetition(running.id);
-    const [leader] = (competition?.participants ?? []).filter(
-      ({ gained }) => gained > 0,
-    );
-
-    if (leader) {
-      return {
-        playerName: leader.username.replaceAll('_', ' '),
-        basis: 'leading',
-        eventName: running.name,
-      };
-    }
-  }
-
-  const lastWon = events.find(
-    (event) => clanEventPhase(event, now) === 'finished' && event.winner,
-  );
-
-  return lastWon?.winner
-    ? {
-        playerName: lastWon.winner.playerName,
-        basis: 'winner',
-        eventName: lastWon.name,
-      }
-    : null;
 }
