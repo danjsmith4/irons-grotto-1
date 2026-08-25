@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { fetchClanStats } from '@/app/data-sources/fetch-clan-stats';
-import { fetchMemberDirectory } from '@/app/data-sources/fetch-member-directory';
 import { JoinExperience } from './join-experience';
 
 export const metadata = {
@@ -24,14 +23,10 @@ export default async function JoinPage() {
     redirect('/');
   }
 
-  const [statsResult, members] = await Promise.all([
-    fetchClanStats(),
-    fetchMemberDirectory(),
-  ]);
+  const statsResult = await fetchClanStats();
 
   return (
     <JoinExperience
-      members={members}
       // The welcome panel is decoration with a job — it is the only proof on
       // screen that there is a clan behind this form. If the aggregate query
       // fails, the panel is dropped rather than shown as a row of zeroes.

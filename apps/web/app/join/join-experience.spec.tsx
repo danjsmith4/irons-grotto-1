@@ -1,13 +1,7 @@
 // Plain render rather than the `test-utils` wrapper: onboarding deliberately
 // mounts outside the app's providers (it has no nav and no profile modal), and
 // wrapping it here would fetch `/api/viewer-accounts` for nothing.
-import {
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-  within,
-} from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import type { ClanStats } from '@/app/data-sources/fetch-clan-stats';
 import { JoinExperience } from './join-experience';
 
@@ -18,16 +12,22 @@ jest.mock('next/navigation', () => ({
 }));
 
 /**
- * The scan actions are server actions, so they are stubbed wholesale. This spec
- * is about the experience mounting and the welcome step behaving — the scan's
- * own decisions are covered by the pure functions in `utils/`.
+ * The actions are server actions, so they are stubbed wholesale. This spec is
+ * about the experience mounting, the welcome step behaving, and the name
+ * pre-flight — the scan's own decisions are covered by the pure functions in
+ * `utils/`.
  */
+const checkNameAvailabilityAction = jest.fn<Promise<unknown>, [unknown]>();
 const scanHiscoresAction = jest.fn<Promise<unknown>, [unknown]>();
 const scanTempleAction = jest.fn<Promise<unknown>, [unknown]>();
 const scanCollectionLogAction = jest.fn<Promise<unknown>, [unknown]>();
 const scanAchievementsAction = jest.fn<Promise<unknown>, [unknown]>();
 const scanClanRecordAction = jest.fn<Promise<unknown>, [unknown]>();
 
+jest.mock('./actions/check-name-availability-action', () => ({
+  checkNameAvailabilityAction: (input: unknown) =>
+    checkNameAvailabilityAction(input),
+}));
 jest.mock('./actions/scan-hiscores-action', () => ({
   scanHiscoresAction: (input: unknown) => scanHiscoresAction(input),
 }));
@@ -63,20 +63,28 @@ const stats: ClanStats = {
   quiverCount: 14,
 };
 
-const members = [
-  { rsn: 'Riftletics', accountType: 'ironman' as const },
-  { rsn: 'Clogging', accountType: 'hardcore_ironman' as const },
-  { rsn: 'Newcomer', accountType: null },
-];
-
 const renderExperience = (clanStats: ClanStats | null = stats) =>
-  render(<JoinExperience members={members} stats={clanStats} />);
+  render(<JoinExperience stats={clanStats} />);
 
 const nameField = () =>
-  screen.getByRole('combobox', { name: /your runescape name/i });
+  screen.getByRole('textbox', { name: /your runescape name/i });
+
+const lookMeUp = () => screen.getByRole('button', { name: /look me up/i });
+
+/** Every scan step answering with nothing, for the cases that get that far. */
+function stubScanWithNothing() {
+  scanHiscoresAction.mockResolvedValue({ data: { exists: true } });
+  scanTempleAction.mockResolvedValue({ data: null });
+  scanCollectionLogAction.mockResolvedValue({ data: null });
+  scanAchievementsAction.mockResolvedValue({ data: null });
+  scanClanRecordAction.mockResolvedValue({ data: null });
+}
 
 beforeEach(() => {
   jest.clearAllMocks();
+  checkNameAvailabilityAction.mockResolvedValue({
+    data: { status: 'available' },
+  });
 });
 
 describe('JoinExperience', () => {
@@ -108,50 +116,107 @@ describe('JoinExperience', () => {
   it('cannot start a scan with an empty name', () => {
     renderExperience();
 
-    expect(screen.getByRole('button', { name: /look me up/i })).toBeDisabled();
+    expect(lookMeUp()).toBeDisabled();
   });
 
-  describe('roster search', () => {
-    it("shows a matching member's game-mode helmet beside their name", async () => {
+  describe('the name field', () => {
+    it('never suggests names', () => {
+      // Not a search box. A member types their own name, and suggesting other
+      // members offers up accounts that already exist and would be refused.
       renderExperience();
-      fireEvent.change(nameField(), { target: { value: 'rift' } });
+      fireEvent.change(nameField(), { target: { value: 'a' } });
 
-      const option = await screen.findByRole('option', { name: /riftletics/i });
+      expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+      expect(screen.queryAllByRole('option')).toHaveLength(0);
 
-      // The badge renders as an <img> carrying the game mode as its alt text.
-      expect(within(option).getByAltText(/ironman/i)).toBeInTheDocument();
+      // And it is a plain field, not a combobox.
+      expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
     });
 
-    it('gives a member with no known game mode no badge', async () => {
+    it('leaves the browser out of it', () => {
       renderExperience();
-      fireEvent.change(nameField(), { target: { value: 'newcomer' } });
 
-      const option = await screen.findByRole('option', { name: /newcomer/i });
+      expect(nameField()).toHaveAttribute('autocomplete', 'off');
+      expect(nameField()).toHaveAttribute('spellcheck', 'false');
+    });
+  });
 
-      expect(within(option).queryByRole('img')).not.toBeInTheDocument();
+  describe('the name pre-flight', () => {
+    it('stops before the scan when the player already has this account', async () => {
+      checkNameAvailabilityAction.mockResolvedValue({
+        data: { status: 'yours', playerName: 'EclipseGoon' },
+      });
+      stubScanWithNothing();
+
+      renderExperience();
+      fireEvent.change(nameField(), { target: { value: 'eclipsegoon' } });
+      fireEvent.click(lookMeUp());
+
+      expect(
+        await screen.findByText(/already set up EclipseGoon/i),
+      ).toBeInTheDocument();
+
+      // The whole point of the pre-flight: none of the scan ran, so nobody
+      // waited on TempleOSRS to be told something we knew immediately.
+      expect(scanHiscoresAction).not.toHaveBeenCalled();
+      expect(scanTempleAction).not.toHaveBeenCalled();
     });
 
-    it('fills the field from a picked suggestion', async () => {
-      renderExperience();
-      fireEvent.change(nameField(), { target: { value: 'rift' } });
-      fireEvent.click(
-        await screen.findByRole('option', { name: /riftletics/i }),
-      );
+    it('offers a way into the account they already have', async () => {
+      checkNameAvailabilityAction.mockResolvedValue({
+        data: { status: 'yours', playerName: 'EclipseGoon' },
+      });
 
-      await waitFor(() => expect(nameField()).toHaveValue('Riftletics'));
+      renderExperience();
+      fireEvent.change(nameField(), { target: { value: 'eclipsegoon' } });
+      fireEvent.click(lookMeUp());
+
+      const link = await screen.findByRole('link', {
+        name: /EclipseGoon/i,
+      });
+
+      expect(link).toHaveAttribute('href', '/player/EclipseGoon');
+    });
+
+    it('says so plainly when somebody else has the name, with no link', async () => {
+      checkNameAvailabilityAction.mockResolvedValue({
+        data: { status: 'taken', playerName: 'EclipseGoon' },
+      });
+
+      renderExperience();
+      fireEvent.change(nameField(), { target: { value: 'eclipsegoon' } });
+      fireEvent.click(lookMeUp());
+
+      expect(
+        await screen.findByText(/registered by another member/i),
+      ).toBeInTheDocument();
+      // Not their account to open.
+      expect(screen.queryByRole('link')).not.toBeInTheDocument();
+    });
+
+    it('runs the scan when the name is free', async () => {
+      stubScanWithNothing();
+
+      renderExperience();
+      fireEvent.change(nameField(), { target: { value: 'Newcomer' } });
+      fireEvent.click(lookMeUp());
+
+      expect(
+        await screen.findByText(/finding you on the hiscores/i),
+      ).toBeInTheDocument();
+      expect(checkNameAvailabilityAction).toHaveBeenCalledWith({
+        playerName: 'Newcomer',
+      });
     });
   });
 
   it('sends the player back to the welcome step when the name is not on the hiscores', async () => {
+    stubScanWithNothing();
     scanHiscoresAction.mockResolvedValue({ data: { exists: false } });
-    scanTempleAction.mockResolvedValue({ data: null });
-    scanAchievementsAction.mockResolvedValue({ data: null });
-    scanClanRecordAction.mockResolvedValue({ data: null });
-    scanCollectionLogAction.mockResolvedValue({ data: null });
 
     renderExperience();
     fireEvent.change(nameField(), { target: { value: 'Nobody' } });
-    fireEvent.click(screen.getByRole('button', { name: /look me up/i }));
+    fireEvent.click(lookMeUp());
 
     expect(
       await screen.findByText(

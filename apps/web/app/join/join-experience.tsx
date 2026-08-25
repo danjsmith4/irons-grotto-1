@@ -6,13 +6,13 @@ import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { AccountTypeBadge } from '@/app/components/account-type-badge';
 import type { ClanStats } from '@/app/data-sources/fetch-clan-stats';
-import type { DirectoryMember } from '@/app/data-sources/fetch-member-directory';
 import {
   AccountTypeChoice,
   accountTypeChoiceLabels,
 } from '@/app/schemas/staff';
 import { clientConstants } from '@/config/constants.client';
 import { addPlayerAction } from './actions/add-player-action';
+import { checkNameAvailabilityAction } from './actions/check-name-availability-action';
 import { revealRankAction, type RankReveal } from './actions/reveal-rank-action';
 import { scanAchievementsAction } from './actions/scan-achievements-action';
 import { scanClanRecordAction } from './actions/scan-clan-record-action';
@@ -20,7 +20,7 @@ import { scanCollectionLogAction } from './actions/scan-collection-log-action';
 import { scanHiscoresAction } from './actions/scan-hiscores-action';
 import { scanTempleAction } from './actions/scan-temple-action';
 import { RankReveal as RankRevealScene } from './components/rank-reveal';
-import { RsnSearch } from './components/rsn-search';
+import { RsnField } from './components/rsn-field';
 import { StatusIndicator, type StepStatus } from './components/status-indicator';
 import { TrophyWall } from './components/trophy-wall';
 import {
@@ -38,7 +38,6 @@ import { resolveEarnedAchievements } from './utils/resolve-earned-achievements';
 import styles from './join.module.css';
 
 interface JoinExperienceProps {
-  members: DirectoryMember[];
   stats: ClanStats | null;
 }
 
@@ -103,12 +102,18 @@ const wait = (ms: number) =>
     window.setTimeout(resolve, ms);
   });
 
-export function JoinExperience({ members, stats }: JoinExperienceProps) {
+export function JoinExperience({ stats }: JoinExperienceProps) {
   const router = useRouter();
 
   const [phase, setPhase] = useState<Phase>('welcome');
   const [rsn, setRsn] = useState('');
   const [nameError, setNameError] = useState<string | null>(null);
+  /** A way out of the name error, when there is one — never just a dead end. */
+  const [nameErrorLink, setNameErrorLink] = useState<{
+    href: string;
+    label: string;
+  } | null>(null);
+  const [isCheckingName, setIsCheckingName] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const [steps, setSteps] = useState<Record<StepKey, StepStatus>>(idleSteps);
@@ -163,7 +168,43 @@ export function JoinExperience({ members, stats }: JoinExperienceProps) {
 
       scannedName.current = trimmed;
       setNameError(null);
+      setNameErrorLink(null);
       setSubmitError(null);
+
+      /*
+       * Pre-flight: is this name already set up?
+       *
+       * One indexed lookup, before any of the theatre. Finding out at the end
+       * instead meant a member who already had an account sat through the whole
+       * scan — including the TempleOSRS registration, which deliberately waits
+       * ten seconds — only to be told something we could have said immediately.
+       */
+      setIsCheckingName(true);
+
+      const availability = await checkNameAvailabilityAction({
+        playerName: trimmed,
+      });
+
+      setIsCheckingName(false);
+
+      if (availability?.data && availability.data.status !== 'available') {
+        const { status, playerName } = availability.data;
+
+        if (status === 'yours') {
+          setNameError(`You've already set up ${playerName}.`);
+          setNameErrorLink({
+            href: `/player/${encodeURIComponent(playerName)}`,
+            label: `Open ${playerName}'s rank sheet.`,
+          });
+        } else {
+          setNameError(
+            `${playerName} is already registered by another member. If that account is yours, ask a moderator to sort it out.`,
+          );
+        }
+
+        return;
+      }
+
       setSteps(idleSteps);
       setRevealedSources(new Set());
       setPhase('scanning');
@@ -398,7 +439,7 @@ export function JoinExperience({ members, stats }: JoinExperienceProps) {
               <h1 className={styles.title}>Welcome to the Grotto.</h1>
               <p className={styles.subtitle} style={{ marginTop: '0.9rem' }}>
                 Tell us your RuneScape name and we&apos;ll pull the rest
-                together — your stats, your collection log, and the rank
+                together: your stats, your collection log, and the rank
                 they add up to.
               </p>
             </div>
@@ -432,15 +473,17 @@ export function JoinExperience({ members, stats }: JoinExperienceProps) {
               </div>
             )}
 
-            <RsnSearch
-              members={members}
+            <RsnField
               value={rsn}
               onChange={(value) => {
                 setRsn(value);
                 setNameError(null);
+                setNameErrorLink(null);
               }}
               onSubmit={runScan}
               error={nameError}
+              errorLink={nameErrorLink}
+              disabled={isCheckingName}
             />
 
             <div className={styles.actions}>
@@ -448,9 +491,9 @@ export function JoinExperience({ members, stats }: JoinExperienceProps) {
                 type="button"
                 className={styles.primary}
                 onClick={() => runScan(rsn)}
-                disabled={!rsn.trim()}
+                disabled={!rsn.trim() || isCheckingName}
               >
-                Look me up
+                {isCheckingName ? 'Checking…' : 'Look me up'}
               </button>
               <button
                 type="button"

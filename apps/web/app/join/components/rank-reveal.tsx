@@ -109,8 +109,7 @@ export function RankReveal({
           </>
         ) : nextRank ? (
           <>
-            This is the rank to apply for — a moderator approves it, and that is
-            what assigns your rank in game and on Discord. Next up is{' '}
+            Next up is{' '}
             {getRankName(nextRank)}
             {nextRankThreshold
               ? ` at ${nextRankThreshold.toLocaleString()} points`
@@ -119,15 +118,14 @@ export function RankReveal({
           </>
         ) : (
           <>
-            Top of the ladder. Apply from your calculator and a moderator will
-            confirm it.
+            Top of the ladder.
           </>
         )}
       </p>
 
       <div className={styles.revealActions}>
         <button type="button" className={styles.primary} onClick={onContinue}>
-          Open my calculator
+          Enter the Grotto
         </button>
       </div>
     </div>

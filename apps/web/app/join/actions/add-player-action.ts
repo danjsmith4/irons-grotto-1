@@ -7,21 +7,46 @@ import { ActionError } from '@/app/action-error';
 import { fetchPlayerMeta } from '@/app/player/data-sources/fetch-player-meta';
 import { ensureTrackedOnTemple } from '@/app/player/data-sources/ensure-tracked-on-temple';
 import { AddPlayerSchema } from './add-player-schema';
-import { createNewPlayer, getPlayerByName } from '@/lib/db/player-operations';
+import {
+  createNewPlayer,
+  findPlayerRegistration,
+} from '@/lib/db/player-operations';
 import { resolveDeclaredAccountType } from '@/app/player/utils/resolve-declared-account-type';
 import { resolveAccountType } from '@/app/player/utils/resolve-account-type';
 
-async function assertUniquePlayerRecord(userId: string, playerName: string) {
+/**
+ * Whether this name is still free, and if not, who has it.
+ *
+ * ⚠️ **Case-insensitive, because the unique index is** (`lower(player_name)`).
+ * This used to call `getPlayerByName`, which compares the name exactly and is
+ * also scoped to the caller — so a name registered with different casing, or by
+ * a different member, passed the check and then failed the insert with a raw
+ * `23505`. The member got a generic error at the very end of signup.
+ *
+ * `null` on a failed read, never "it's free": a database we cannot ask has not
+ * told us the name is available, and letting the insert decide is exactly the
+ * outcome above.
+ */
+async function findExistingRegistration(userId: string, playerName: string) {
   if (!userId) {
-    return false;
+    return { status: 'unknown' } as const;
   }
 
   try {
-    const existingPlayer = await getPlayerByName(playerName, userId);
-    return !existingPlayer; // Return true if player doesn't exist (unique)
+    const existing = await findPlayerRegistration(playerName);
+
+    if (!existing) {
+      return { status: 'available' } as const;
+    }
+
+    return {
+      status: existing.discordUserId === userId ? 'yours' : 'taken',
+      playerName: existing.playerName,
+    } as const;
   } catch (error) {
     Sentry.captureException(error);
-    return false;
+
+    return { status: 'unknown' } as const;
   }
 }
 
@@ -39,14 +64,19 @@ export const addPlayerAction = authActionClient
       },
       ctx: { userId },
     }) => {
-      const isUsernameUnique = await assertUniquePlayerRecord(
-        userId,
-        playerName,
-      );
+      const registration = await findExistingRegistration(userId, playerName);
 
-      if (!isUsernameUnique) {
+      if (registration.status !== 'available') {
         returnValidationErrors(AddPlayerSchema, {
-          playerName: { _errors: ['You have already registered this account'] },
+          playerName: {
+            _errors: [
+              registration.status === 'yours'
+                ? `You have already set up ${registration.playerName}.`
+                : registration.status === 'taken'
+                  ? `${registration.playerName} is already registered by another member. If that account is yours, ask a moderator to sort it out.`
+                  : 'We could not check whether this name is already registered. Try again in a moment.',
+            ],
+          },
         });
       }
 

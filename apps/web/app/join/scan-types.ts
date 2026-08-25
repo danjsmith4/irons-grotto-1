@@ -12,6 +12,21 @@ import type { AccountType } from '@/app/schemas/staff';
  * only ever ticks because its own request came back.
  */
 
+/**
+ * Whether a name is free to register, checked the moment it is submitted.
+ *
+ * Three outcomes rather than a boolean, because the two ways a name can be
+ * taken need different answers: an account the member already owns is one click
+ * from being useful to them, and an account somebody else owns is not their
+ * problem to solve.
+ */
+export type NameAvailability =
+  | { status: 'available' }
+  /** This Discord account already registered it. */
+  | { status: 'yours'; playerName: string }
+  /** Another member registered it. */
+  | { status: 'taken'; playerName: string };
+
 export interface HiscoresScan {
   /** The name exists on the OSRS hiscores. */
   exists: boolean;
