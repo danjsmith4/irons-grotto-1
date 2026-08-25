@@ -11,6 +11,7 @@ import {
   accountTypeChoiceLabels,
 } from '@/app/schemas/staff';
 import { clientConstants } from '@/config/constants.client';
+import { publishRankSubmissionAction } from '@/app/player/[player]/actions/publish-rank-submission-action';
 import { addPlayerAction } from './actions/add-player-action';
 import { checkNameAvailabilityAction } from './actions/check-name-availability-action';
 import { revealRankAction, type RankReveal } from './actions/reveal-rank-action';
@@ -141,6 +142,8 @@ export function JoinExperience({ stats }: JoinExperienceProps) {
   const [gimGroupError, setGimGroupError] = useState<string | null>(null);
 
   const [reveal, setReveal] = useState<RankReveal | null>(null);
+  const [isApplying, setIsApplying] = useState(false);
+  const [applyError, setApplyError] = useState<string | null>(null);
 
   /** The name the scan actually ran for — never the raw input afterwards. */
   const scannedName = useRef('');
@@ -424,6 +427,59 @@ export function JoinExperience({ stats }: JoinExperienceProps) {
     setPhase('reveal');
   }
 
+  /**
+   * "Enter the Grotto" — applies for the revealed rank, then goes in.
+   *
+   * The reveal is not a grant, so leaving onboarding without applying meant a
+   * member had just been shown a rank and then had to go and ask for it from a
+   * menu. Applying here is the natural end of the sequence: the submission is
+   * the same one `publishRankSubmissionAction` creates from the calculator, so
+   * a moderator sees it exactly as they see every other application.
+   *
+   * ⚠️ A **main never applies.** `publishRankSubmissionAction` refuses them
+   * server-side (`canApplyForRank`), and it is right to — approval assigns a
+   * real in-game and Discord clan rank off the ironman ladder. They go straight
+   * through to the calculator, which is theirs to use like anyone's.
+   *
+   * A failed application does not block the way in. The account exists either
+   * way, so the failure is reported and the button becomes a plain "Continue
+   * anyway" — the calculator's own "Apply for promotion" is still there, which
+   * makes it recoverable rather than silently lost.
+   */
+  async function enterTheGrotto() {
+    const playerName = scannedName.current;
+    const goIn = () => router.push(`/player/${encodeURIComponent(playerName)}`);
+
+    if (!reveal?.canApply || applyError) {
+      goIn();
+
+      return;
+    }
+
+    setIsApplying(true);
+    setApplyError(null);
+
+    const submitted = await publishRankSubmissionAction.bind(
+      null,
+      // The row was created moments ago, so this is what it holds.
+      'Unranked',
+      playerName,
+    )({ rank: reveal.rank, totalPoints: Math.round(reveal.points) });
+
+    setIsApplying(false);
+
+    if (submitted?.serverError ?? submitted?.validationErrors) {
+      setApplyError(
+        submitted.serverError ??
+          'We could not send your application just now. You can apply from your calculator instead.',
+      );
+
+      return;
+    }
+
+    goIn();
+  }
+
   // ---------------------------------------------------------------- welcome
 
   if (phase === 'welcome') {
@@ -525,9 +581,9 @@ export function JoinExperience({ stats }: JoinExperienceProps) {
           <RankRevealScene
             playerName={scannedName.current}
             reveal={reveal}
-            onContinue={() =>
-              router.push(`/player/${encodeURIComponent(scannedName.current)}`)
-            }
+            isApplying={isApplying}
+            applyError={applyError}
+            onContinue={enterTheGrotto}
           />
         </div>
       </main>
@@ -625,25 +681,25 @@ export function JoinExperience({ stats }: JoinExperienceProps) {
 
           {isConfirming && (
             <>
-              {/* ---------------- join date, as a finding ---------------- */}
-              <div className={styles.card}>
-                <p className={styles.eyebrow}>Joined the clan</p>
-                <div className={styles.cardHead}>
-                  <span className={styles.cardValue}>
-                    {format(joinDate, 'd MMMM yyyy')}
-                  </span>
-                </div>
-                <p className={styles.cardNote}>
-                  {isJoinDateKnown
-                    ? 'From the clan member list. Your points scale from this date, so it is worth being right.'
-                    : 'The clan list has no record of you yet, so we have assumed today. Change it if you joined earlier.'}
+              {/*
+                Join date — a finding, not a field, and deliberately quiet.
+
+                It was a bordered card with the date in display type, which gave
+                a settled fact the same weight as the one blocking decision on
+                the screen, and arrived with a thump. It is now a label, the
+                date, and fine print: the size of a thing you glance at and move
+                past, with the way to correct it in reach if you don't.
+              */}
+              <div className={styles.joined}>
+                <p className={styles.joinedLabel}>Joined the clan</p>
+                <p className={styles.joinedValue}>
+                  {format(joinDate, 'd MMMM yyyy')}
                 </p>
                 {isEditingJoinDate ? (
-                  <div className={styles.cardActions}>
+                  <div className={styles.joinedEdit}>
                     <input
                       type="date"
-                      className={styles.textInput}
-                      style={{ maxWidth: '200px' }}
+                      className={styles.joinedInput}
                       aria-label="Join date"
                       max={format(new Date(), 'yyyy-MM-dd')}
                       value={format(joinDate, 'yyyy-MM-dd')}
@@ -658,22 +714,25 @@ export function JoinExperience({ stats }: JoinExperienceProps) {
                     />
                     <button
                       type="button"
-                      className={styles.ghost}
+                      className={styles.joinedCta}
                       onClick={() => setIsEditingJoinDate(false)}
                     >
                       Done
                     </button>
                   </div>
                 ) : (
-                  <div className={styles.cardActions}>
+                  <p className={styles.joinedNote}>
+                    {isJoinDateKnown
+                      ? 'From the clan member list. Your points scale from it.'
+                      : 'No record of you on the clan list yet, so we’ve assumed today.'}{' '}
                     <button
                       type="button"
-                      className={styles.link}
+                      className={styles.joinedCta}
                       onClick={() => setIsEditingJoinDate(true)}
                     >
-                      That&apos;s not right
+                      Is this wrong? Change it
                     </button>
-                  </div>
+                  </p>
                 )}
               </div>
 

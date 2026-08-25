@@ -1,7 +1,7 @@
 // Plain render rather than the `test-utils` wrapper: onboarding deliberately
 // mounts outside the app's providers (it has no nav and no profile modal), and
 // wrapping it here would fetch `/api/viewer-accounts` for nothing.
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { ClanStats } from '@/app/data-sources/fetch-clan-stats';
 import { JoinExperience } from './join-experience';
 
@@ -43,11 +43,27 @@ jest.mock('./actions/scan-achievements-action', () => ({
 jest.mock('./actions/scan-clan-record-action', () => ({
   scanClanRecordAction: (input: unknown) => scanClanRecordAction(input),
 }));
+const addPlayerAction = jest.fn<Promise<unknown>, [unknown]>();
+const revealRankAction = jest.fn<Promise<unknown>, [unknown]>();
+const publishRankSubmission = jest.fn<Promise<unknown>, [unknown]>();
+
 jest.mock('./actions/add-player-action', () => ({
-  addPlayerAction: jest.fn(),
+  addPlayerAction: (input: unknown) => addPlayerAction(input),
 }));
 jest.mock('./actions/reveal-rank-action', () => ({
-  revealRankAction: jest.fn(),
+  revealRankAction: (input: unknown) => revealRankAction(input),
+}));
+
+// A bound action: `.bind(null, currentRank, playerName)` returns the callable.
+// Addressed relatively — Jest does not resolve the `@/` alias through a path
+// segment containing brackets.
+jest.mock('../player/[player]/actions/publish-rank-submission-action', () => ({
+  publishRankSubmissionAction: {
+    bind:
+      (_: unknown, currentRank: unknown, playerName: unknown) =>
+      (input: unknown) =>
+        publishRankSubmission({ currentRank, playerName, input }),
+  },
 }));
 
 const stats: ClanStats = {
@@ -80,11 +96,101 @@ function stubScanWithNothing() {
   scanClanRecordAction.mockResolvedValue({ data: null });
 }
 
+/**
+ * Drives welcome → scan → confirm → reveal with everything resolving cleanly.
+ *
+ * The scan holds each row for a minimum dwell, so this genuinely takes a few
+ * seconds of fake-free waiting; the tests using it carry a longer timeout.
+ */
+async function reachTheReveal(
+  reveal: Partial<{
+    rank: string;
+    nextRank: string | null;
+    points: number;
+    rankThreshold: number;
+    nextRankThreshold: number | null;
+    canApply: boolean;
+    throttleReason: null;
+  }> = {},
+) {
+  scanHiscoresAction.mockResolvedValue({ data: { exists: true } });
+  scanTempleAction.mockResolvedValue({
+    data: {
+      isTracked: true,
+      didRegister: false,
+      accountType: 'ironman',
+      totalLevel: 2131,
+      isMaxed: false,
+      hasInfernal: true,
+      ehb: 250,
+      ehp: 969,
+      hiscoresClogSlots: 430,
+    },
+  });
+  scanCollectionLogAction.mockResolvedValue({
+    data: {
+      hasCollectionLog: true,
+      clogSlots: 430,
+      clogTotal: 1600,
+      hasFangKit: false,
+      ehc: 525,
+    },
+  });
+  scanAchievementsAction.mockResolvedValue({
+    data: {
+      hasWikiSync: true,
+      hasBlorva: false,
+      hasQuiver: false,
+      hasZukHelm: false,
+      combatAchievementTier: 'Elite',
+    },
+  });
+  scanClanRecordAction.mockResolvedValue({
+    data: {
+      joinDate: '2025-03-14T00:00:00.000Z',
+      isClanMember: true,
+      rsn: 'Riftletics',
+    },
+  });
+  addPlayerAction.mockResolvedValue({ data: { playerName: 'Riftletics' } });
+  revealRankAction.mockResolvedValue({
+    data: {
+      rank: 'Captain',
+      nextRank: 'General',
+      points: 13892,
+      rankThreshold: 13000,
+      nextRankThreshold: 16000,
+      canApply: true,
+      throttleReason: null,
+      ...reveal,
+    },
+  });
+
+  renderExperience();
+  fireEvent.change(nameField(), { target: { value: 'Riftletics' } });
+  fireEvent.click(lookMeUp());
+
+  const setUp = await screen.findByRole(
+    'button',
+    { name: /set up my account/i },
+    { timeout: 15_000 },
+  );
+
+  fireEvent.click(setUp);
+
+  return screen.findByRole(
+    'button',
+    { name: /enter the grotto|continue anyway/i },
+    { timeout: 15_000 },
+  );
+}
+
 beforeEach(() => {
   jest.clearAllMocks();
   checkNameAvailabilityAction.mockResolvedValue({
     data: { status: 'available' },
   });
+  publishRankSubmission.mockResolvedValue({ data: { success: true } });
 });
 
 describe('JoinExperience', () => {
@@ -207,6 +313,63 @@ describe('JoinExperience', () => {
       expect(checkNameAvailabilityAction).toHaveBeenCalledWith({
         playerName: 'Newcomer',
       });
+    });
+  });
+
+  describe('entering the Grotto', () => {
+    jest.setTimeout(40_000);
+
+    it('applies for the revealed rank, then goes in', async () => {
+      const enter = await reachTheReveal();
+
+      fireEvent.click(enter);
+
+      await waitFor(() =>
+        expect(publishRankSubmission).toHaveBeenCalledWith({
+          // The row was created moments ago, so this is what it holds.
+          currentRank: 'Unranked',
+          playerName: 'Riftletics',
+          input: { rank: 'Captain', totalPoints: 13892 },
+        }),
+      );
+
+      await waitFor(() => expect(push).toHaveBeenCalledWith('/player/Riftletics'));
+    });
+
+    it('never applies on behalf of a main', async () => {
+      // Approval assigns a real in-game and Discord rank off the ironman
+      // ladder, which a main is not on. The server refuses it too.
+      const enter = await reachTheReveal({ canApply: false, rank: 'Looter' });
+
+      fireEvent.click(enter);
+
+      await waitFor(() => expect(push).toHaveBeenCalledWith('/player/Riftletics'));
+      expect(publishRankSubmission).not.toHaveBeenCalled();
+    });
+
+    it('lets the member in anyway when the application fails', async () => {
+      publishRankSubmission.mockResolvedValue({
+        serverError: 'Discord is unavailable.',
+      });
+
+      const enter = await reachTheReveal();
+
+      fireEvent.click(enter);
+
+      // Reported, not swallowed — and the account already exists, so the way in
+      // stays open rather than stranding someone who has just signed up.
+      expect(
+        await screen.findByText(/Discord is unavailable/i),
+      ).toBeInTheDocument();
+      expect(push).not.toHaveBeenCalled();
+
+      fireEvent.click(
+        await screen.findByRole('button', { name: /continue anyway/i }),
+      );
+
+      await waitFor(() => expect(push).toHaveBeenCalledWith('/player/Riftletics'));
+      // Not retried behind their back.
+      expect(publishRankSubmission).toHaveBeenCalledTimes(1);
     });
   });
 

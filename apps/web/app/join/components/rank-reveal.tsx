@@ -10,6 +10,10 @@ import styles from '../join.module.css';
 interface RankRevealProps {
   playerName: string;
   reveal: RankRevealData;
+  /** The rank application is in flight. */
+  isApplying?: boolean;
+  /** It did not go through. The way in stays open regardless. */
+  applyError?: string | null;
   onContinue: () => void;
 }
 
@@ -29,6 +33,8 @@ interface RankRevealProps {
 export function RankReveal({
   playerName,
   reveal,
+  isApplying,
+  applyError,
   onContinue,
 }: RankRevealProps) {
   const {
@@ -117,16 +123,35 @@ export function RankReveal({
             .
           </>
         ) : (
+          <>Top of the ladder.</>
+        )}
+        {canApply && !applyError && (
           <>
-            Top of the ladder.
+            {' '}
+            Entering applies for it — a moderator confirms it, and that is what
+            sets your rank in game and on Discord.
           </>
         )}
       </p>
 
       <div className={styles.revealActions}>
-        <button type="button" className={styles.primary} onClick={onContinue}>
-          Enter the Grotto
+        <button
+          type="button"
+          className={styles.primary}
+          onClick={onContinue}
+          disabled={isApplying}
+        >
+          {isApplying
+            ? `Applying for ${getRankName(rank)}…`
+            : applyError
+              ? 'Continue anyway'
+              : 'Enter the Grotto'}
         </button>
+        {applyError && (
+          <p className={styles.revealError}>
+            {applyError} You can apply again from your calculator.
+          </p>
+        )}
       </div>
     </div>
   );
