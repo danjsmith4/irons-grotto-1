@@ -73,6 +73,13 @@
  */
 .nameRow {
   display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+}
+
+.nameHeading {
+  display: flex;
   align-items: center;
   gap: 0.55rem;
   font-family: var(--font-display), sans-serif;
@@ -82,6 +89,43 @@
   line-height: 1.1;
   color: rgb(var(--ig-text));
   margin: 0;
+}
+
+/*
+ * The headline numbers, sitting after the name rather than under it. Mono and
+ * muted: they are context for the name, not a second heading competing with it.
+ */
+.nameStats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.15rem 0.9rem;
+  margin: 0;
+}
+
+.nameStat {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  animation: rise 0.4s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+.nameStat dt {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgb(var(--ig-text-muted));
+}
+
+.nameStat dd {
+  margin: 0;
+  font-family: var(--font-mono), monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.86rem;
+  font-weight: 500;
+  color: rgb(var(--ig-text-light));
 }
 
 .nameBadge {
@@ -409,7 +453,20 @@
  * silhouette of the item — you can still tell a cape from a helmet, which is
  * the point of showing what there is to get.
  */
+/*
+ * ⚠️ The box is fixed in CSS, not left to the image's own dimensions.
+ *
+ * These wiki thumbnails are not a consistent shape — most are around 64×65, but
+ * `Max_cape` is 64×124, a full-length cape render. Sized from the source it
+ * stood nearly twice as tall as everything beside it and spilled out of its
+ * tile. `object-fit: contain` inside a fixed square normalises every icon to
+ * the same footprint whatever the wiki hands back, including the next one that
+ * turns out to be an odd shape.
+ */
 .trophy img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
   filter: grayscale(1) brightness(1.45) contrast(0.85);
   opacity: 0.34;
   transition:

@@ -6,7 +6,6 @@ import { PlayerName } from '@/app/schemas/player';
 import { maximumTotalLevel } from '@/app/schemas/osrs';
 import { ensureTrackedOnTemple } from '@/app/player/data-sources/ensure-tracked-on-temple';
 import { fetchTemplePlayerStats } from '@/app/player/data-sources/fetch-temple-player-stats';
-import { calculateEfficiencyData } from '@/app/player/data-sources/fetch-player-details/utils/calculate-efficiency-data';
 import { resolveAccountType } from '@/app/player/utils/resolve-account-type';
 import type { TempleScan } from '../scan-types';
 
@@ -32,7 +31,15 @@ export const scanTempleAction = authActionClient
       ? await fetchTemplePlayerStats(playerName)
       : null;
 
-    const { ehb, ehp } = calculateEfficiencyData(stats);
+    /*
+     * The ironman rates, read directly rather than through
+     * `calculateEfficiencyData` — that follows Temple's `Primary_ehb` /
+     * `Primary_ehp` pointers to whichever rate suits the account's own game
+     * mode, which is right for the stored record but wrong on this screen.
+     * Every other efficiency number on the site is an ironman figure, so a main
+     * shown their main-rate hours here would be reading a different unit from
+     * the one their rank is scored in.
+     */
     const totalLevel = stats?.Overall_level ?? null;
 
     return {
@@ -44,8 +51,8 @@ export const scanTempleAction = authActionClient
       isMaxed: totalLevel === maximumTotalLevel,
       // The same rule the calculator uses: a single Zuk kill is the cape.
       hasInfernal: (stats?.['TzKal-Zuk'] ?? 0) > 0,
-      ehb,
-      ehp,
+      ehb: stats?.Im_ehb ?? null,
+      ehp: stats?.Im_ehp ?? null,
       hiscoresClogSlots: stats?.Collections ?? null,
     };
   });

@@ -29,6 +29,8 @@ export const scanCollectionLogAction = authActionClient
         clogTotal: log?.total_collections_available ?? null,
         hasFangKit:
           log?.items.some(({ name }) => name === 'Cursed phalanx') ?? false,
+        // The ironman rate, matching the EHB and EHP shown beside it.
+        ehc: log?.ehc_im ?? null,
       };
     },
   );

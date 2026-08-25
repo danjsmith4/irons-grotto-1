@@ -29,6 +29,7 @@ import {
   type CollectionLogScan,
   type TempleScan,
 } from './scan-types';
+import { buildPlayerStats } from './utils/build-player-stats';
 import { collectValidationErrors } from './utils/collect-validation-errors';
 import {
   canPassCollectionLogGate,
@@ -318,6 +319,12 @@ export function JoinExperience({ stats }: JoinExperienceProps) {
 
   const collectionLogState = resolveCollectionLogState(temple, collectionLog);
 
+  /** The headline numbers shown beside the name, as their sources land. */
+  const playerStats = useMemo(
+    () => buildPlayerStats(temple, collectionLog),
+    [temple, collectionLog],
+  );
+
   /** Temple could not settle the game mode, so the player has to say. */
   const needsAccountType = phase !== 'welcome' && temple?.accountType == null;
 
@@ -545,14 +552,36 @@ export function JoinExperience({ stats }: JoinExperienceProps) {
               which is the moment we learn what kind of account this is — the
               name settling across is the feedback, not a layout jump.
             */}
-            <h1 className={styles.nameRow}>
-              {temple?.accountType && (
-                <span className={styles.nameBadge}>
-                  <AccountTypeBadge accountType={temple.accountType} size={26} />
-                </span>
+            <div className={styles.nameRow}>
+              <h1 className={styles.nameHeading}>
+                {temple?.accountType && (
+                  <span className={styles.nameBadge}>
+                    <AccountTypeBadge
+                      accountType={temple.accountType}
+                      size={26}
+                    />
+                  </span>
+                )}
+                {scannedName.current || rsn}
+              </h1>
+              {/*
+                The headline numbers, filling in beside the name as the source
+                that settles each one lands. Total level, EHB and EHP come from
+                the Temple step; EHC rides along with the collection log, which
+                is the only endpoint that reports it. A figure that has not
+                arrived is left out rather than shown as a zero.
+              */}
+              {playerStats.length > 0 && (
+                <dl className={styles.nameStats}>
+                  {playerStats.map(({ label, value }) => (
+                    <div key={label} className={styles.nameStat}>
+                      <dt>{label}</dt>
+                      <dd>{value}</dd>
+                    </div>
+                  ))}
+                </dl>
               )}
-              {scannedName.current || rsn}
-            </h1>
+            </div>
           </div>
 
           <div className={styles.steps}>

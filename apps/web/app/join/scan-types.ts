@@ -42,6 +42,16 @@ export interface TempleScan {
   totalLevel: number | null;
   isMaxed: boolean;
   hasInfernal: boolean;
+  /**
+   * Efficient hours bossed and played, **at the ironman rates**.
+   *
+   * Not Temple's `Primary_ehb` / `Primary_ehp`, which point at whichever rate
+   * matches the account's own game mode. This is an ironman clan and the
+   * calculator scores everyone against ironman EHB rates
+   * (`config/efficiency-rates.ts`), so showing a main their main-rate hours
+   * here would be a number that means something different from every other
+   * number on the site.
+   */
   ehb: number | null;
   ehp: number | null;
   /**
@@ -58,6 +68,8 @@ export interface CollectionLogScan {
   clogSlots: number | null;
   clogTotal: number | null;
   hasFangKit: boolean;
+  /** Efficient hours collected, at the ironman rate — as with `ehb`/`ehp`. */
+  ehc: number | null;
 }
 
 export interface AchievementScan {
