@@ -4,8 +4,7 @@ import { NavBar } from '@/app/components/nav-bar';
 import { fetchPlayerAccounts } from '@/app/rank-calculator/data-sources/fetch-player-accounts';
 import { fetchAdminDashboard } from '@/app/data-sources/fetch-admin-dashboard';
 import { fetchDiscordBans } from '@/app/data-sources/fetch-discord-bans';
-import { StaffRoles } from './staff-roles';
-import { DiscordBans } from './discord-bans';
+import { AdminPanes } from './admin-panes';
 import styles from './admin.module.css';
 
 export const metadata = {
@@ -45,15 +44,13 @@ export default async function AdminPage() {
     <div className={styles.page}>
       <NavBar currentPage="admin" userCalculators={userCalculators} />
       <main className={styles.main}>
-        <StaffRoles
+        <AdminPanes
           viewerRole={viewerRole}
           viewerPlayerName={viewerPlayerName}
           members={members}
           history={history}
-        />
-        <DiscordBans
           bans={bansResult.success ? bansResult.data.bans : null}
-          error={bansResult.success ? null : bansResult.error}
+          bansError={bansResult.success ? null : bansResult.error}
         />
       </main>
     </div>

@@ -22,6 +22,56 @@
   gap: 1.5rem;
 }
 
+/* ---------- Pane sub-menu ---------- */
+
+/*
+ * A hairline segmented control, not a nav bar — the panes are two jobs on one
+ * page, and the strip should read as smaller than the page heading above it.
+ */
+.paneTabs {
+  display: inline-flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border: 1px solid rgb(var(--ig-text-muted) / 0.12);
+  border-radius: 10px;
+  background: rgb(var(--ig-surface) / 0.5);
+  align-self: flex-start;
+}
+
+.paneTab {
+  padding: 0.4rem 0.875rem;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: rgb(var(--ig-text-muted));
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.paneTab:hover[aria-selected='false'] {
+  color: rgb(var(--ig-text));
+}
+
+.paneTab[aria-selected='true'] {
+  background: rgb(var(--ig-secondary) / 0.14);
+  color: rgb(var(--ig-secondary));
+}
+
+.paneTab:focus-visible {
+  outline: 2px solid rgb(var(--ig-secondary) / 0.6);
+  outline-offset: 1px;
+}
+
+/* The mounted pane's own panels keep the column's usual rhythm. */
+.pane {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
 /* ---------- Panels ---------- */
 
 .panel {
