@@ -7,6 +7,7 @@ import {
   ChevronDownIcon,
   DotsHorizontalIcon,
   PlusIcon,
+  StopwatchIcon,
 } from '@radix-ui/react-icons';
 import { DropdownMenu, Spinner } from '@radix-ui/themes';
 import { useState, useTransition } from 'react';
@@ -28,7 +29,7 @@ import { useViewerStaffRole } from './use-viewer-staff-role';
 import styles from './nav-bar.module.css';
 
 interface NavBarProps {
-  currentPage?: 'dashboard' | 'player' | 'submission' | 'admin';
+  currentPage?: 'dashboard' | 'player' | 'submission' | 'admin' | 'tools';
   playerName?: string;
   /**
    * Renders the calculator's own actions: the "Apply for promotion" button and
@@ -213,6 +214,34 @@ export function NavBar({
                 <Link href="/rank-calculator/players/add">
                   <PlusIcon />
                   New account
+                </Link>
+              </DropdownMenu.Item>
+            </DropdownMenu.Content>
+          </DropdownMenu.Root>
+
+          {/* Standalone calculators for specific in-game content. They read no
+              player data, so unlike everything else in this bar they work
+              signed out — the menu is here rather than on a /tools index
+              because one click should reach the tool. */}
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger>
+              <button
+                type="button"
+                className={`${styles.link} ${
+                  currentPage === 'tools' ? styles.linkActive : ''
+                }`}
+              >
+                Tools
+                <ChevronDownIcon />
+              </button>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Content>
+              <DropdownMenu.Label>Combat achievements</DropdownMenu.Label>
+              <DropdownMenu.Item asChild>
+                <Link href="/tools/maggot-king">
+                  <StopwatchIcon />
+                  Maggot King
+                  <span className={styles.menuMeta}>Speed Chaser</span>
                 </Link>
               </DropdownMenu.Item>
             </DropdownMenu.Content>

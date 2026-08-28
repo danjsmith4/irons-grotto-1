@@ -1,0 +1,402 @@
+/* ==========================================================================
+   Maggot King Speed Chaser — the clan's first tool page.
+
+   Same language as the rank calculator and the player profile modal: hairline
+   borders and typography instead of card chrome, mono figures in tabular
+   columns, and green reserved for the one thing that matters (time still in
+   hand). Every colour is an --ig-* token; nothing here is a literal.
+   ========================================================================== */
+
+.shell {
+  min-height: 100vh;
+  background: radial-gradient(
+    ellipse at center,
+    rgb(var(--ig-surface-2)) 0%,
+    rgb(var(--ig-bg)) 70%
+  );
+  color: rgb(var(--ig-text));
+}
+
+.page {
+  --mk-hairline: rgb(var(--ig-text-muted) / 0.1);
+  --mk-hairline-strong: rgb(var(--ig-text-muted) / 0.16);
+
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: 1.5rem 0.75rem 3rem;
+  }
+}
+
+/* -- the task's fixed numbers, stated once ------------------------------- */
+
+.brief {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.9rem;
+  padding: 0.7rem 0;
+  border-top: 1px solid var(--mk-hairline);
+  border-bottom: 1px solid var(--mk-hairline);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgb(var(--ig-text-muted));
+}
+
+.briefTier {
+  color: rgb(var(--ig-secondary));
+}
+
+.briefValue {
+  color: rgb(var(--ig-text-light));
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+
+/* -- scoreboard ----------------------------------------------------------- */
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  margin: 1.75rem 0 1.25rem;
+  background: var(--mk-hairline);
+  border: 1px solid var(--mk-hairline);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+@media (max-width: 720px) {
+  .stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.9rem 1rem;
+  background: rgb(var(--ig-bg) / 0.55);
+}
+
+.statLabel {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(var(--ig-text-muted));
+}
+
+.statValue {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(1.25rem, 3.4vw, 1.6rem);
+  font-weight: 600;
+  line-height: 1;
+  color: rgb(var(--ig-text));
+}
+
+.statSub {
+  font-size: 11px;
+  line-height: 1.3;
+  color: rgb(var(--ig-text-muted));
+}
+
+.toneGood {
+  color: rgb(var(--ig-secondary));
+}
+
+.toneBad {
+  color: rgb(var(--ig-danger));
+}
+
+.toneIdle {
+  color: rgb(var(--ig-text-muted));
+}
+
+/* -- the nine minutes, drawn ---------------------------------------------- */
+
+.budget {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.budgetTrack {
+  position: relative;
+  height: 34px;
+  border: 1px solid var(--mk-hairline-strong);
+  border-radius: 8px;
+  background: rgb(var(--ig-surface) / 0.5);
+  overflow: hidden;
+}
+
+.budgetFill {
+  display: flex;
+  height: 100%;
+}
+
+/*
+  One block per logged kill, so the shape of the attempt is legible at a
+  glance: where the time went, and how much of the bar is still empty. Kills
+  alternate green/teal purely so two adjacent ones stay distinguishable.
+*/
+.segment {
+  height: 100%;
+  min-width: 2px;
+  background: rgb(var(--ig-secondary) / 0.75);
+  border-right: 1px solid rgb(var(--ig-bg));
+}
+
+.segmentAlt {
+  background: rgb(var(--ig-teal) / 0.6);
+}
+
+.segmentOver {
+  background: rgb(var(--ig-danger) / 0.7);
+}
+
+/* The flat-pace gridlines, at every 1:48.0. Structure, not decoration. */
+.paceMark {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgb(var(--ig-text-muted) / 0.22);
+  pointer-events: none;
+}
+
+/* The nine-minute line, drawn only once the bar has had to stretch past it. */
+.budgetMark {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgb(var(--ig-text) / 0.75);
+  pointer-events: none;
+}
+
+.budgetScale {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: rgb(var(--ig-text-muted));
+}
+
+.budgetScaleLimit {
+  position: absolute;
+  transform: translateX(-50%);
+  color: rgb(var(--ig-text));
+}
+
+/* -- verdict -------------------------------------------------------------- */
+
+.verdict {
+  margin: 1.25rem 0 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--mk-hairline-strong);
+  border-left-width: 2px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: rgb(var(--ig-text-light));
+}
+
+.verdictGood {
+  border-left-color: rgb(var(--ig-secondary));
+}
+
+.verdictWarn {
+  border-left-color: rgb(var(--ig-warning));
+}
+
+.verdictBad {
+  border-left-color: rgb(var(--ig-danger));
+}
+
+.verdictFigure {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: rgb(var(--ig-text));
+}
+
+/* -- kill list ------------------------------------------------------------ */
+
+.kills {
+  margin-top: 2.25rem;
+}
+
+.killsHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--mk-hairline);
+}
+
+.killsTitle {
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: rgb(var(--ig-text));
+  margin: 0;
+}
+
+.killsHint {
+  font-size: 11px;
+  color: rgb(var(--ig-text-muted));
+}
+
+.killList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.killRow {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(7rem, 9rem) 1fr;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--mk-hairline);
+}
+
+@media (max-width: 560px) {
+  /* The readout drops to its own line; the field is capped rather than left to
+     fill the row, since nothing typed into it is longer than "01:48.0". */
+  .killRow {
+    grid-template-columns: 4.5rem minmax(0, 12rem);
+  }
+
+  .killReadout {
+    grid-column: 1 / -1;
+  }
+}
+
+.killIndex {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgb(var(--ig-text-muted));
+}
+
+.killInput {
+  width: 100%;
+  height: 34px;
+  padding: 0 0.65rem;
+  border: 1px solid var(--mk-hairline-strong);
+  border-radius: 8px;
+  background: rgb(var(--ig-surface) / 0.6);
+  color: rgb(var(--ig-text));
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.killInput::placeholder {
+  color: rgb(var(--ig-text-muted) / 0.55);
+}
+
+.killInput:hover {
+  border-color: rgb(var(--ig-text-muted) / 0.3);
+}
+
+.killInput:focus {
+  outline: none;
+  border-color: rgb(var(--ig-secondary) / 0.6);
+  background: rgb(var(--ig-surface) / 0.9);
+}
+
+.killInputInvalid,
+.killInputInvalid:focus {
+  border-color: rgb(var(--ig-danger) / 0.7);
+}
+
+.killReadout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.3rem 0.75rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  color: rgb(var(--ig-text-muted));
+}
+
+.killTicks {
+  color: rgb(var(--ig-text-light));
+}
+
+.killError {
+  color: rgb(var(--ig-danger));
+}
+
+/* -- actions / footnote --------------------------------------------------- */
+
+.reset {
+  display: inline-flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 0.75rem;
+  border: 1px solid var(--mk-hairline-strong);
+  border-radius: 8px;
+  background: rgb(var(--ig-surface-2) / 0.5);
+  color: rgb(var(--ig-text-muted));
+  font-size: 12px;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.reset:hover:not(:disabled) {
+  color: rgb(var(--ig-text));
+  border-color: rgb(var(--ig-secondary) / 0.4);
+}
+
+.reset:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.reset:focus-visible {
+  outline: 2px solid rgb(var(--ig-secondary) / 0.6);
+  outline-offset: 2px;
+}
+
+.footnote {
+  margin: 2rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--mk-hairline);
+  font-size: 12px;
+  line-height: 1.6;
+  color: rgb(var(--ig-text-muted));
+}
+
+.footnote a {
+  color: rgb(var(--ig-tertiary));
+  text-decoration: none;
+}
+
+.footnote a:hover {
+  text-decoration: underline;
+}
