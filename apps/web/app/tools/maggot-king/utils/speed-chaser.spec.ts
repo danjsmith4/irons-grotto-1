@@ -82,10 +82,8 @@ describe('Maggot King Speed Chaser', () => {
   });
 
   describe('summariseAttempt', () => {
-    const blank = [null, null, null, null, null];
-
     it('starts with the whole budget and the flat pace on offer', () => {
-      const summary = summariseAttempt(blank);
+      const summary = summariseAttempt([]);
 
       expect(summary).toMatchObject({
         killsLogged: 0,
@@ -101,7 +99,7 @@ describe('Maggot King Speed Chaser', () => {
 
     it('spends the budget and re-averages what is left over the remaining kills', () => {
       // Two kills at 1:30.0 (150 ticks) leaves 600 ticks over three kills.
-      const summary = summariseAttempt([150, 150, null, null, null]);
+      const summary = summariseAttempt([150, 150]);
 
       expect(summary.elapsedTicks).toBe(300);
       expect(summary.remainingTicks).toBe(600);
@@ -112,7 +110,7 @@ describe('Maggot King Speed Chaser', () => {
 
     it('floors the required average — a fractional tick is not achievable', () => {
       // 599 ticks left over three kills is 199.67 each; 199 is the real ceiling.
-      const summary = summariseAttempt([151, 150, null, null, null]);
+      const summary = summariseAttempt([151, 150]);
 
       expect(summary.remainingTicks).toBe(599);
       expect(summary.requiredAverageTicks).toBe(199);
@@ -122,23 +120,23 @@ describe('Maggot King Speed Chaser', () => {
     });
 
     it('banks time under the flat pace and owes it over', () => {
-      expect(summariseAttempt([150, null, null, null, null]).bankedTicks).toBe(30);
-      expect(summariseAttempt([200, null, null, null, null]).bankedTicks).toBe(-20);
-      expect(summariseAttempt([180, null, null, null, null]).bankedTicks).toBe(0);
+      expect(summariseAttempt([150]).bankedTicks).toBe(30);
+      expect(summariseAttempt([200]).bankedTicks).toBe(-20);
+      expect(summariseAttempt([180]).bankedTicks).toBe(0);
     });
 
     it('is at risk once the flat pace has been lost, not only once time runs out', () => {
-      expect(summariseAttempt([150, null, null, null, null]).status).toBe(
+      expect(summariseAttempt([150]).status).toBe(
         'on-track',
       );
-      expect(summariseAttempt([200, null, null, null, null]).status).toBe(
+      expect(summariseAttempt([200]).status).toBe(
         'at-risk',
       );
     });
 
     it('projects the finish from the pace so far', () => {
       // Three kills averaging 160 ticks projects 800 for five.
-      expect(summariseAttempt([160, 160, 160, null, null]).projectedTicks).toBe(
+      expect(summariseAttempt([160, 160, 160]).projectedTicks).toBe(
         800,
       );
     });
@@ -157,11 +155,11 @@ describe('Maggot King Speed Chaser', () => {
 
     it('fails as soon as there is no time left for the kills still to come', () => {
       // Four kills have consumed the lot; the fifth cannot happen in zero ticks.
-      expect(summariseAttempt([225, 225, 225, 225, null]).status).toBe('failed');
+      expect(summariseAttempt([225, 225, 225, 225]).status).toBe('failed');
     });
 
-    it('counts only the kills that were entered, whatever order they arrived in', () => {
-      const summary = summariseAttempt([150, null, 150, null, null]);
+    it('treats a short list as an attempt still in progress', () => {
+      const summary = summariseAttempt([150, 150]);
 
       expect(summary.killsLogged).toBe(2);
       expect(summary.killsRemaining).toBe(3);

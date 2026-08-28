@@ -232,22 +232,154 @@
   color: rgb(var(--ig-text));
 }
 
-/* -- kill list ------------------------------------------------------------ */
+/* -- entry ----------------------------------------------------------------
+   One kill at a time. The attempt happened in an order and cannot be revised
+   halfway through, so this is a single committing field rather than five
+   editable rows — the page asks for the next kill, and nothing else.
+   ------------------------------------------------------------------------- */
 
-.kills {
-  margin-top: 2.25rem;
+.entry {
+  margin-top: 2rem;
+  padding: 1.1rem 1.25rem 0.9rem;
+  border: 1px solid var(--mk-hairline-strong);
+  border-radius: 12px;
+  background: rgb(var(--ig-surface) / 0.35);
 }
 
-.killsHead {
+.entryHead {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.3rem 1rem;
+  margin-bottom: 0.7rem;
+}
+
+.entryStep {
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: rgb(var(--ig-text));
+}
+
+.entryTarget {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: rgb(var(--ig-text-muted));
+}
+
+.entryRow {
+  display: flex;
+  align-items: stretch;
+  gap: 0.6rem;
+}
+
+/* The one thing on the page you type into, sized to say so. */
+.entryInput {
+  flex: 1;
+  min-width: 0;
+  height: 52px;
+  padding: 0 0.9rem;
+  border: 1px solid var(--mk-hairline-strong);
+  border-radius: 10px;
+  background: rgb(var(--ig-bg) / 0.6);
+  color: rgb(var(--ig-text));
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.entryInput::placeholder {
+  color: rgb(var(--ig-text-muted) / 0.4);
+  font-weight: 500;
+}
+
+.entryInput:hover {
+  border-color: rgb(var(--ig-text-muted) / 0.3);
+}
+
+.entryInput:focus {
+  outline: none;
+  border-color: rgb(var(--ig-secondary) / 0.6);
+  background: rgb(var(--ig-bg) / 0.85);
+}
+
+.entryInputInvalid,
+.entryInputInvalid:focus {
+  border-color: rgb(var(--ig-danger) / 0.7);
+}
+
+.entrySubmit {
+  flex-shrink: 0;
+  padding: 0 1.1rem;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: rgb(var(--ig-secondary));
+  color: rgb(var(--ig-on-accent));
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.entrySubmit:hover {
+  background: color-mix(in srgb, rgb(var(--ig-secondary)) 88%, white);
+}
+
+.entrySubmit:focus-visible {
+  outline: 2px solid rgb(var(--ig-text) / 0.7);
+  outline-offset: 2px;
+}
+
+/* Holds the typing hint, the snapped preview and the parse error in one place,
+   so the block does not change height as they swap. */
+.entryHint {
+  min-height: 1.4em;
+  margin: 0.55rem 0 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  line-height: 1.4;
+  color: rgb(var(--ig-text-muted));
+}
+
+.entryPreview {
+  color: rgb(var(--ig-secondary));
+  font-weight: 600;
+}
+
+.entryError {
+  color: rgb(var(--ig-danger));
+}
+
+/* -- splits ---------------------------------------------------------------
+   Committed kills, in the order they happened. Five slots always show, so the
+   attempt reads as progress rather than as a list that grows.
+   ------------------------------------------------------------------------- */
+
+.splits {
+  margin-top: 1.75rem;
+}
+
+.splitsHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 1rem;
-  padding-bottom: 0.6rem;
+  padding-bottom: 0.7rem;
   border-bottom: 1px solid var(--mk-hairline);
 }
 
-.killsTitle {
+.splitsTitle {
   font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
   font-size: 0.95rem;
   font-weight: 600;
@@ -256,98 +388,68 @@
   margin: 0;
 }
 
-.killsHint {
-  font-size: 11px;
-  color: rgb(var(--ig-text-muted));
-}
-
-.killList {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.killRow {
+.splitList {
   display: grid;
-  grid-template-columns: 4.5rem minmax(7rem, 9rem) 1fr;
-  align-items: center;
-  gap: 0.75rem 1rem;
-  padding: 0.7rem 0;
-  border-bottom: 1px solid var(--mk-hairline);
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1px;
+  list-style: none;
+  margin: 0.9rem 0 0;
+  padding: 0;
+  background: var(--mk-hairline);
+  border: 1px solid var(--mk-hairline);
+  border-radius: 10px;
+  overflow: hidden;
 }
 
-@media (max-width: 560px) {
-  /* The readout drops to its own line; the field is capped rather than left to
-     fill the row, since nothing typed into it is longer than "01:48.0". */
-  .killRow {
-    grid-template-columns: 4.5rem minmax(0, 12rem);
-  }
-
-  .killReadout {
-    grid-column: 1 / -1;
+@media (max-width: 640px) {
+  .splitList {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
-.killIndex {
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: rgb(var(--ig-text-muted));
-}
-
-.killInput {
-  width: 100%;
-  height: 34px;
-  padding: 0 0.65rem;
-  border: 1px solid var(--mk-hairline-strong);
-  border-radius: 8px;
-  background: rgb(var(--ig-surface) / 0.6);
-  color: rgb(var(--ig-text));
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-variant-numeric: tabular-nums;
-  font-size: 13px;
-  transition:
-    border-color 0.15s ease,
-    background 0.15s ease;
-}
-
-.killInput::placeholder {
-  color: rgb(var(--ig-text-muted) / 0.55);
-}
-
-.killInput:hover {
-  border-color: rgb(var(--ig-text-muted) / 0.3);
-}
-
-.killInput:focus {
-  outline: none;
-  border-color: rgb(var(--ig-secondary) / 0.6);
-  background: rgb(var(--ig-surface) / 0.9);
-}
-
-.killInputInvalid,
-.killInputInvalid:focus {
-  border-color: rgb(var(--ig-danger) / 0.7);
-}
-
-.killReadout {
+.split {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.3rem 0.75rem;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.75rem 0.85rem;
+  background: rgb(var(--ig-bg) / 0.55);
+}
+
+.splitIndex {
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-variant-numeric: tabular-nums;
-  font-size: 12px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
   color: rgb(var(--ig-text-muted));
 }
 
-.killTicks {
-  color: rgb(var(--ig-text-light));
+.splitTime {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1;
+  color: rgb(var(--ig-text));
 }
 
-.killError {
+.splitAhead,
+.splitBehind {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+}
+
+.splitAhead {
+  color: rgb(var(--ig-secondary));
+}
+
+.splitBehind {
   color: rgb(var(--ig-danger));
+}
+
+/* A kill that has not happened yet: present in the layout, absent in weight. */
+.splitGhost .splitTime {
+  color: rgb(var(--ig-text-muted) / 0.35);
+  font-weight: 500;
 }
 
 /* -- actions / footnote --------------------------------------------------- */

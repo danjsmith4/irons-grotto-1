@@ -155,18 +155,18 @@ export interface SpeedChaserSummary {
 }
 
 /**
- * Scores an attempt from the kill times entered so far. Blanks are simply kills
- * that have not happened yet.
+ * Scores an attempt from the kills logged so far, in the order they happened.
+ * Kills are only ever appended, so a short list is simply an attempt in
+ * progress.
  *
  * The budget is inclusive — a dead-on 09:00.0 passes.
  */
 export function summariseAttempt(
-  killTicks: readonly (number | null)[],
+  killTicks: readonly number[],
 ): SpeedChaserSummary {
-  const logged = killTicks.filter((ticks): ticks is number => ticks !== null);
-  const killsLogged = logged.length;
+  const killsLogged = killTicks.length;
   const killsRemaining = Math.max(0, speedChaserKillCount - killsLogged);
-  const elapsedTicks = logged.reduce((total, ticks) => total + ticks, 0);
+  const elapsedTicks = killTicks.reduce((total, ticks) => total + ticks, 0);
   const remainingTicks = speedChaserBudgetTicks - elapsedTicks;
 
   const status = ((): SpeedChaserStatus => {

@@ -15,14 +15,15 @@ import {
 } from './utils/speed-chaser';
 import styles from './maggot-king.module.css';
 
-const emptyAttempt = Array.from<string>({ length: speedChaserKillCount }).fill(
-  '',
-);
-
 /** The flat-pace gridlines on the budget bar: every 1:48.0 short of the end. */
 const paceGridlines = Array.from(
   { length: speedChaserKillCount - 1 },
   (_, index) => (index + 1) * flatPaceTicks,
+);
+
+const killSlots = Array.from(
+  { length: speedChaserKillCount },
+  (_, index) => index,
 );
 
 function plural(count: number, noun: string) {
@@ -39,6 +40,34 @@ function requiredAverageTone(ticks: number | null) {
   }
 
   return ticks < flatPaceTicks ? ('bad' as const) : ('good' as const);
+}
+
+/**
+ * One line under the field, carrying whichever of three things is true: the
+ * parse error, the tick the typed time will be scored as, or how to type one.
+ */
+function EntryHint({
+  error,
+  previewTicks,
+}: {
+  error: string | null;
+  previewTicks: number | null;
+}) {
+  if (error !== null) {
+    return <span className={styles.entryError}>{error}</span>;
+  }
+
+  if (previewTicks !== null) {
+    return (
+      <>
+        Scores as{' '}
+        <span className={styles.entryPreview}>{formatTicks(previewTicks)}</span>{' '}
+        — {plural(previewTicks, 'tick')}
+      </>
+    );
+  }
+
+  return <>As the game writes it: 1:42.60, 1:42.6 or 102.6. Enter to log.</>;
 }
 
 interface StatProps {
@@ -78,7 +107,7 @@ function BudgetBar({
   killTicks,
   summary,
 }: {
-  killTicks: (number | null)[];
+  killTicks: readonly number[];
   summary: SpeedChaserSummary;
 }) {
   // An overrun still has to be visible, so the bar stretches to fit it rather
@@ -101,10 +130,6 @@ function BudgetBar({
       >
         <div className={styles.budgetFill}>
           {killTicks.map((ticks, index) => {
-            if (ticks === null) {
-              return null;
-            }
-
             consumed += ticks;
 
             const isOver = consumed > speedChaserBudgetTicks;
@@ -112,7 +137,8 @@ function BudgetBar({
 
             return (
               <span
-                // Fixed-length list of kill slots — the index is the identity.
+                // Kills are append-only and never reordered, so their position
+                // in the attempt is their identity.
                 key={index}
                 className={`${styles.segment} ${
                   isOver ? styles.segmentOver : ''
@@ -178,7 +204,7 @@ function Verdict({ summary }: { summary: SpeedChaserSummary }) {
     return (
       <p className={`${styles.verdict} ${styles.verdictGood}`} role="status">
         Five kills inside {figure(speedChaserBudgetTicks)}. Split evenly that is{' '}
-        {figure(flatPaceTicks)} each — enter a kill time as it lands and this
+        {figure(flatPaceTicks)} each — log a kill as it lands and this
         re-averages what is left.
       </p>
     );
@@ -205,8 +231,7 @@ function Verdict({ summary }: { summary: SpeedChaserSummary }) {
           <>
             Out of time. {plural(killsLogged, 'kill')} have used{' '}
             {figure(elapsedTicks)} of the {figure(speedChaserBudgetTicks)}, so
-            the {plural(killsRemaining, 'kill')} still to come cannot fit. Reset
-            and go again.
+            the {plural(killsRemaining, 'kill')} still to come cannot fit.
           </>
         )}
       </p>
@@ -238,40 +263,55 @@ function Verdict({ summary }: { summary: SpeedChaserSummary }) {
 /**
  * The Maggot King Speed Chaser planner.
  *
- * The player types each fight duration off the chat message as it lands; every
- * number on the page is derived from those, in ticks, with no timer running.
- * That matters because the achievement counts time in combat, not wall clock —
- * banking special attack energy between kills costs nothing.
+ * One kill is entered at a time and committed as a split — the attempt happened
+ * in an order and cannot be revised mid-flight, so a five-field form was the
+ * wrong shape for it. Correcting a mistake means resetting, which is the same
+ * thing the attempt itself demands.
+ *
+ * Every number is derived from those splits, in ticks, with no timer running:
+ * the achievement counts time in combat, not wall clock, so banking special
+ * attack energy between kills costs nothing.
  */
 export function MaggotKingSpeedChaser() {
-  const [entries, setEntries] = useState<string[]>(emptyAttempt);
+  const [kills, setKills] = useState<number[]>([]);
+  const [draft, setDraft] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
-  const parsed = useMemo(() => entries.map(parseKillTime), [entries]);
-  const killTicks = useMemo(() => parsed.map(({ ticks }) => ticks), [parsed]);
-  const summary = useMemo(() => summariseAttempt(killTicks), [killTicks]);
+  const summary = useMemo(() => summariseAttempt(kills), [kills]);
+  // Parsed as it is typed so the tick it will be scored as is visible before
+  // it is committed, not after.
+  const preview = useMemo(() => parseKillTime(draft), [draft]);
 
-  const isStarted = entries.some((entry) => entry.trim() !== '');
-  const { requiredAverageTicks, killsRemaining, status } = summary;
+  const { requiredAverageTicks, killsLogged, killsRemaining, status } = summary;
   const hasRoomLeft = requiredAverageTicks !== null && requiredAverageTicks > 0;
+  const isAcceptingKills = killsRemaining > 0 && status !== 'failed';
+
+  function reset() {
+    setKills([]);
+    setDraft('');
+    setError(null);
+  }
+
+  function logKill() {
+    const { ticks, error: parseError } = parseKillTime(draft);
+
+    if (ticks === null) {
+      setError(parseError ?? 'Enter the kill time');
+
+      return;
+    }
+
+    setKills((current) => [...current, ticks]);
+    setDraft('');
+    setError(null);
+  }
 
   return (
     <div className={styles.page}>
       <SectionHeader
         title="Maggot King Speed Chaser"
-        subtitle="Five kills, nine minutes. Log each kill and see what the rest have to average."
+        subtitle="Five kills, nine minutes. Log each kill as it lands and see what the rest have to average."
         icon={<StopwatchIcon width={18} height={18} />}
-        actions={
-          <button
-            type="button"
-            className={styles.reset}
-            disabled={!isStarted}
-            onClick={() => {
-              setEntries(emptyAttempt);
-            }}
-          >
-            Reset attempt
-          </button>
-        }
       />
 
       <div className={styles.brief}>
@@ -298,7 +338,7 @@ export function MaggotKingSpeedChaser() {
         <Stat
           label="Time used"
           value={formatTicks(summary.elapsedTicks)}
-          sub={`${summary.killsLogged} of ${speedChaserKillCount} kills logged`}
+          sub={`${killsLogged} of ${speedChaserKillCount} kills logged`}
         />
         <Stat
           label="Time left"
@@ -324,75 +364,108 @@ export function MaggotKingSpeedChaser() {
         />
       </div>
 
-      <BudgetBar killTicks={killTicks} summary={summary} />
+      <BudgetBar killTicks={kills} summary={summary} />
 
       <Verdict summary={summary} />
 
-      <section className={styles.kills}>
-        <div className={styles.killsHead}>
-          <h3 className={styles.killsTitle}>Kill times</h3>
-          <span className={styles.killsHint}>
-            As the game writes them: 1:42.60, 1:42.6 or 102.6
-          </span>
+      {isAcceptingKills ? (
+        <form
+          className={styles.entry}
+          onSubmit={(event) => {
+            event.preventDefault();
+            logKill();
+          }}
+        >
+          <div className={styles.entryHead}>
+            <span className={styles.entryStep}>
+              Kill {killsLogged + 1} of {speedChaserKillCount}
+            </span>
+            {hasRoomLeft && (
+              <span className={styles.entryTarget}>
+                needs {formatTicks(requiredAverageTicks)} or better
+              </span>
+            )}
+          </div>
+          <div className={styles.entryRow}>
+            <input
+              className={`${styles.entryInput} ${
+                error ? styles.entryInputInvalid : ''
+              }`}
+              type="text"
+              autoComplete="off"
+              spellCheck={false}
+              autoFocus
+              placeholder="1:42.60"
+              aria-label="Kill time"
+              aria-invalid={error !== null}
+              value={draft}
+              onChange={({ target }) => {
+                setDraft(target.value);
+                setError(null);
+              }}
+            />
+            <button type="submit" className={styles.entrySubmit}>
+              Log kill
+            </button>
+          </div>
+          <p className={styles.entryHint} aria-live="polite">
+            <EntryHint error={error} previewTicks={preview.ticks} />
+          </p>
+        </form>
+      ) : (
+        <div className={styles.entry}>
+          <div className={styles.entryHead}>
+            <span className={styles.entryStep}>
+              {killsRemaining === 0 ? 'Attempt finished' : 'Attempt over'}
+            </span>
+          </div>
+          {/* No instruction to "press reset" — the button is immediately
+              below, in the splits header it actually acts on. */}
+          <p className={styles.entryHint}>
+            {killsRemaining === 0
+              ? 'All five kills are in.'
+              : 'There is no time left for the kills still to come.'}
+          </p>
         </div>
-        <ol className={styles.killList}>
-          {entries.map((entry, index) => {
-            const { ticks, error } = parsed[index];
-            const paceDelta = ticks === null ? null : flatPaceTicks - ticks;
+      )}
+
+      <section className={styles.splits}>
+        <div className={styles.splitsHead}>
+          <h3 className={styles.splitsTitle}>Splits</h3>
+          <button
+            type="button"
+            className={styles.reset}
+            disabled={killsLogged === 0}
+            onClick={reset}
+          >
+            Reset attempt
+          </button>
+        </div>
+        <ol className={styles.splitList}>
+          {killSlots.map((slot) => {
+            const ticks = kills[slot];
+
+            if (ticks === undefined) {
+              return (
+                <li key={slot} className={`${styles.split} ${styles.splitGhost}`}>
+                  <span className={styles.splitIndex}>{slot + 1}</span>
+                  <span className={styles.splitTime}>--:--.-</span>
+                </li>
+              );
+            }
+
+            const paceDelta = flatPaceTicks - ticks;
 
             return (
-              <li
-                // Five fixed kill slots — the index is the identity, and rows
-                // are never added, removed or reordered.
-                key={index}
-                className={styles.killRow}
-              >
-                <span className={styles.killIndex}>Kill {index + 1}</span>
-                <input
-                  className={`${styles.killInput} ${
-                    error ? styles.killInputInvalid : ''
-                  }`}
-                  type="text"
-                  autoComplete="off"
-                  spellCheck={false}
-                  placeholder={formatTicks(flatPaceTicks)}
-                  aria-label={`Kill ${index + 1} time`}
-                  aria-invalid={error !== null}
-                  value={entry}
-                  onChange={({ target }) => {
-                    setEntries((current) =>
-                      current.map((value, position) =>
-                        position === index ? target.value : value,
-                      ),
-                    );
-                  }}
-                />
-                <span className={styles.killReadout}>
-                  {error !== null && (
-                    <span className={styles.killError}>{error}</span>
-                  )}
-                  {ticks !== null && (
-                    <>
-                      {/* Echoed back snapped to the tick it was rounded to, so
-                          a time the game could not produce is visibly fixed. */}
-                      <span className={styles.killTicks}>
-                        {formatTicks(ticks)}
-                      </span>
-                      <span>{plural(ticks, 'tick')}</span>
-                      <span
-                        className={
-                          paceDelta !== null && paceDelta < 0
-                            ? styles.killError
-                            : styles.toneGood
-                        }
-                      >
-                        {formatTickDelta(paceDelta ?? 0)} on pace
-                      </span>
-                    </>
-                  )}
-                  {ticks === null && error === null && hasRoomLeft && (
-                    <span>≤ {formatTicks(requiredAverageTicks)} to stay in</span>
-                  )}
+              <li key={slot} className={styles.split}>
+                <span className={styles.splitIndex}>{slot + 1}</span>
+                <span className={styles.splitTime}>{formatTicks(ticks)}</span>
+                <span
+                  className={
+                    paceDelta < 0 ? styles.splitBehind : styles.splitAhead
+                  }
+                >
+                  {formatTickDelta(paceDelta)}
                 </span>
               </li>
             );
@@ -403,10 +476,10 @@ export function MaggotKingSpeedChaser() {
       <p className={styles.footnote}>
         The achievement counts only time spent fighting the boss, so waiting on
         special attack energy or a surge potion cooldown between kills is free —
-        enter each fight duration on its own. Times are held in game ticks
-        (0.6s), which is why anything typed in between snaps to the nearest one.
-        A dead-on {formatTicks(speedChaserBudgetTicks)} counts as inside the
-        limit. Task detail on the{' '}
+        log each fight duration on its own. Times are held in game ticks (0.6s),
+        which is why anything typed in between snaps to the nearest one. A
+        dead-on {formatTicks(speedChaserBudgetTicks)} counts as inside the limit.
+        Task detail on the{' '}
         <a
           href="https://oldschool.runescape.wiki/w/Maggot_King_Speed_Chaser"
           target="_blank"
