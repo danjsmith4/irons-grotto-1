@@ -1,5 +1,5 @@
 import 'server-only';
-import { sendDiscordMessage } from '@/app/rank-calculator/utils/send-discord-message';
+import { sendDiscordMessage } from '@/app/player/utils/send-discord-message';
 import {
   clanEventAnnouncementChannelId,
   clanEventBotCommand,

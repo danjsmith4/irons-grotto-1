@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { NavBar } from '@/app/components/nav-bar';
-import { fetchPlayerAccounts } from '@/app/rank-calculator/data-sources/fetch-player-accounts';
+import { fetchPlayerAccounts } from '@/app/player/data-sources/fetch-player-accounts';
 import { MaggotKingSpeedChaser } from './maggot-king-speed-chaser';
 import styles from './maggot-king.module.css';
 
