@@ -23,7 +23,7 @@ import { nextClanEventWindow } from '@/app/utils/clan-event-schedule';
 import { selectClanEventPicker } from '@/app/utils/select-clan-event-picker';
 import { pickEventDutyStaff } from '@/app/utils/pick-event-duty-staff';
 import { buildEventDutyMessage } from '@/app/utils/build-event-duty-message';
-import { sendDiscordMessage } from '@/app/rank-calculator/utils/send-discord-message';
+import { sendDiscordMessage } from '@/app/player/utils/send-discord-message';
 import { clanEventDutyChannelId } from '@/config/clan-events';
 import { clientConstants } from '@/config/constants.client';
 
