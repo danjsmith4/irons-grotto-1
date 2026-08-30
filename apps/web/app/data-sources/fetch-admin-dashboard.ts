@@ -6,7 +6,16 @@ import {
   type StaffDirectoryEntry,
   type StaffRoleChangeEntry,
 } from '@/lib/db/staff-operations';
+import {
+  getMembersBelowTotalLevel,
+  type MemberBelowTotalLevel,
+} from '@/lib/db/player-operations';
 import { canAccessAdminDashboard } from '@/app/utils/staff-permissions';
+import {
+  resolveTotalLevelGrace,
+  type TotalLevelGrace,
+} from '@/app/utils/resolve-total-level-grace';
+import { minimumJoinTotalLevel } from '@/config/clan-requirements';
 import type { StaffRole } from '@/app/schemas/staff';
 
 export interface AdminDashboardData {
@@ -15,6 +24,16 @@ export interface AdminDashboardData {
   viewerPlayerName: string | null;
   members: StaffDirectoryEntry[];
   history: StaffRoleChangeEntry[];
+  /**
+   * Members who were already here when the minimum total level came in, with
+   * where each stands against the grace deadline. Read-only: the pane informs
+   * a decision, it does not take one.
+   */
+  belowTotalLevel: MemberBelowTotalLevelEntry[];
+}
+
+export interface MemberBelowTotalLevelEntry extends MemberBelowTotalLevel {
+  grace: TotalLevelGrace;
 }
 
 /**
@@ -42,10 +61,15 @@ export async function fetchAdminDashboard(): Promise<
       return { success: false, error: 'Not an elevated account' };
     }
 
-    const [members, history] = await Promise.all([
+    const [members, history, belowTotalLevel] = await Promise.all([
       getStaffDirectory(discordUserId),
       getStaffRoleChanges(),
+      getMembersBelowTotalLevel(minimumJoinTotalLevel),
     ]);
+
+    // One `now` for the whole list, so two rows rendered from the same request
+    // can never disagree about how many days are left.
+    const now = new Date();
 
     return {
       success: true,
@@ -55,6 +79,10 @@ export async function fetchAdminDashboard(): Promise<
         viewerPlayerName: playerName,
         members,
         history,
+        belowTotalLevel: belowTotalLevel.map((member) => ({
+          ...member,
+          grace: resolveTotalLevelGrace(member.totalLevel, now),
+        })),
       },
     };
   } catch (error) {

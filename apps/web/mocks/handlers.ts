@@ -84,6 +84,41 @@ const wikiApiHandler = http.get(
   },
 );
 
+/**
+ * The OSRS hiscores.
+ *
+ * Mocked rather than passed through since `fetchHiscoresOverview` started
+ * reading the response body for the player's total level: a passthrough here
+ * means a live network call on every spec that touches player validation, and
+ * a flaky third party deciding whether the suite goes green.
+ *
+ * `Overall` leads the list as it does in the real response. The level is above
+ * the clan's minimum so that existing specs, which only ever cared whether the
+ * name resolved, keep passing the total-level gate as they always did.
+ */
+const hiscoresHandler = http.get(
+  'https://secure.runescape.com/m=hiscore_oldschool/index_lite.json',
+  ({ request }) => {
+    const player = new URL(request.url).searchParams.get('player');
+
+    if (!player) {
+      return HttpResponse.error();
+    }
+
+    if (decodeURIComponent(player).toLowerCase() === 'nonexistentplayer') {
+      return new HttpResponse(null, { status: 404 });
+    }
+
+    return HttpResponse.json({
+      skills: [
+        { id: 0, name: 'Overall', rank: 12345, level: 1800, xp: 100000000 },
+        { id: 1, name: 'Attack', rank: 12345, level: 99, xp: 13034431 },
+      ],
+      activities: [],
+    });
+  },
+);
+
 const memberListHandler = http.get(
   'https://*.public.blob.vercel-storage.com/members-*.json',
   () => HttpResponse.json<ClanMember[]>(memberListFixture),
@@ -131,7 +166,6 @@ const passthroughHandlers = [
   'https://discord.com/api/oauth2/token',
   'https://discord.com/api/v10/channels/*/messages',
   `${serverConstants.redisUrl}/*`,
-  'https://secure.runescape.com/m=hiscore_oldschool/index_lite.json',
   'https://*.sentry.io/*',
   'https://telemetry.nextjs.org/*',
   'http://localhost:3000/__nextjs_original-stack-frame',
@@ -142,6 +176,7 @@ const passthroughHandlers = [
 export const handlers = [
   wikiSyncHandler,
   templePlayerStatsHandler,
+  hiscoresHandler,
   memberListHandler,
   wikiApiHandler,
   clanPointDistributionHandler,

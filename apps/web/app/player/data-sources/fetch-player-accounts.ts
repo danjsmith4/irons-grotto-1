@@ -22,6 +22,9 @@ export async function fetchPlayerAccounts() {
           rank: player.rank as Rank,
           rsn: player.playerName,
           isMobileOnly: player.isMobileOnly,
+          // For the minimum-total-level notice on the dashboard, so a member
+          // below the line hears about it without opening their rank sheet.
+          totalLevel: player.totalLevel,
         },
       };
     },
@@ -32,6 +35,7 @@ export async function fetchPlayerAccounts() {
         rank?: Rank;
         rsn: string;
         isMobileOnly: boolean;
+        totalLevel: number;
         isNameInvalid?: true;
       }
     >,

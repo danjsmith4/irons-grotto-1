@@ -30,6 +30,15 @@ export type NameAvailability =
 export interface HiscoresScan {
   /** The name exists on the OSRS hiscores. */
   exists: boolean;
+  /**
+   * Total level, straight off the same response the existence check already
+   * fetched — the hiscores have always carried it, it was just discarded.
+   *
+   * Live and authoritative, where `TempleScan.totalLevel` is a synced snapshot
+   * that can lag; `resolveTotalLevelState` reads both and takes the higher.
+   * Null means the hiscores could not answer, never that the level is zero.
+   */
+  totalLevel: number | null;
 }
 
 export interface TempleScan {

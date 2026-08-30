@@ -681,6 +681,26 @@
   text-underline-offset: 3px;
 }
 
+/*
+ * An anchor wearing `.ghost`.
+ *
+ * A `<button>` is inline-block and sits inside its own padding already; an
+ * anchor is plain inline, so vertical padding paints outside the line box and
+ * the border lands in the wrong place. This is the whole difference, and it is
+ * a modifier rather than a change to the shared button rule so that no existing
+ * button's layout moves.
+ */
+.ghostLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.ghostLink:hover {
+  text-decoration: none;
+}
+
 /* An anchor sitting inside a sentence, rather than a button dressed as a link. */
 .inlineLink {
   color: rgb(var(--ig-tertiary));
@@ -850,6 +870,84 @@
   max-width: 42ch;
 }
 
+/*
+ * The entry requirement on the welcome screen. Mono and muted, the weight of a
+ * fact rather than a warning — it sits with the clan's numbers, not against
+ * the player.
+ */
+.requirement {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  color: rgb(var(--ig-text-muted));
+  margin: 0.75rem 0 0;
+}
+
+/* ---------- threshold (under the clan's minimum total level) ---------- */
+
+/*
+ * Shares the reveal's badge, meter, note and actions — this is the same shape
+ * of moment, not an error state, so it reads in the same language. Only the
+ * things with no equivalent on the reveal are defined here.
+ */
+
+/*
+ * Their total level, sitting where the rank crest sits on the reveal.
+ *
+ * The one accented element on the screen besides the meter it feeds: the number
+ * is what the screen is about, and putting it in the accent frames it as
+ * progress made rather than a requirement missed.
+ */
+.thresholdValue {
+  position: relative;
+  font-family: var(--font-display), sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(2.1rem, 7vw, 2.9rem);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  color: rgb(var(--ig-secondary));
+  animation: crest 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.thresholdUnit {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgb(var(--ig-text-muted));
+  margin: 0;
+  animation: rise 0.7s 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.thresholdGoal {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: rgb(var(--ig-text));
+  margin: 0;
+  max-width: 44ch;
+  animation: rise 0.7s 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/*
+ * The two ways off this screen, side by side under the one action that keeps
+ * someone here. Wraps to a column on a narrow phone rather than shrinking the
+ * hit targets.
+ */
+.thresholdSecondary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.thresholdGoal strong {
+  font-family: var(--font-mono), monospace;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: rgb(var(--ig-secondary));
+}
+
 .meter {
   width: min(380px, 100%);
   height: 6px;
@@ -954,6 +1052,9 @@
   .revealNote,
   .revealActions,
   .revealRing,
+  .thresholdValue,
+  .thresholdUnit,
+  .thresholdGoal,
   .meter,
   .indicatorMark,
   .nameBadge,

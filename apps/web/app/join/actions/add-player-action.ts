@@ -6,6 +6,13 @@ import * as Sentry from '@sentry/nextjs';
 import { ActionError } from '@/app/action-error';
 import { fetchPlayerMeta } from '@/app/player/data-sources/fetch-player-meta';
 import { ensureTrackedOnTemple } from '@/app/player/data-sources/ensure-tracked-on-temple';
+import { fetchTemplePlayerStats } from '@/app/player/data-sources/fetch-temple-player-stats';
+import { fetchHiscoresOverview } from '@/app/player/validation/player-validation';
+import { minimumJoinTotalLevel } from '@/config/clan-requirements';
+import {
+  canPassTotalLevelGate,
+  resolveTotalLevelState,
+} from '../utils/resolve-total-level-state';
 import { AddPlayerSchema } from './add-player-schema';
 import {
   createNewPlayer,
@@ -80,14 +87,48 @@ export const addPlayerAction = authActionClient
         });
       }
 
-      const [playerMeta, tracking] = await Promise.all([
+      const [playerMeta, tracking, hiscores, templeStats] = await Promise.all([
         fetchPlayerMeta(playerName),
         // The form does this too, but the server never trusts that it did.
         // Already-tracked accounts cost one cheap read and no wait.
         ensureTrackedOnTemple(playerName),
+        // Both total level readings, because the browser is not what decides
+        // who clears the clan's minimum — see the gate below.
+        fetchHiscoresOverview(playerName),
+        fetchTemplePlayerStats(playerName),
       ]);
 
       const maybeFormattedPlayerName = playerMeta?.rsn ?? playerName;
+
+      /*
+       * The clan's minimum total level.
+       *
+       * ⚠️ **This is a backstop a real member never reaches.** The join
+       * experience routes anyone short to its own scene long before "Set up my
+       * account" exists to press, so what this catches is a forged request or
+       * the rare race where a source changes its answer between the scan and
+       * the submit. The message therefore has to be honest and readable, but
+       * the curated version of it lives in `threshold-reveal.tsx`.
+       *
+       * ⚠️ **The level is never taken from the request.** It is read here, from
+       * the same two sources and through the same rule the client used, because
+       * a client-supplied total level is just a claim that the account
+       * qualifies — which is the one thing this check exists to not believe.
+       */
+      const totalLevelState = resolveTotalLevelState(
+        hiscores.totalLevel,
+        templeStats?.Overall_level ?? null,
+      );
+
+      if (!canPassTotalLevelGate(totalLevelState)) {
+        returnValidationErrors(AddPlayerSchema, {
+          playerName: {
+            _errors: [
+              `You need ${minimumJoinTotalLevel.toLocaleString()} total level to join Irons' Grotto. ${maybeFormattedPlayerName} is at ${totalLevelState.totalLevel.toLocaleString()}. Come back when you get there. Your account is tracked on TempleOSRS now, so your stats will be waiting.`,
+            ],
+          },
+        });
+      }
 
       // Game mode, from the only source that can assert one: TempleOSRS.
       // Only when Temple cannot does the player's own answer come into it,

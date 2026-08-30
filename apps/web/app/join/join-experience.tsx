@@ -23,11 +23,13 @@ import { scanTempleAction } from './actions/scan-temple-action';
 import { RankReveal as RankRevealScene } from './components/rank-reveal';
 import { RsnField } from './components/rsn-field';
 import { StatusIndicator, type StepStatus } from './components/status-indicator';
+import { ThresholdReveal } from './components/threshold-reveal';
 import { TrophyWall } from './components/trophy-wall';
 import {
   type AchievementScan,
   type ClanRecordScan,
   type CollectionLogScan,
+  type HiscoresScan,
   type TempleScan,
 } from './scan-types';
 import { buildPlayerStats } from './utils/build-player-stats';
@@ -37,13 +39,29 @@ import {
   resolveCollectionLogState,
 } from './utils/resolve-collection-log-state';
 import { resolveEarnedAchievements } from './utils/resolve-earned-achievements';
+import {
+  canPassTotalLevelGate,
+  resolveTotalLevelState,
+} from './utils/resolve-total-level-state';
+import { minimumJoinTotalLevel } from '@/config/clan-requirements';
 import styles from './join.module.css';
 
 interface JoinExperienceProps {
   stats: ClanStats | null;
 }
 
-type Phase = 'welcome' | 'scanning' | 'confirm' | 'creating' | 'reveal';
+/**
+ * `threshold` is where the scan ends for an account under the clan's minimum
+ * total level — a destination of its own rather than a disabled button on
+ * `confirm`. See `components/threshold-reveal.tsx`.
+ */
+type Phase =
+  | 'welcome'
+  | 'scanning'
+  | 'confirm'
+  | 'creating'
+  | 'reveal'
+  | 'threshold';
 
 type StepKey =
   | 'hiscores'
@@ -119,6 +137,7 @@ export function JoinExperience({ stats }: JoinExperienceProps) {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const [steps, setSteps] = useState<Record<StepKey, StepStatus>>(idleSteps);
+  const [hiscores, setHiscores] = useState<HiscoresScan | null>(null);
   const [temple, setTemple] = useState<TempleScan | null>(null);
   const [collectionLog, setCollectionLog] = useState<CollectionLogScan | null>(
     null,
@@ -210,6 +229,7 @@ export function JoinExperience({ stats }: JoinExperienceProps) {
       }
 
       setSteps(idleSteps);
+      setHiscores(null);
       setRevealedSources(new Set());
       setPhase('scanning');
 
@@ -238,6 +258,9 @@ export function JoinExperience({ stats }: JoinExperienceProps) {
         return;
       }
 
+      const hiscoresData = hiscores?.data ?? null;
+
+      setHiscores(hiscoresData);
       setStep('hiscores', 'ok');
 
       // --- temple ---------------------------------------------------------
@@ -305,7 +328,23 @@ export function JoinExperience({ stats }: JoinExperienceProps) {
       }
 
       await wait(650);
-      setPhase('confirm');
+
+      /*
+       * The clan's minimum total level, judged on both readings the scan just
+       * took: the hiscores figure (live) and Temple's (a synced snapshot that
+       * can lag). Either being missing is not evidence against the player —
+       * `resolveTotalLevelState` returns `unknown` and this passes.
+       *
+       * Falling short is its own destination rather than a disabled button on
+       * the confirm screen: a total level is weeks of play, and a screen that
+       * reads as a rejection is one nobody comes back from.
+       */
+      const totalLevelState = resolveTotalLevelState(
+        hiscoresData?.totalLevel ?? null,
+        templeData?.totalLevel ?? null,
+      );
+
+      setPhase(canPassTotalLevelGate(totalLevelState) ? 'confirm' : 'threshold');
     },
     [setStep],
   );
@@ -321,6 +360,15 @@ export function JoinExperience({ stats }: JoinExperienceProps) {
   );
 
   const collectionLogState = resolveCollectionLogState(temple, collectionLog);
+
+  /**
+   * Re-derived for the render, from the same rule `runScan` used to pick the
+   * phase — the threshold scene needs the level and the shortfall to show them.
+   */
+  const totalLevelState = resolveTotalLevelState(
+    hiscores?.totalLevel ?? null,
+    temple?.totalLevel ?? null,
+  );
 
   /** The headline numbers shown beside the name, as their sources land. */
   const playerStats = useMemo(
@@ -505,6 +553,16 @@ export function JoinExperience({ stats }: JoinExperienceProps) {
                 together: your stats, your collection log, and the rank
                 they add up to.
               </p>
+              {/*
+                The clan's one entry requirement, said before they type rather
+                than after the scan. Stated as a fact of the place, alongside
+                the numbers below it — not as a warning, and not as something
+                to be got past.
+              */}
+              <p className={styles.requirement}>
+                You need {minimumJoinTotalLevel.toLocaleString()} total level to
+                join.
+              </p>
             </div>
 
             {stats && (
@@ -567,6 +625,28 @@ export function JoinExperience({ stats }: JoinExperienceProps) {
               </button>
             </div>
           </section>
+        </div>
+      </main>
+    );
+  }
+
+  // -------------------------------------------------------------- threshold
+
+  if (phase === 'threshold' && totalLevelState.status === 'short') {
+    return (
+      <main className={styles.shell}>
+        <div className={styles.stage}>
+          <ThresholdReveal
+            playerName={scannedName.current}
+            totalLevel={totalLevelState.totalLevel}
+            shortfall={totalLevelState.shortfall}
+            didRegisterOnTemple={temple?.didRegister ?? false}
+            earned={earnedAchievements}
+            settledSources={revealedSources.size}
+            isRechecking={isCheckingName}
+            onRecheck={() => runScan(scannedName.current)}
+            onBackToDashboard={() => router.push('/dashboard')}
+          />
         </div>
       </main>
     );

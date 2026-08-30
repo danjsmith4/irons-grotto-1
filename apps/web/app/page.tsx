@@ -8,6 +8,7 @@ import { after } from 'next/server';
 import { auth, signIn } from '@/auth';
 import { redirect } from 'next/navigation';
 import { maybeRunInactivitySync } from '@/lib/db/inactivity-sync';
+import { clientConstants } from '@/config/constants.client';
 import { fetchRecentRankUps } from './data-sources/fetch-recent-rank-ups';
 import { fetchRecentClogUpdates } from './data-sources/fetch-recent-clog-updates';
 import { fetchRecentAccomplishments } from './data-sources/fetch-recent-accomplishments';
@@ -139,7 +140,7 @@ export default async function HomePage() {
             </button>
           </form>
           <a
-            href="https://discord.gg/sUT4Xx9zag"
+            href={clientConstants.discord.inviteUrl}
             target="_blank"
             className={`${css.button} ${css['secondary-button']}`}
           >
