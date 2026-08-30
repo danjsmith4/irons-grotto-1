@@ -1,8 +1,17 @@
 import type { Metadata } from 'next';
 import { NavBar } from '@/app/components/nav-bar';
 import { fetchPlayerAccounts } from '@/app/player/data-sources/fetch-player-accounts';
+import { fetchNavContext } from '@/app/data-sources/fetch-nav-context';
 import { MaggotKingSpeedChaser } from './maggot-king-speed-chaser';
 import styles from './maggot-king.module.css';
+
+/*
+ * The page's content is static, but its nav bar is not: it names the viewer's
+ * accounts and now carries their staff role, both of which come from the
+ * session. Saying so up front stops Next attempting a static render and
+ * logging the bailout as a failed staff-role read at build time.
+ */
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Maggot King Speed Chaser | Irons Grotto',
@@ -16,11 +25,18 @@ export const metadata: Metadata = {
  * only changes what the nav bar's Accounts menu has to offer.
  */
 export default async function MaggotKingToolPage() {
-  const userCalculators = await fetchPlayerAccounts();
+  const [userCalculators, navContext] = await Promise.all([
+    fetchPlayerAccounts(),
+    fetchNavContext(),
+  ]);
 
   return (
     <div className={styles.shell}>
-      <NavBar currentPage="tools" userCalculators={userCalculators} />
+      <NavBar
+        currentPage="tools"
+        userCalculators={userCalculators}
+        {...navContext}
+      />
       <main>
         <MaggotKingSpeedChaser />
       </main>

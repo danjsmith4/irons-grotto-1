@@ -15,6 +15,7 @@ import { PlayerEditableFields } from './player-editable-schema';
 import { useAutosave } from '../hooks/use-autosave';
 import { CurrentPlayerProvider } from '../contexts/current-player-context';
 import { NavBar } from '@/app/components/nav-bar';
+import type { NavContext } from '@/app/data-sources/fetch-nav-context';
 import { Player } from '@/app/schemas/player';
 
 /** How long the RuneLite-plugin warnings stay up before dismissing themselves. */
@@ -30,6 +31,8 @@ interface FormWrapperProps {
     templeCollectionLogOutdated: boolean;
     wikiSyncNotFound: boolean;
   };
+  /** Threaded straight to the nav bar so its chrome does not pop in. */
+  navContext: NavContext;
 }
 
 export function FormWrapper({
@@ -38,6 +41,7 @@ export function FormWrapper({
   playerName,
   userCalculators,
   warnings,
+  navContext,
 }: FormWrapperProps) {
   const form = useForm<Omit<RankCalculatorSchema, 'rank' | 'points'>>({
     resolver: zodResolver(RankCalculatorValidator),
@@ -139,6 +143,7 @@ export function FormWrapper({
             userCalculators={userCalculators}
             showCalculatorActions
             beforeSubmit={flushNow}
+            {...navContext}
           />
           <div style={{ flex: 1 }}>
             <RankCalculator submitRankCalculatorAction={submitRankCalculator} />

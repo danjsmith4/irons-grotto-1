@@ -24,6 +24,8 @@ import { useCurrentPlayer } from '@/app/player/contexts/current-player-context';
 import { getRankName } from '@/app/player/utils/get-rank-name';
 import { isRankUp } from '@/app/player/utils/is-rank-up';
 import { canAccessAdminDashboard } from '@/app/utils/staff-permissions';
+import type { StaffRole } from '@/app/schemas/staff';
+import type { ClanEventStatus } from '@/app/data-sources/fetch-clan-event-status';
 import { canApplyForRank } from '@/config/ranks';
 import { useViewerStaffRole } from './use-viewer-staff-role';
 import { EventStatus } from './event-status';
@@ -54,6 +56,23 @@ interface NavBarProps {
     }
   >;
   additionalButtons?: React.ReactNode;
+  /**
+   * The viewer's staff role and the running event, as the server already knew
+   * them.
+   *
+   * ⚠️ **Both should be supplied by every page that renders a nav bar.** Left
+   * out, each is fetched from the browser after mount, so the Admin link and
+   * the event indicator cannot exist until a round trip completes and visibly
+   * pop into a bar that has already settled. Nav chrome arriving late reads as
+   * the page still loading, and the event indicator is the loudest thing in
+   * the bar, which makes it the worst of the two to animate in.
+   *
+   * Optional rather than required so no call site can break by not knowing,
+   * and `undefined` (not supplied) is distinguished from `null` (a real answer:
+   * not staff, no event) inside each.
+   */
+  viewerStaffRole?: StaffRole | null;
+  eventStatus?: ClanEventStatus | null;
 }
 
 export function NavBar({
@@ -64,9 +83,11 @@ export function NavBar({
   beforeSubmit,
   userCalculators = {},
   additionalButtons,
+  viewerStaffRole: initialStaffRole,
+  eventStatus,
 }: NavBarProps) {
   const router = useRouter();
-  const viewerStaffRole = useViewerStaffRole();
+  const viewerStaffRole = useViewerStaffRole(initialStaffRole);
   const canAdminister = canAccessAdminDashboard(viewerStaffRole);
 
   // Form hooks - these will be null when not in form context
@@ -198,9 +219,7 @@ export function NavBar({
                   <DropdownMenu.Label>Your accounts</DropdownMenu.Label>
                   {accounts.map((player) => (
                     <DropdownMenu.Item key={player.rsn} asChild>
-                      <Link
-                        href={`/player/${encodeURIComponent(player.rsn)}`}
-                      >
+                      <Link href={`/player/${encodeURIComponent(player.rsn)}`}>
                         {player.rsn}
                         <span className={styles.menuMeta}>
                           {player.rank ?? 'Unranked'}
@@ -270,7 +289,7 @@ export function NavBar({
           {/* Renders nothing unless an event is running or queued — see the
               component. It sits before the page's own actions because it is
               about the clan, not about this page. */}
-          <EventStatus />
+          <EventStatus initialStatus={eventStatus} />
 
           {additionalButtons}
 

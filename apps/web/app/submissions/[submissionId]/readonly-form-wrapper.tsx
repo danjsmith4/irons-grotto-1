@@ -7,6 +7,7 @@ import { RankCalculatorSchema } from '@/app/player/[player]/submit-rank-calculat
 import { userCanModerateSubmission } from './utils/user-can-moderate-submission';
 import { ModerationProvider } from '@/app/player/contexts/moderation-context';
 import { NavBar } from '@/app/components/nav-bar';
+import type { NavContext } from '@/app/data-sources/fetch-nav-context';
 import { SubmissionNavbarActions } from './components/submission-navbar-actions';
 
 interface FormWrapperProps {
@@ -21,6 +22,8 @@ interface FormWrapperProps {
     isTempleCollectionLogOutdated: boolean;
   } | null;
   actionedByUsername: string | null;
+  /** Threaded straight to the nav bar so its chrome does not pop in. */
+  navContext: NavContext;
 }
 
 export function ReadonlyFormWrapper({
@@ -30,6 +33,7 @@ export function ReadonlyFormWrapper({
   submissionMetadata,
   freshModerationData,
   actionedByUsername,
+  navContext,
 }: FormWrapperProps) {
   const isModerator = userCanModerateSubmission(userPermissions);
 
@@ -100,6 +104,7 @@ export function ReadonlyFormWrapper({
                 userCanModerate={isModerator}
               />
             }
+            {...navContext}
           />
           <div style={{ flex: 1 }}>
             <RankCalculator submitRankCalculatorAction={undefined} />

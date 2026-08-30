@@ -18,11 +18,33 @@ import styles from './event-status.module.css';
  * running and nothing is queued the component renders nothing at all rather
  * than an empty state — a nav item that says "no event" is just noise.
  */
-export function EventStatus() {
-  const [status, setStatus] = useState<ClanEventStatus | null>(null);
+interface EventStatusProps {
+  /**
+   * The status as the server already knew it.
+   *
+   * ⚠️ **Pass this wherever there is a server component to pass it from.**
+   * Without it the indicator cannot exist until a round trip has completed, so
+   * a live event announces itself a beat after the page has settled and pops
+   * into the nav bar. It is the loudest thing in the bar, which makes it the
+   * worst thing to arrive late.
+   *
+   * `undefined` means "not supplied, go and ask"; `null` is a real answer
+   * meaning nothing is running, and does not trigger a fetch.
+   */
+  initialStatus?: ClanEventStatus | null;
+}
+
+export function EventStatus({ initialStatus }: EventStatusProps) {
+  const [status, setStatus] = useState<ClanEventStatus | null>(
+    initialStatus ?? null,
+  );
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
+    if (initialStatus !== undefined) {
+      return undefined;
+    }
+
     let cancelled = false;
 
     fetch('/api/clan-events/status')
@@ -41,7 +63,7 @@ export function EventStatus() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [initialStatus]);
 
   if (!status || (!status.active && !status.next)) {
     return null;

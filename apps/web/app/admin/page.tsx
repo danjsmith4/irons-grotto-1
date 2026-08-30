@@ -5,6 +5,7 @@ import { fetchPlayerAccounts } from '@/app/player/data-sources/fetch-player-acco
 import { fetchAdminDashboard } from '@/app/data-sources/fetch-admin-dashboard';
 import { fetchDiscordBans } from '@/app/data-sources/fetch-discord-bans';
 import { fetchClanEvents } from '@/app/data-sources/fetch-clan-events';
+import { fetchNavContext } from '@/app/data-sources/fetch-nav-context';
 import { AdminPanes } from './admin-panes';
 import styles from './admin.module.css';
 
@@ -42,11 +43,18 @@ export default async function AdminPage() {
 
   const { viewerRole, viewerPlayerName, members, history, belowTotalLevel } =
     result.data;
-  const userCalculators = await fetchPlayerAccounts();
+  const [userCalculators, navContext] = await Promise.all([
+    fetchPlayerAccounts(),
+    fetchNavContext(),
+  ]);
 
   return (
     <div className={styles.page}>
-      <NavBar currentPage="admin" userCalculators={userCalculators} />
+      <NavBar
+        currentPage="admin"
+        userCalculators={userCalculators}
+        {...navContext}
+      />
       <main className={styles.main}>
         <AdminPanes
           viewerRole={viewerRole}

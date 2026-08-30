@@ -11,6 +11,7 @@ import { RecentClogUpdatesTable } from '@/app/components/recent-clog-updates-tab
 import { RecentAccomplishmentsTable } from '@/app/components/recent-accomplishments-table';
 import { Leaderboard } from '@/app/components/leaderboard';
 import { NavBar } from '@/app/components/nav-bar';
+import { fetchNavContext } from '@/app/data-sources/fetch-nav-context';
 import { TotalLevelGraceNotice } from '@/app/components/total-level-grace-notice';
 import { hasAccountsBelowMinimum } from '@/app/utils/resolve-total-level-grace';
 
@@ -43,8 +44,12 @@ export default async function DashboardPage() {
     ? (recentAccomplishmentsResult.data ?? [])
     : [];
 
-  // Fetch user's calculators
-  const userCalculators = await fetchPlayerAccounts();
+  // Fetch user's calculators, and what the nav bar needs so that neither the
+  // Admin link nor the event indicator has to pop in after mount.
+  const [userCalculators, navContext] = await Promise.all([
+    fetchPlayerAccounts(),
+    fetchNavContext(),
+  ]);
 
   const graceAccounts = Object.values(userCalculators).map(
     ({ rsn, totalLevel }) => ({ playerName: rsn, totalLevel }),
@@ -68,7 +73,11 @@ export default async function DashboardPage() {
         overflow: 'hidden',
       }}
     >
-      <NavBar currentPage="dashboard" userCalculators={userCalculators} />
+      <NavBar
+        currentPage="dashboard"
+        userCalculators={userCalculators}
+        {...navContext}
+      />
 
       {/* Main content */}
       <div
