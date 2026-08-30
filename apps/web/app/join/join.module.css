@@ -681,6 +681,26 @@
   text-underline-offset: 3px;
 }
 
+/*
+ * An anchor wearing `.ghost`.
+ *
+ * A `<button>` is inline-block and sits inside its own padding already; an
+ * anchor is plain inline, so vertical padding paints outside the line box and
+ * the border lands in the wrong place. This is the whole difference, and it is
+ * a modifier rather than a change to the shared button rule so that no existing
+ * button's layout moves.
+ */
+.ghostLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.ghostLink:hover {
+  text-decoration: none;
+}
+
 /* An anchor sitting inside a sentence, rather than a button dressed as a link. */
 .inlineLink {
   color: rgb(var(--ig-tertiary));
@@ -907,6 +927,18 @@
   margin: 0;
   max-width: 44ch;
   animation: rise 0.7s 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/*
+ * The two ways off this screen, side by side under the one action that keeps
+ * someone here. Wraps to a column on a narrow phone rather than shrinking the
+ * hit targets.
+ */
+.thresholdSecondary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
 }
 
 .thresholdGoal strong {

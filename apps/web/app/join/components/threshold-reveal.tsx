@@ -19,6 +19,7 @@ interface ThresholdRevealProps {
   settledSources: number;
   isRechecking: boolean;
   onRecheck: () => void;
+  onBackToDashboard: () => void;
 }
 
 /**
@@ -58,6 +59,7 @@ export function ThresholdReveal({
   settledSources,
   isRechecking,
   onRecheck,
+  onBackToDashboard,
 }: ThresholdRevealProps) {
   // Held at zero for a frame so the meter fills from empty on mount rather than
   // rendering already full — the same trick, and the same reason, as RankReveal.
@@ -115,19 +117,34 @@ export function ThresholdReveal({
         >
           {isRechecking ? 'Checking…' : 'Check again'}
         </button>
-        {/*
-          The point of this button. Someone who wants in but is not in yet can
-          be part of the clan's community while they train — which is also how
-          the clan keeps them rather than losing them to the next one they find.
-        */}
-        <a
-          className={styles.link}
-          href={clientConstants.discord.inviteUrl}
-          target="_blank"
-          rel="noreferrer"
-        >
-          Join our Discord while you train.
-        </a>
+        <div className={styles.thresholdSecondary}>
+          {/*
+            The Discord is the point of this screen. Someone who wants in but is
+            not in yet can be part of the clan's community while they train,
+            which is also how the clan keeps them rather than losing them to the
+            next one they find. It carries the same weight as leaving, so it
+            gets a button rather than a line of underlined text.
+
+            Still an anchor, because it goes somewhere off this site: middle
+            click and open-in-new-tab have to keep working. `.ghostLink` is only
+            what makes an inline anchor sit correctly in a button's padding.
+          */}
+          <a
+            className={`${styles.ghost} ${styles.ghostLink}`}
+            href={clientConstants.discord.inviteUrl}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Join our Discord
+          </a>
+          <button
+            type="button"
+            className={styles.ghost}
+            onClick={onBackToDashboard}
+          >
+            Back to dashboard
+          </button>
+        </div>
       </div>
     </div>
   );

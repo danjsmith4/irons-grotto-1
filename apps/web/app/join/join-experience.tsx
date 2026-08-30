@@ -645,6 +645,7 @@ export function JoinExperience({ stats }: JoinExperienceProps) {
             settledSources={revealedSources.size}
             isRechecking={isCheckingName}
             onRecheck={() => runScan(scannedName.current)}
+            onBackToDashboard={() => router.push('/dashboard')}
           />
         </div>
       </main>

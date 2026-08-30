@@ -485,6 +485,24 @@ describe('JoinExperience', () => {
       ).toBeInTheDocument();
     });
 
+    it('offers a way back to the dashboard as well as the Discord', async () => {
+      stubScanAtTotalLevel(1342, 1342);
+      scan();
+
+      // Wait for the scene itself before reaching for the button: the welcome
+      // step has a "Back to dashboard" of its own, and querying too early
+      // matches that one and then clicks it after React has unmounted it.
+      await screen.findByText(/158 to go/i, {}, { timeout: 15_000 });
+
+      fireEvent.click(
+        screen.getByRole('button', { name: /back to dashboard/i }),
+      );
+
+      // Nothing was created on the way out.
+      await waitFor(() => expect(push).toHaveBeenCalledWith('/dashboard'));
+      expect(addPlayerAction).not.toHaveBeenCalled();
+    });
+
     it('lets a member re-scan without retyping their name', async () => {
       stubScanAtTotalLevel(1342, 1342);
       scan();
