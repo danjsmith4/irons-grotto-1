@@ -392,4 +392,148 @@ describe('JoinExperience', () => {
     // Nothing was created, and the player was not moved on.
     expect(push).not.toHaveBeenCalled();
   });
+
+  describe('the clan minimum total level', () => {
+    /** A scan that resolves cleanly, with the total level dictated per test. */
+    function stubScanAtTotalLevel(
+      hiscoresTotalLevel: number | null,
+      templeTotalLevel: number | null,
+    ) {
+      scanHiscoresAction.mockResolvedValue({
+        data: { exists: true, totalLevel: hiscoresTotalLevel },
+      });
+      scanTempleAction.mockResolvedValue({
+        data: {
+          isTracked: true,
+          didRegister: true,
+          accountType: 'ironman',
+          totalLevel: templeTotalLevel,
+          isMaxed: false,
+          hasInfernal: false,
+          ehb: 4,
+          ehp: 30,
+          hiscoresClogSlots: 120,
+        },
+      });
+      scanCollectionLogAction.mockResolvedValue({
+        data: {
+          hasCollectionLog: true,
+          clogSlots: 120,
+          clogTotal: 1600,
+          hasFangKit: false,
+          ehc: 12,
+        },
+      });
+      scanAchievementsAction.mockResolvedValue({
+        data: {
+          hasWikiSync: true,
+          hasBlorva: false,
+          hasQuiver: false,
+          hasZukHelm: false,
+          combatAchievementTier: null,
+        },
+      });
+      scanClanRecordAction.mockResolvedValue({
+        data: { joinDate: null, isClanMember: false, rsn: 'Riftletics' },
+      });
+    }
+
+    const scan = () => {
+      renderExperience();
+      fireEvent.change(nameField(), { target: { value: 'Riftletics' } });
+      fireEvent.click(lookMeUp());
+    };
+
+    it('names the requirement on the welcome step, before anyone types', () => {
+      renderExperience();
+
+      // Stated up front so nobody sits through the whole scan — including the
+      // ten-second Temple registration — to learn a rule we could have led with.
+      expect(screen.getByText(/1,500 total\s+level/i)).toBeInTheDocument();
+    });
+
+    it('sends an under-level account to the threshold scene instead of confirm', async () => {
+      stubScanAtTotalLevel(1342, 1342);
+      scan();
+
+      expect(
+        await screen.findByText(/158 to go/i, {}, { timeout: 15_000 }),
+      ).toBeInTheDocument();
+
+      // A destination, not a disabled button: there is no way to press on.
+      expect(
+        screen.queryByRole('button', { name: /set up my account/i }),
+      ).not.toBeInTheDocument();
+      expect(addPlayerAction).not.toHaveBeenCalled();
+    });
+
+    it('shows what the scan already found rather than only the shortfall', async () => {
+      stubScanAtTotalLevel(1342, 1342);
+      scan();
+
+      await screen.findByText(/158 to go/i, {}, { timeout: 15_000 });
+
+      // The trophy wall and the Discord invite are what make this an invitation
+      // rather than a door — see `threshold-reveal.tsx`.
+      expect(screen.getByRole('img', { name: /infernal cape/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('link', { name: /join the discord/i }),
+      ).toBeInTheDocument();
+      // The account was registered on Temple by the scan, which is theirs to keep.
+      expect(screen.getByText(/on TempleOSRS now/i)).toBeInTheDocument();
+    });
+
+    it('lets a member re-scan without retyping their name', async () => {
+      stubScanAtTotalLevel(1342, 1342);
+      scan();
+
+      fireEvent.click(
+        await screen.findByRole(
+          'button',
+          { name: /check again/i },
+          { timeout: 15_000 },
+        ),
+      );
+
+      // They levelled up in the meantime.
+      stubScanAtTotalLevel(1520, 1520);
+
+      expect(
+        await screen.findByRole(
+          'button',
+          { name: /set up my account/i },
+          { timeout: 15_000 },
+        ),
+      ).toBeInTheDocument();
+    });
+
+    it('takes the higher reading when a stale Temple disagrees with the hiscores', async () => {
+      // Temple's figure is whatever the last sync uploaded. It must never be
+      // the reason a qualifying member is turned away.
+      stubScanAtTotalLevel(1600, 1400);
+      scan();
+
+      expect(
+        await screen.findByRole(
+          'button',
+          { name: /set up my account/i },
+          { timeout: 15_000 },
+        ),
+      ).toBeInTheDocument();
+    });
+
+    it('lets a player through when no source could report a level', async () => {
+      // An unreachable third party is not evidence against the player.
+      stubScanAtTotalLevel(null, null);
+      scan();
+
+      expect(
+        await screen.findByRole(
+          'button',
+          { name: /set up my account/i },
+          { timeout: 15_000 },
+        ),
+      ).toBeInTheDocument();
+    });
+  });
 });

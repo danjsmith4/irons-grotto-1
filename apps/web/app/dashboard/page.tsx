@@ -11,6 +11,8 @@ import { RecentClogUpdatesTable } from '@/app/components/recent-clog-updates-tab
 import { RecentAccomplishmentsTable } from '@/app/components/recent-accomplishments-table';
 import { Leaderboard } from '@/app/components/leaderboard';
 import { NavBar } from '@/app/components/nav-bar';
+import { TotalLevelGraceNotice } from '@/app/components/total-level-grace-notice';
+import { minimumJoinTotalLevel } from '@/config/clan-requirements';
 
 const inter = Inter({
   weight: ['300', '400', '500', '600'],
@@ -78,6 +80,34 @@ export default async function DashboardPage() {
           padding: '2rem',
         }}
       >
+        {/*
+          The minimum-total-level notice, for members who were here before the
+          rule. Above everything else, because it is the only thing on this page
+          addressed to the person reading it — and each renders nothing at all
+          unless that account is under the line, which almost none are.
+        */}
+        {Object.values(userCalculators).some(
+          ({ totalLevel }) => totalLevel < minimumJoinTotalLevel,
+        ) && (
+          <div
+            style={{
+              width: '100%',
+              maxWidth: '1200px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.75rem',
+            }}
+          >
+            {Object.values(userCalculators).map(({ rsn, totalLevel }) => (
+              <TotalLevelGraceNotice
+                key={rsn}
+                playerName={rsn}
+                totalLevel={totalLevel}
+              />
+            ))}
+          </div>
+        )}
+
         {/* What's happening section */}
         <div
           style={{

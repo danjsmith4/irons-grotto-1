@@ -13,12 +13,15 @@ import type {
 } from '@/lib/db/staff-operations';
 import type { DiscordBanEntry } from '@/app/data-sources/fetch-discord-bans';
 import type { ClanEventsAdminData } from '@/app/data-sources/fetch-clan-events';
+import type { MemberBelowTotalLevelEntry } from '@/app/data-sources/fetch-admin-dashboard';
+import { minimumJoinTotalLevel } from '@/config/clan-requirements';
 import { StaffRoles } from './staff-roles';
 import { DiscordBans } from './discord-bans';
 import { ClanEvents } from './clan-events';
+import { TotalLevelMembers } from './total-level-members';
 import styles from './admin.module.css';
 
-type AdminPane = 'events' | 'staff' | 'bans';
+type AdminPane = 'events' | 'staff' | 'bans' | 'totalLevel';
 
 // Events lead, and are the default: they are the only thing here staff do on a
 // schedule. Roles and bans are occasional.
@@ -26,6 +29,7 @@ const panes = [
   { id: 'events', label: 'Events' },
   { id: 'staff', label: 'Staff ranks' },
   { id: 'bans', label: 'Discord bans' },
+  { id: 'totalLevel', label: 'Total level' },
 ] as const satisfies readonly { id: AdminPane; label: string }[];
 
 interface AdminPanesProps {
@@ -37,6 +41,7 @@ interface AdminPanesProps {
   bansError: string | null;
   events: ClanEventsAdminData | null;
   eventsError: string | null;
+  belowTotalLevel: MemberBelowTotalLevelEntry[];
 }
 
 /**
@@ -63,12 +68,14 @@ export function AdminPanes({
   bansError,
   events,
   eventsError,
+  belowTotalLevel,
 }: AdminPanesProps) {
   const [active, setActive] = useState<AdminPane>('events');
   const tabRefs = useRef<Record<AdminPane, HTMLButtonElement | null>>({
     events: null,
     staff: null,
     bans: null,
+    totalLevel: null,
   });
 
   const grantable = useMemo(
@@ -87,6 +94,7 @@ export function AdminPanes({
         : 'which, as an administrator, is none'
     }.`,
     bans: 'Bans are placed and lifted in the clan Discord. You can act on anyone whose role is below your own.',
+    totalLevel: `The clan now asks for ${minimumJoinTotalLevel.toLocaleString()} total level to join. Members who were already here keep everything and have until the deadline to get there — nothing happens to them automatically.`,
   };
 
   /**
@@ -162,6 +170,9 @@ export function AdminPanes({
           />
         )}
         {active === 'bans' && <DiscordBans bans={bans} error={bansError} />}
+        {active === 'totalLevel' && (
+          <TotalLevelMembers members={belowTotalLevel} />
+        )}
       </div>
     </>
   );

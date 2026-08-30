@@ -10,6 +10,7 @@ import { RankLadderModal } from './rank-ladder-modal';
 import { AccountTypeDialog } from './account-type-dialog';
 import { StaffBadge } from '@/app/components/staff-badge';
 import { AccountTypeBadge } from '@/app/components/account-type-badge';
+import { TotalLevelGraceNotice } from '@/app/components/total-level-grace-notice';
 import { useRankCalculator } from '../hooks/point-calculator/use-rank-calculator';
 import { getRankName } from '../utils/get-rank-name';
 import { isRankUp } from '../utils/is-rank-up';
@@ -54,6 +55,9 @@ export function CalculatorHero() {
   });
   const staffRole = useWatch<RankCalculatorSchema, 'staffRole'>({
     name: 'staffRole',
+  });
+  const totalLevel = useWatch<RankCalculatorSchema, 'totalLevel'>({
+    name: 'totalLevel',
   });
   // Whether the game mode still has to be settled. Nothing else in the hero
   // may interrupt until it is: the rank below is read off whichever ladder the
@@ -205,6 +209,13 @@ export function CalculatorHero() {
             />
           </div>
         </div>
+
+        {/*
+          Renders nothing unless this player is under the clan's minimum total
+          level, which almost nobody is — mounted unconditionally rather than
+          guarded here so the rule lives in one place.
+        */}
+        <TotalLevelGraceNotice totalLevel={totalLevel} />
 
         <div className={styles.scoreFoot}>
           <RankPace rank={rank} />

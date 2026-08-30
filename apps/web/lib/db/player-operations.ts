@@ -1,4 +1,4 @@
-import { eq, and, sql } from 'drizzle-orm';
+import { eq, and, asc, lt, sql } from 'drizzle-orm';
 import { db } from './index';
 import {
   players,
@@ -1000,4 +1000,45 @@ export async function resetPlayerClaims(
       .delete(playerItemOverrides)
       .where(eq(playerItemOverrides.playerName, playerName));
   });
+}
+
+export interface MemberBelowTotalLevel {
+  playerName: string;
+  totalLevel: number;
+  rank: string;
+  accountType: AccountType | null;
+}
+
+/**
+ * Active members under the clan's minimum total level.
+ *
+ * These are the grandfathered ones: the gate refuses every new signup below the
+ * line, so anyone in the table under it either predates the rule or was
+ * admitted while a source was unreachable — and both belong in the same
+ * conversation. That is why membership of this set needs no flag to track it.
+ *
+ * ⚠️ **Not filtered by `rankedMember`.** Almost every clan-wide query here
+ * excludes mains, because mains are not on the points ladder. This one is not
+ * about the ladder: the minimum applies at the door to everybody, before an
+ * account type has even been resolved, so leaving mains out would hide members
+ * the rule genuinely covers.
+ *
+ * Ordered by total level ascending — furthest from the line first, since those
+ * are the ones a moderator most needs to look at.
+ */
+export async function getMembersBelowTotalLevel(
+  minimumTotalLevel: number,
+): Promise<MemberBelowTotalLevel[]> {
+  return db
+    .select({
+      playerName: players.playerName,
+      totalLevel: players.totalLevel,
+      rank: players.rank,
+      accountType: players.accountType,
+    })
+    .from(players)
+    .where(
+      and(eq(players.isActive, true), lt(players.totalLevel, minimumTotalLevel)),
+    )
+    .orderBy(asc(players.totalLevel));
 }

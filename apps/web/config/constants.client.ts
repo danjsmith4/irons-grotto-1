@@ -30,6 +30,15 @@ const ClientConfigSchema = z.object({
   }),
   discord: z.object({
     baseUrl: z.literal('https://discord.com/api/v10'),
+    /**
+     * The public invite to the clan Discord.
+     *
+     * Here rather than inline in a page because two places now offer it: the
+     * homepage, and the onboarding screen someone lands on when they are under
+     * the clan's minimum total level — where it is the one thing that keeps a
+     * member who wants in but is not in yet.
+     */
+    inviteUrl: z.literal('https://discord.gg/sUT4Xx9zag'),
   }),
 });
 
@@ -53,5 +62,6 @@ export const clientConstants = ClientConfigSchema.parse({
   },
   discord: {
     baseUrl: 'https://discord.com/api/v10',
+    inviteUrl: 'https://discord.gg/sUT4Xx9zag',
   },
 });

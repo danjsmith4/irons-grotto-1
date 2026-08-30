@@ -40,7 +40,8 @@ export default async function AdminPage() {
     redirect('/dashboard');
   }
 
-  const { viewerRole, viewerPlayerName, members, history } = result.data;
+  const { viewerRole, viewerPlayerName, members, history, belowTotalLevel } =
+    result.data;
   const userCalculators = await fetchPlayerAccounts();
 
   return (
@@ -56,6 +57,7 @@ export default async function AdminPage() {
           bansError={bansResult.success ? null : bansResult.error}
           events={eventsResult.success ? eventsResult.data : null}
           eventsError={eventsResult.success ? null : eventsResult.error}
+          belowTotalLevel={belowTotalLevel}
         />
       </main>
     </div>
