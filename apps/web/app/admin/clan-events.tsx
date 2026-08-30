@@ -44,6 +44,62 @@ function formatUtc(iso: string) {
   return `${utcDateTime.format(new Date(iso))} UTC`;
 }
 
+/**
+ * What the create panel says while the queue is full.
+ *
+ * ⚠️ **This replaces the picker and the duty roll, it does not sit beside
+ * them.** When creation is blocked the next event already exists, so who picks
+ * it and who sets it up are decisions that have already been made. Leaving them
+ * on screen shows a moderator a name against a choice nobody still has to make
+ * — and when that name has left the clan it reads as an unresolved problem,
+ * which is the bug this fixes. Staff had already worked around a departed
+ * winner and created the event; the pane went on telling them to sort it out.
+ *
+ * So the only useful thing here is the state of the one that is running.
+ */
+function RunningEventNote({
+  running,
+}: {
+  running: ClanEventsAdminData['running'];
+}) {
+  if (!running) {
+    return (
+      <p className={styles.pickerNote}>
+        <PersonIcon />
+        <span>
+          The next event is already scheduled, so there is nothing to pick right
+          now.
+        </span>
+      </p>
+    );
+  }
+
+  return (
+    <p className={styles.pickerNote}>
+      <PersonIcon />
+      <span>
+        “{running.name}” is running.{' '}
+        {running.standingsUnavailable ? (
+          <>TempleOSRS could not be reached, so the standings are unknown.</>
+        ) : running.leader ? (
+          <>
+            <PlayerNameButton
+              name={running.leader.playerName}
+              className={styles.pickerName}
+            />{' '}
+            is leading on {running.leader.gained.toLocaleString()}{' '}
+            {running.gainLabel}.
+          </>
+        ) : (
+          <>Nobody has gained anything yet.</>
+        )}{' '}
+        Check back after {formatUtc(running.endsAt)} to see who wins — they pick
+        the next {running.typeLabel}.
+      </span>
+    </p>
+  );
+}
+
 function competitionUrl(id: number) {
   return `${clientConstants.temple.baseUrl}/competitions/standings.php?id=${id}`;
 }
@@ -209,91 +265,98 @@ export function ClanEvents({ data, error }: ClanEventsProps) {
           and who to ask instead. Silently substituting would leave a moderator
           unable to tell a stand-in from the real answer.
         */}
-        <p className={styles.pickerNote}>
-          <PersonIcon />
-          {picker.winner ? (
-            <span>
-              {picker.winner.isActiveMember ? (
-                <>
-                  Ask{' '}
-                  <PlayerNameButton
-                    name={picker.winner.playerName}
-                    className={styles.pickerName}
-                  />{' '}
-                  for the {metricNoun} — they won the last {nextSlot.typeLabel},
-                  “{picker.winner.eventName}”.
-                </>
-              ) : (
-                <>
-                  <PlayerNameButton
-                    name={picker.winner.playerName}
-                    className={styles.pickerName}
-                  />{' '}
-                  won the last {nextSlot.typeLabel} (“{picker.winner.eventName}
-                  ”) but has{' '}
-                  <strong className={styles.departed}>
-                    left the clan
-                  </strong>.{' '}
-                  {picker.standIn ? (
+        {isBlocked ? (
+          <RunningEventNote running={data.running} />
+        ) : (
+          <>
+            <p className={styles.pickerNote}>
+              <PersonIcon />
+              {picker.winner ? (
+                <span>
+                  {picker.winner.isActiveMember ? (
                     <>
                       Ask{' '}
                       <PlayerNameButton
-                        name={picker.standIn.playerName}
+                        name={picker.winner.playerName}
                         className={styles.pickerName}
                       />{' '}
-                      instead — they won “{picker.standIn.eventName}”.
+                      for the {metricNoun} — they won the last{' '}
+                      {nextSlot.typeLabel}, “{picker.winner.eventName}”.
                     </>
                   ) : (
                     <>
-                      No earlier {nextSlot.typeLabel} winner is still here, so
-                      choose the {metricNoun} with the rest of staff.
+                      <PlayerNameButton
+                        name={picker.winner.playerName}
+                        className={styles.pickerName}
+                      />{' '}
+                      won the last {nextSlot.typeLabel} (“
+                      {picker.winner.eventName}
+                      ”) but has{' '}
+                      <strong className={styles.departed}>left the clan</strong>
+                      .{' '}
+                      {picker.standIn ? (
+                        <>
+                          Ask{' '}
+                          <PlayerNameButton
+                            name={picker.standIn.playerName}
+                            className={styles.pickerName}
+                          />{' '}
+                          instead — they won “{picker.standIn.eventName}”.
+                        </>
+                      ) : (
+                        <>
+                          No earlier {nextSlot.typeLabel} winner is still here,
+                          so choose the {metricNoun} with the rest of staff.
+                        </>
+                      )}
                     </>
                   )}
-                </>
+                </span>
+              ) : (
+                <span>
+                  No previous {nextSlot.typeLabel} has a winner recorded, so
+                  there is nobody to ask — choose the {metricNoun} with the rest
+                  of staff.
+                </span>
               )}
-            </span>
-          ) : (
-            <span>
-              No previous {nextSlot.typeLabel} has a winner recorded, so there
-              is nobody to ask — choose the {metricNoun} with the rest of staff.
-            </span>
-          )}
-        </p>
+            </p>
 
-        {/*
+            {/*
           Who is actually going to do it. Staff kept forgetting whose turn it
           was, so the site rolls someone and says so in the clan chat — the
           message carries the deadline and the pick, so being volunteered does
           not mean coming back here to find out what for.
         */}
-        <div className={styles.dutyRow}>
-          <span className={styles.dutyText}>
-            {data.duty ? (
-              <>
-                <PlayerNameButton
-                  name={data.duty.playerName}
-                  className={styles.pickerName}
-                />{' '}
-                is on duty for this one
-                {data.duty.rolledByPlayerName
-                  ? `, rolled by ${data.duty.rolledByPlayerName}`
-                  : ''}
-                .
-              </>
-            ) : (
-              <>Nobody is on duty for the next event yet.</>
-            )}
-          </span>
-          <button
-            type="button"
-            className={styles.ghostButton}
-            disabled={isBlocked || isPickingDuty}
-            onClick={() => pickDuty({})}
-          >
-            {isPickingDuty && <Spinner size="1" />}
-            {data.duty ? 'Re-roll staff' : 'Pick staff'}
-          </button>
-        </div>
+            <div className={styles.dutyRow}>
+              <span className={styles.dutyText}>
+                {data.duty ? (
+                  <>
+                    <PlayerNameButton
+                      name={data.duty.playerName}
+                      className={styles.pickerName}
+                    />{' '}
+                    is on duty for this one
+                    {data.duty.rolledByPlayerName
+                      ? `, rolled by ${data.duty.rolledByPlayerName}`
+                      : ''}
+                    .
+                  </>
+                ) : (
+                  <>Nobody is on duty for the next event yet.</>
+                )}
+              </span>
+              <button
+                type="button"
+                className={styles.ghostButton}
+                disabled={isBlocked || isPickingDuty}
+                onClick={() => pickDuty({})}
+              >
+                {isPickingDuty && <Spinner size="1" />}
+                {data.duty ? 'Re-roll staff' : 'Pick staff'}
+              </button>
+            </div>
+          </>
+        )}
 
         <div className={styles.eventForm}>
           {/*

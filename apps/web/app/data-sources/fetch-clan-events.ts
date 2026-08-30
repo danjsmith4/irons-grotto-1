@@ -1,6 +1,7 @@
 import 'server-only';
 import { auth } from '@/auth';
 import {
+  clanEventGainLabel,
   clanEventTypeLabels,
   clanEventTypeSuffix,
   findClanEventMetric,
@@ -23,6 +24,7 @@ import {
   selectClanEventPicker,
   type ClanEventPickerResult,
 } from '@/app/utils/select-clan-event-picker';
+import { fetchTempleCompetition } from './fetch-temple-competition';
 import { syncClanEventResults } from './sync-clan-event-results';
 
 export type { ClanEventPickerResult };
@@ -71,10 +73,33 @@ export interface ClanEventDutySummary {
   rolledByPlayerName: string | null;
 }
 
+/**
+ * The event running right now, for when the queue is full.
+ *
+ * ⚠️ **Only rendered while creation is blocked**, where it replaces the picker
+ * and the duty roll. Both of those are about an event that, in that state, has
+ * already been created — so naming who picks it, or who is on duty to set it
+ * up, is describing a decision that has already been made. What a moderator
+ * wants instead is where the running one stands and when it settles.
+ */
+export interface RunningClanEvent {
+  name: string;
+  typeLabel: string;
+  endsAt: string;
+  /** Whoever is ahead, or null when nobody has gained anything yet. */
+  leader: { playerName: string; gained: number } | null;
+  /** Temple could not be read, so "no leader" is unknown rather than nobody. */
+  standingsUnavailable: boolean;
+  /** Kill count for a boss week, experience for a skill week. */
+  gainLabel: string;
+}
+
 export interface ClanEventsAdminData {
   events: AdminClanEvent[];
   nextSlot: NextClanEventSlot;
   picker: ClanEventPickerResult;
+  /** Null when nothing is running. */
+  running: RunningClanEvent | null;
   winCounts: { playerName: string; wins: number; isActiveMember: boolean }[];
   /**
    * Null when nobody has been rolled, or when the roll was for an earlier
@@ -130,6 +155,27 @@ export async function fetchClanEvents(): Promise<
       (event) => clanEventPhase(event, now) === 'upcoming',
     );
 
+    /*
+     * The running event's standings, but only when there is something blocking
+     * creation — that is the only state the pane renders them in, and Temple is
+     * a network call worth not making otherwise.
+     */
+    const activeEvent = events.find(
+      (event) => clanEventPhase(event, now) === 'active',
+    );
+
+    const competition =
+      queued && activeEvent
+        ? await fetchTempleCompetition(activeEvent.id)
+        : null;
+
+    const leaderEntry = competition?.participants
+      ?.filter(({ gained }) => gained > 0)
+      .reduce<{
+        username: string;
+        gained: number;
+      } | null>((best, entry) => (!best || entry.gained > best.gained ? entry : best), null);
+
     return {
       success: true,
       data: {
@@ -157,6 +203,22 @@ export async function fetchClanEvents(): Promise<
             : null,
         },
         picker: selectClanEventPicker(events, type, now),
+        running:
+          queued && activeEvent
+            ? {
+                name: activeEvent.name,
+                typeLabel: clanEventTypeLabels[activeEvent.type],
+                endsAt: activeEvent.endsAt.toISOString(),
+                leader: leaderEntry
+                  ? {
+                      playerName: leaderEntry.username.replaceAll('_', ' '),
+                      gained: leaderEntry.gained,
+                    }
+                  : null,
+                standingsUnavailable: !competition,
+                gainLabel: clanEventGainLabel[activeEvent.type],
+              }
+            : null,
         winCounts,
         // Tied to the slot it was rolled for: once the calendar moves on, the
         // assignment is spent and the pane offers a fresh roll.
