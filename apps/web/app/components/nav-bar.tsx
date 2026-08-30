@@ -25,7 +25,7 @@ import { getRankName } from '@/app/player/utils/get-rank-name';
 import { isRankUp } from '@/app/player/utils/is-rank-up';
 import { canAccessAdminDashboard } from '@/app/utils/staff-permissions';
 import type { StaffRole } from '@/app/schemas/staff';
-import type { ClanEventStatus } from '@/app/data-sources/fetch-clan-event-status';
+import type { SessionEvents } from '@/app/data-sources/fetch-session-context';
 import { canApplyForRank } from '@/config/ranks';
 import { useViewerStaffRole } from './use-viewer-staff-role';
 import { EventStatus } from './event-status';
@@ -57,22 +57,20 @@ interface NavBarProps {
   >;
   additionalButtons?: React.ReactNode;
   /**
-   * The viewer's staff role and the running event, as the server already knew
-   * them.
+   * The viewer's identity, from `fetchSessionContext`.
    *
-   * ⚠️ **Both should be supplied by every page that renders a nav bar.** Left
-   * out, each is fetched from the browser after mount, so the Admin link and
-   * the event indicator cannot exist until a round trip completes and visibly
-   * pop into a bar that has already settled. Nav chrome arriving late reads as
-   * the page still loading, and the event indicator is the loudest thing in
-   * the bar, which makes it the worst of the two to animate in.
+   * ⚠️ **Supply both from every page that renders a nav bar.** Left out, the
+   * staff role is fetched from the browser after mount, so the Admin link pops
+   * into a bar that has already settled, and the event indicator does not
+   * render at all. Nav chrome arriving late reads as the page still loading.
    *
-   * Optional rather than required so no call site can break by not knowing,
-   * and `undefined` (not supplied) is distinguished from `null` (a real answer:
-   * not staff, no event) inside each.
+   * `viewerStaffRole` stays optional so no call site can break by not knowing
+   * about it, and `undefined` (not supplied) is distinguished from `null` (a
+   * real answer: not staff). `events` has no client fallback: which event is on
+   * is a fact we own, and a page that cannot say has nothing to draw.
    */
   viewerStaffRole?: StaffRole | null;
-  eventStatus?: ClanEventStatus | null;
+  events?: SessionEvents;
 }
 
 export function NavBar({
@@ -84,7 +82,7 @@ export function NavBar({
   userCalculators = {},
   additionalButtons,
   viewerStaffRole: initialStaffRole,
-  eventStatus,
+  events,
 }: NavBarProps) {
   const router = useRouter();
   const viewerStaffRole = useViewerStaffRole(initialStaffRole);
@@ -289,7 +287,7 @@ export function NavBar({
           {/* Renders nothing unless an event is running or queued — see the
               component. It sits before the page's own actions because it is
               about the clan, not about this page. */}
-          <EventStatus initialStatus={eventStatus} />
+          {events && <EventStatus events={events} />}
 
           {additionalButtons}
 

@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { NavBar } from '@/app/components/nav-bar';
-import { fetchPlayerAccounts } from '@/app/player/data-sources/fetch-player-accounts';
-import { fetchNavContext } from '@/app/data-sources/fetch-nav-context';
+import { fetchSessionContext } from '@/app/data-sources/fetch-session-context';
 import { MaggotKingSpeedChaser } from './maggot-king-speed-chaser';
 import styles from './maggot-king.module.css';
 
@@ -25,17 +24,15 @@ export const metadata: Metadata = {
  * only changes what the nav bar's Accounts menu has to offer.
  */
 export default async function MaggotKingToolPage() {
-  const [userCalculators, navContext] = await Promise.all([
-    fetchPlayerAccounts(),
-    fetchNavContext(),
-  ]);
+  const { accounts: userCalculators, ...viewer } = await fetchSessionContext();
 
   return (
     <div className={styles.shell}>
       <NavBar
         currentPage="tools"
         userCalculators={userCalculators}
-        {...navContext}
+        viewerStaffRole={viewer.staffRole}
+        events={viewer.events}
       />
       <main>
         <MaggotKingSpeedChaser />

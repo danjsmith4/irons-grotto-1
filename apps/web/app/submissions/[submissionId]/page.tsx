@@ -6,7 +6,7 @@ import {
   HydrationBoundary,
   QueryClient,
 } from '@tanstack/react-query';
-import { fetchNavContext } from '@/app/data-sources/fetch-nav-context';
+import { fetchSessionContext } from '@/app/data-sources/fetch-session-context';
 import { ReadonlyFormWrapper } from './readonly-form-wrapper';
 import { fetchPlayerDetails } from '@/app/player/data-sources/fetch-player-details/fetch-player-details';
 import { calculateDiffErrors } from './utils/calculate-diff-errors';
@@ -95,9 +95,9 @@ export default async function ViewSubmissionPage({
 
   const queryClient = new QueryClient();
 
-  const [dropRates, navContext] = await Promise.all([
+  const [dropRates, session] = await Promise.all([
     fetchItemDropRates([...generateRequiredItemList()]),
-    fetchNavContext(),
+    fetchSessionContext(),
   ]);
   const notableItemList = await buildNotableItemList(dropRates);
 
@@ -113,7 +113,7 @@ export default async function ViewSubmissionPage({
         submissionMetadata={submissionMetadata}
         freshModerationData={freshModerationData}
         actionedByUsername={actionedByUsername}
-        navContext={navContext}
+        session={session}
       />
     </HydrationBoundary>
   );

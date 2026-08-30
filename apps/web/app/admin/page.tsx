@@ -1,11 +1,10 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { NavBar } from '@/app/components/nav-bar';
-import { fetchPlayerAccounts } from '@/app/player/data-sources/fetch-player-accounts';
+import { fetchSessionContext } from '@/app/data-sources/fetch-session-context';
 import { fetchAdminDashboard } from '@/app/data-sources/fetch-admin-dashboard';
 import { fetchDiscordBans } from '@/app/data-sources/fetch-discord-bans';
 import { fetchClanEvents } from '@/app/data-sources/fetch-clan-events';
-import { fetchNavContext } from '@/app/data-sources/fetch-nav-context';
 import { AdminPanes } from './admin-panes';
 import styles from './admin.module.css';
 
@@ -43,17 +42,15 @@ export default async function AdminPage() {
 
   const { viewerRole, viewerPlayerName, members, history, belowTotalLevel } =
     result.data;
-  const [userCalculators, navContext] = await Promise.all([
-    fetchPlayerAccounts(),
-    fetchNavContext(),
-  ]);
+  const { accounts: userCalculators, ...viewer } = await fetchSessionContext();
 
   return (
     <div className={styles.page}>
       <NavBar
         currentPage="admin"
         userCalculators={userCalculators}
-        {...navContext}
+        viewerStaffRole={viewer.staffRole}
+        events={viewer.events}
       />
       <main className={styles.main}>
         <AdminPanes

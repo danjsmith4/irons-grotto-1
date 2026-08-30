@@ -4,14 +4,13 @@ import { Inter } from 'next/font/google';
 import { fetchRecentRankUps } from '@/app/data-sources/fetch-recent-rank-ups';
 import { fetchRecentClogUpdates } from '@/app/data-sources/fetch-recent-clog-updates';
 import { fetchRecentAccomplishments } from '@/app/data-sources/fetch-recent-accomplishments';
-import { fetchPlayerAccounts } from '@/app/player/data-sources/fetch-player-accounts';
+import { fetchSessionContext } from '@/app/data-sources/fetch-session-context';
 import { fetchLeaderboard } from '@/app/data-sources/fetch-leaderboard';
 import { RecentRankUpsTable } from '@/app/components/recent-rank-ups-table';
 import { RecentClogUpdatesTable } from '@/app/components/recent-clog-updates-table';
 import { RecentAccomplishmentsTable } from '@/app/components/recent-accomplishments-table';
 import { Leaderboard } from '@/app/components/leaderboard';
 import { NavBar } from '@/app/components/nav-bar';
-import { fetchNavContext } from '@/app/data-sources/fetch-nav-context';
 import { TotalLevelGraceNotice } from '@/app/components/total-level-grace-notice';
 import { hasAccountsBelowMinimum } from '@/app/utils/resolve-total-level-grace';
 
@@ -44,12 +43,9 @@ export default async function DashboardPage() {
     ? (recentAccomplishmentsResult.data ?? [])
     : [];
 
-  // Fetch user's calculators, and what the nav bar needs so that neither the
-  // Admin link nor the event indicator has to pop in after mount.
-  const [userCalculators, navContext] = await Promise.all([
-    fetchPlayerAccounts(),
-    fetchNavContext(),
-  ]);
+  // Who is looking at this: their accounts, their staff role and the event on
+  // now, in one place so none of the nav has to pop in after mount.
+  const { accounts: userCalculators, ...viewer } = await fetchSessionContext();
 
   const graceAccounts = Object.values(userCalculators).map(
     ({ rsn, totalLevel }) => ({ playerName: rsn, totalLevel }),
@@ -76,7 +72,8 @@ export default async function DashboardPage() {
       <NavBar
         currentPage="dashboard"
         userCalculators={userCalculators}
-        {...navContext}
+        viewerStaffRole={viewer.staffRole}
+        events={viewer.events}
       />
 
       {/* Main content */}
