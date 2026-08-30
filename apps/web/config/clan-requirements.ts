@@ -21,9 +21,11 @@ export const minimumJoinTotalLevel = 1500;
 /**
  * How long members who were already here have to reach it.
  *
+ * The end of the year: they have the rest of 2026, and the requirement applies
+ * to everybody from the first day of 2027.
+ *
  * ⚠️ **Hardcoded, deliberately, rather than derived from a ship date.** Members
- * were told this date; a deadline computed from `Date.now()` at deploy time
- * would move every time the app is redeployed, which is not a deadline. Ninety
- * days from the rule being agreed, 2026-08-30.
+ * were told this date, and a deadline computed from `Date.now()` at deploy time
+ * would move every time the app is redeployed, which is not a deadline.
  */
-export const totalLevelGraceDeadline = new Date('2026-11-28T00:00:00.000Z');
+export const totalLevelGraceDeadline = new Date('2027-01-01T00:00:00.000Z');
