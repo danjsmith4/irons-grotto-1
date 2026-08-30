@@ -4,7 +4,11 @@ import { useEffect, useState } from 'react';
 import { Dialog, VisuallyHidden } from '@radix-ui/themes';
 import { clanEventGainLabel } from '@/config/clan-events';
 import { clientConstants } from '@/config/constants.client';
-import type { ClanEventStatus } from '@/app/data-sources/fetch-clan-event-status';
+import type {
+  ActiveClanEvent,
+  ClanEventStatus,
+} from '@/app/data-sources/fetch-clan-event-status';
+import type { SessionEvents } from '@/app/data-sources/fetch-session-context';
 import { ItemImageWithFallback } from './item-image-with-fallback';
 import { PlayerNameButton } from './player-name-button';
 import styles from './event-status.module.css';
@@ -18,36 +22,63 @@ import styles from './event-status.module.css';
  * running and nothing is queued the component renders nothing at all rather
  * than an empty state — a nav item that says "no event" is just noise.
  */
-export function EventStatus() {
-  const [status, setStatus] = useState<ClanEventStatus | null>(null);
+interface EventStatusProps {
+  /**
+   * Which event is running and which is queued, from our own database.
+   *
+   * ⚠️ **This is what draws the indicator, and it must not depend on
+   * TempleOSRS.** Whether there is an event is a fact we own; only the
+   * standings belong to Temple. Waiting on Temple to decide whether to render
+   * a nav item meant the loudest thing in the bar popped in a beat after the
+   * page had settled — and made every page render depend on a third party
+   * being up.
+   */
+  events: SessionEvents;
+}
+
+export function EventStatus({ events }: EventStatusProps) {
+  const { active, next } = events;
+  const [standings, setStandings] = useState<ActiveClanEvent | null>(null);
+  const [hasTried, setHasTried] = useState(false);
   const [open, setOpen] = useState(false);
 
+  /*
+   * The standings, fetched after the indicator is already on screen.
+   *
+   * Deliberately not awaited by anything: the trigger is rendered from data the
+   * server already had, so this only ever fills in the modal's body. Started on
+   * mount rather than on open so that opening it is usually instant, and
+   * skipped entirely when nothing is running, since a queued event has no
+   * standings to have.
+   */
   useEffect(() => {
-    let cancelled = false;
+    if (!active) {
+      return undefined;
+    }
 
-    fetch('/api/clan-events/status')
+    const controller = new AbortController();
+
+    fetch('/api/clan-events/status', { signal: controller.signal })
       .then((response) => response.json())
       .then((result: { success: boolean; data?: ClanEventStatus }) => {
-        if (!cancelled && result.success && result.data) {
-          setStatus(result.data);
+        if (result.success && result.data?.active) {
+          setStandings(result.data.active);
         }
+
+        setHasTried(true);
       })
-      // A missing indicator is the right failure here — the nav bar must not
-      // report that the site could not reach Temple.
+      // Unknown standings are a line of copy in the modal, never a missing
+      // indicator: the event is ours and is worth showing regardless.
       .catch((error: unknown) => {
-        console.error('Could not load clan event status:', error);
+        if (!controller.signal.aborted) {
+          console.error('Could not load clan event standings:', error);
+          setHasTried(true);
+        }
       });
 
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    return () => controller.abort();
+  }, [active]);
 
-  if (!status || (!status.active && !status.next)) {
-    return null;
-  }
-
-  const { active, next } = status;
   const headline = active ?? next;
 
   if (!headline) {
@@ -100,18 +131,25 @@ export function EventStatus() {
 
         {active ? (
           <>
-            {active.standingsUnavailable ? (
+            {/*
+              Four states, because the standings arrive after the event does.
+              "Still loading" and "Temple could not be reached" are different
+              things to be told, and neither may be shown as an empty table.
+            */}
+            {!standings && !hasTried ? (
+              <p className={styles.note}>Loading the standings…</p>
+            ) : !standings || standings.standingsUnavailable ? (
               <p className={styles.note}>
                 TempleOSRS could not be reached, so the standings are unknown
                 right now. The event is still running.
               </p>
-            ) : active.standings.length === 0 ? (
+            ) : standings.standings.length === 0 ? (
               <p className={styles.note}>
                 Nobody has gained anything yet. First one in takes the lead.
               </p>
             ) : (
               <ol className={styles.standings}>
-                {active.standings.map((entry) => (
+                {standings.standings.map((entry) => (
                   <li
                     key={entry.playerName}
                     className={`${styles.standing} ${
@@ -136,7 +174,9 @@ export function EventStatus() {
 
             <div className={styles.footer}>
               <span className={styles.footerMeta}>
-                {active.participantCount.toLocaleString()} entered
+                {standings
+                  ? `${standings.participantCount.toLocaleString()} entered`
+                  : ''}
               </span>
               <a
                 className={styles.footerLink}

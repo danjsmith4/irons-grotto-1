@@ -96,6 +96,33 @@ export async function getActiveClanEvent(
   return row ?? null;
 }
 
+/**
+ * The event running now and the one queued behind it, in **one** query.
+ *
+ * Both are "not finished yet", which is a single predicate, so asking twice was
+ * two round trips for one answer. Every page that renders a nav bar needs this,
+ * so it is the query most worth not doubling.
+ *
+ * The one-ahead rule caps the queue at one, so two rows is the most there can
+ * be: ordered by start, the first is running if it has already started and the
+ * second is always upcoming.
+ */
+export async function getCurrentAndNextClanEvents(
+  now = new Date(),
+): Promise<{ active: ClanEventRow | null; next: ClanEventRow | null }> {
+  const rows = await db
+    .select()
+    .from(clanEvents)
+    .where(gt(clanEvents.endsAt, now))
+    .orderBy(asc(clanEvents.startsAt))
+    .limit(2);
+
+  return {
+    active: rows.find((row) => row.startsAt <= now) ?? null,
+    next: rows.find((row) => row.startsAt > now) ?? null,
+  };
+}
+
 /** The queued event, of which there is at most one — see the schedule rules. */
 export async function getUpcomingClanEvent(
   now = new Date(),
