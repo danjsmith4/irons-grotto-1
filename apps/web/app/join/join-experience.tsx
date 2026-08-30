@@ -560,8 +560,8 @@ export function JoinExperience({ stats }: JoinExperienceProps) {
                 to be got past.
               */}
               <p className={styles.requirement}>
-                Ironmen from {minimumJoinTotalLevel.toLocaleString()} total
-                level.
+                You need {minimumJoinTotalLevel.toLocaleString()} total level to
+                join.
               </p>
             </div>
 
@@ -645,11 +645,6 @@ export function JoinExperience({ stats }: JoinExperienceProps) {
             settledSources={revealedSources.size}
             isRechecking={isCheckingName}
             onRecheck={() => runScan(scannedName.current)}
-            onUseAnotherName={() => {
-              setPhase('welcome');
-              setNameError(null);
-              setNameErrorLink(null);
-            }}
           />
         </div>
       </main>

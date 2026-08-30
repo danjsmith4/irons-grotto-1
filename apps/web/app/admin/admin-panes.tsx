@@ -94,7 +94,7 @@ export function AdminPanes({
         : 'which, as an administrator, is none'
     }.`,
     bans: 'Bans are placed and lifted in the clan Discord. You can act on anyone whose role is below your own.',
-    totalLevel: `The clan now asks for ${minimumJoinTotalLevel.toLocaleString()} total level to join. Members who were already here keep everything and have until the deadline to get there — nothing happens to them automatically.`,
+    totalLevel: `New members need ${minimumJoinTotalLevel.toLocaleString()} total level to join. Anyone who was already in the clan keeps everything and has until the deadline to get there. Nothing happens to them automatically.`,
   };
 
   /**

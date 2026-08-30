@@ -477,10 +477,12 @@ describe('JoinExperience', () => {
       // rather than a door — see `threshold-reveal.tsx`.
       expect(screen.getByRole('img', { name: /infernal cape/i })).toBeInTheDocument();
       expect(
-        screen.getByRole('link', { name: /join the discord/i }),
+        screen.getByRole('link', { name: /join our discord/i }),
       ).toBeInTheDocument();
       // The account was registered on Temple by the scan, which is theirs to keep.
-      expect(screen.getByText(/on TempleOSRS now/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/added your account to TempleOSRS/i),
+      ).toBeInTheDocument();
     });
 
     it('lets a member re-scan without retyping their name', async () => {

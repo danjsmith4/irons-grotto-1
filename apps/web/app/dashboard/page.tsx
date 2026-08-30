@@ -12,7 +12,7 @@ import { RecentAccomplishmentsTable } from '@/app/components/recent-accomplishme
 import { Leaderboard } from '@/app/components/leaderboard';
 import { NavBar } from '@/app/components/nav-bar';
 import { TotalLevelGraceNotice } from '@/app/components/total-level-grace-notice';
-import { minimumJoinTotalLevel } from '@/config/clan-requirements';
+import { hasAccountsBelowMinimum } from '@/app/utils/resolve-total-level-grace';
 
 const inter = Inter({
   weight: ['300', '400', '500', '600'],
@@ -45,6 +45,10 @@ export default async function DashboardPage() {
 
   // Fetch user's calculators
   const userCalculators = await fetchPlayerAccounts();
+
+  const graceAccounts = Object.values(userCalculators).map(
+    ({ rsn, totalLevel }) => ({ playerName: rsn, totalLevel }),
+  );
 
   // Fetch leaderboard data
   const leaderboardResult = await fetchLeaderboard(50, 0);
@@ -83,28 +87,16 @@ export default async function DashboardPage() {
         {/*
           The minimum-total-level notice, for members who were here before the
           rule. Above everything else, because it is the only thing on this page
-          addressed to the person reading it — and each renders nothing at all
-          unless that account is under the line, which almost none are.
+          addressed to the person reading it.
+
+          Every account goes in and the notice picks out the short ones itself,
+          so a member with three accounts gets one notice listing them rather
+          than the same paragraph three times. It renders nothing when they are
+          all above the line, which is almost always.
         */}
-        {Object.values(userCalculators).some(
-          ({ totalLevel }) => totalLevel < minimumJoinTotalLevel,
-        ) && (
-          <div
-            style={{
-              width: '100%',
-              maxWidth: '1200px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '0.75rem',
-            }}
-          >
-            {Object.values(userCalculators).map(({ rsn, totalLevel }) => (
-              <TotalLevelGraceNotice
-                key={rsn}
-                playerName={rsn}
-                totalLevel={totalLevel}
-              />
-            ))}
+        {hasAccountsBelowMinimum(graceAccounts) && (
+          <div style={{ width: '100%', maxWidth: '1200px' }}>
+            <TotalLevelGraceNotice accounts={graceAccounts} />
           </div>
         )}
 

@@ -83,9 +83,9 @@ describe('addPlayerAction and the clan minimum total level', () => {
     const result = await submit();
 
     expect(createNewPlayer).not.toHaveBeenCalled();
-    expect(
-      result?.validationErrors?.playerName?._errors?.join(' '),
-    ).toMatch(new RegExp(`${minimumJoinTotalLevel.toLocaleString()}`));
+    expect(result?.validationErrors?.playerName?._errors?.join(' ')).toMatch(
+      new RegExp(`${minimumJoinTotalLevel.toLocaleString()}`),
+    );
   });
 
   it('creates the player when the account clears the minimum', async () => {

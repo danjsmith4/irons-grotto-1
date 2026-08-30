@@ -215,7 +215,7 @@ export function CalculatorHero() {
           level, which almost nobody is — mounted unconditionally rather than
           guarded here so the rule lives in one place.
         */}
-        <TotalLevelGraceNotice totalLevel={totalLevel} />
+        <TotalLevelGraceNotice accounts={[{ totalLevel }]} />
 
         <div className={styles.scoreFoot}>
           <RankPace rank={rank} />

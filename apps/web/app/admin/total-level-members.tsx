@@ -59,59 +59,61 @@ export function TotalLevelMembers({ members }: TotalLevelMembersProps) {
               </tr>
             </thead>
             <tbody>
-              {members.map(({ playerName, totalLevel, rank, accountType, grace }) => (
-                <tr key={playerName}>
-                  <td>
-                    <div className={styles.nameCell}>
-                      <span className={styles.badgeSlot}>
-                        {accountType && (
-                          <AccountTypeBadge
-                            accountType={accountType}
-                            size={16}
-                          />
-                        )}
-                      </span>
-                      <PlayerNameButton
-                        name={playerName}
-                        className={styles.name}
-                      />
-                    </div>
-                  </td>
-                  <td className={styles.rankCell}>
-                    {getRankName(rank as Rank)}
-                  </td>
-                  <td className={styles.numberCell}>
-                    {totalLevel.toLocaleString()}
-                  </td>
-                  <td className={styles.numberCell}>
-                    {grace.status === 'met'
-                      ? '—'
-                      : grace.shortfall.toLocaleString()}
-                  </td>
-                  <td>
-                    {grace.status === 'in-grace' && (
-                      <>
-                        {format(grace.deadline, 'd MMM yyyy')}{' '}
-                        <span className={styles.departedTag}>
-                          {grace.daysRemaining}d left
+              {members.map(
+                ({ playerName, totalLevel, rank, accountType, grace }) => (
+                  <tr key={playerName}>
+                    <td>
+                      <div className={styles.nameCell}>
+                        <span className={styles.badgeSlot}>
+                          {accountType && (
+                            <AccountTypeBadge
+                              accountType={accountType}
+                              size={16}
+                            />
+                          )}
                         </span>
-                      </>
-                    )}
-                    {grace.status === 'overdue' && (
-                      <>
-                        {format(grace.deadline, 'd MMM yyyy')}{' '}
-                        <span className={styles.departed}>passed</span>
-                      </>
-                    )}
-                    {/*
+                        <PlayerNameButton
+                          name={playerName}
+                          className={styles.name}
+                        />
+                      </div>
+                    </td>
+                    <td className={styles.rankCell}>
+                      {getRankName(rank as Rank)}
+                    </td>
+                    <td className={styles.numberCell}>
+                      {totalLevel.toLocaleString()}
+                    </td>
+                    <td className={styles.numberCell}>
+                      {grace.status === 'met'
+                        ? '-'
+                        : grace.shortfall.toLocaleString()}
+                    </td>
+                    <td>
+                      {grace.status === 'in-grace' && (
+                        <>
+                          {format(grace.deadline, 'd MMM yyyy')}{' '}
+                          <span className={styles.departedTag}>
+                            {grace.daysRemaining}d left
+                          </span>
+                        </>
+                      )}
+                      {grace.status === 'overdue' && (
+                        <>
+                          {format(grace.deadline, 'd MMM yyyy')}{' '}
+                          <span className={styles.departed}>passed</span>
+                        </>
+                      )}
+                      {/*
                       Only reachable if someone reaches the minimum between the
                       query and this render — the query already filters below
                       it. Rendered rather than crashed on.
                     */}
-                    {grace.status === 'met' && '—'}
-                  </td>
-                </tr>
-              ))}
+                      {grace.status === 'met' && '-'}
+                    </td>
+                  </tr>
+                ),
+              )}
             </tbody>
           </table>
         </div>

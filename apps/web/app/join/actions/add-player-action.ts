@@ -124,7 +124,7 @@ export const addPlayerAction = authActionClient
         returnValidationErrors(AddPlayerSchema, {
           playerName: {
             _errors: [
-              `Irons' Grotto asks for ${minimumJoinTotalLevel.toLocaleString()} total level to join, and ${maybeFormattedPlayerName} is at ${totalLevelState.totalLevel.toLocaleString()}. Come back when you get there — your account is tracked on TempleOSRS now, so your stats will be waiting.`,
+              `You need ${minimumJoinTotalLevel.toLocaleString()} total level to join Irons' Grotto. ${maybeFormattedPlayerName} is at ${totalLevelState.totalLevel.toLocaleString()}. Come back when you get there. Your account is tracked on TempleOSRS now, so your stats will be waiting.`,
             ],
           },
         });

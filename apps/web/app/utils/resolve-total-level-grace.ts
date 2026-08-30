@@ -15,9 +15,40 @@ export type TotalLevelGrace =
       daysRemaining: number;
     }
   /** Below it, past the date. */
-  | { status: 'overdue'; totalLevel: number; shortfall: number; deadline: Date };
+  | {
+      status: 'overdue';
+      totalLevel: number;
+      shortfall: number;
+      deadline: Date;
+    };
 
 const millisecondsPerDay = 24 * 60 * 60 * 1000;
+
+export interface GraceAccount {
+  totalLevel: number;
+  /**
+   * Which account this is. Left out on a page that is already about one
+   * account, given where a member may be looking at several of theirs at once.
+   */
+  playerName?: string;
+}
+
+/**
+ * Whether any of these accounts is below the minimum.
+ *
+ * `TotalLevelGraceNotice` already renders nothing when none is, so this is for
+ * a caller that wraps it in layout of its own: an empty wrapper inside a flex
+ * or grid column still takes a gap, which reads as a hole in the page.
+ *
+ * ⚠️ **It lives here, not beside the component.** The notice is a `'use client'`
+ * module, and a server component cannot call a plain function exported from
+ * one — only render it or pass props to it. The dashboard is a server
+ * component, so putting this next to the notice fails at runtime rather than
+ * at build.
+ */
+export function hasAccountsBelowMinimum(accounts: GraceAccount[]) {
+  return accounts.some(({ totalLevel }) => totalLevel < minimumJoinTotalLevel);
+}
 
 /**
  * Where a member who was already here stands against the new minimum.

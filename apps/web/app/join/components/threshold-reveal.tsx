@@ -19,7 +19,6 @@ interface ThresholdRevealProps {
   settledSources: number;
   isRechecking: boolean;
   onRecheck: () => void;
-  onUseAnotherName: () => void;
 }
 
 /**
@@ -59,7 +58,6 @@ export function ThresholdReveal({
   settledSources,
   isRechecking,
   onRecheck,
-  onUseAnotherName,
 }: ThresholdRevealProps) {
   // Held at zero for a frame so the meter fills from empty on mount rather than
   // rendering already full — the same trick, and the same reason, as RankReveal.
@@ -96,16 +94,16 @@ export function ThresholdReveal({
       </div>
 
       <p className={styles.thresholdGoal}>
-        <strong>{shortfall.toLocaleString()} to go</strong> — the Grotto starts
-        at {minimumJoinTotalLevel.toLocaleString()}.
+        <strong>{shortfall.toLocaleString()} to go.</strong> Irons Grotto
+        requires {minimumJoinTotalLevel.toLocaleString()} total level or higher.
       </p>
 
       <TrophyWall earned={earned} settledSources={settledSources} />
 
       <p className={styles.revealNote}>
         {didRegisterOnTemple
-          ? 'Your account is on TempleOSRS now, so your stats are already being tracked. When you get there, everything here will be waiting for you.'
-          : 'Your stats are tracked on TempleOSRS, so when you get there, everything here will be waiting for you.'}
+          ? "We've added your account to TempleOSRS, so your stats are being tracked from now on. Get there and everything here will be waiting for you."
+          : 'Your stats are tracked on TempleOSRS. Get there and the Grotto here will be waiting for you.'}
       </p>
 
       <div className={styles.revealActions}>
@@ -128,15 +126,8 @@ export function ThresholdReveal({
           target="_blank"
           rel="noreferrer"
         >
-          Join the Discord while you get there
+          Join our Discord while you train.
         </a>
-        <button
-          type="button"
-          className={styles.link}
-          onClick={onUseAnotherName}
-        >
-          Use a different name
-        </button>
       </div>
     </div>
   );

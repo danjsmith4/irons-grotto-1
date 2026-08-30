@@ -4,9 +4,6 @@
  * because this is information a member needs to act on and not an alarm.
  */
 .root {
-  display: flex;
-  gap: 0.9rem;
-  align-items: flex-start;
   padding: 0.85rem 1rem;
   border: 1px solid rgb(var(--ig-warning) / 0.28);
   border-left: 2px solid rgb(var(--ig-warning) / 0.7);
@@ -20,8 +17,53 @@
   background: rgb(var(--ig-danger) / 0.05);
 }
 
-.body {
+/*
+ * One row per account that is short. A member with several sees the
+ * explanation once and their accounts listed under it, not the whole notice
+ * repeated.
+ */
+.accounts {
+  list-style: none;
+  margin: 0.8rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.account {
   min-width: 0;
+}
+
+.accountLine {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  font-size: 0.83rem;
+  color: rgb(var(--ig-text-muted));
+}
+
+.accountName {
+  font-weight: 600;
+  color: rgb(var(--ig-text));
+  margin-right: auto;
+}
+
+/*
+ * "1,342 / 1,500". The level they have is the figure that matters, so the
+ * target behind the slash is dimmed to sit as context rather than competing
+ * with it.
+ */
+.accountProgress {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: rgb(var(--ig-text-light));
+}
+
+.accountTarget {
+  font-weight: 400;
+  color: rgb(var(--ig-text-muted));
 }
 
 .title {
@@ -52,7 +94,7 @@
 .meter {
   height: 4px;
   border-radius: 2px;
-  margin-top: 0.65rem;
+  margin-top: 0.35rem;
   background: rgb(var(--ig-text-muted) / 0.16);
   overflow: hidden;
 }
