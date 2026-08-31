@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Rank } from '@/config/enums';
 import { toast } from 'react-toastify';
 import { useCallback, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { RankCalculator } from './rank-calculator';
 import {
   RankCalculatorSchema,
@@ -13,6 +14,7 @@ import {
 import { updatePlayerStateAction } from './actions/update-player-state-action';
 import { PlayerEditableFields } from './player-editable-schema';
 import { useAutosave } from '../hooks/use-autosave';
+import { patchPlayerDetailsCache } from '../hooks/use-player-details';
 import { CurrentPlayerProvider } from '../contexts/current-player-context';
 import { NavBar } from '@/app/components/nav-bar';
 import type { SessionContext } from '@/app/data-sources/fetch-session-context';
@@ -50,15 +52,25 @@ export function FormWrapper({
     mode: 'onBlur',
   });
 
+  const queryClient = useQueryClient();
+
   const save = useCallback(
     async (patch: PlayerEditableFields) => {
       // Bound args come first: the action is bound to the player name, and
       // takes the patch as its input.
       const result = await updatePlayerStateAction(playerName, patch);
+      const stored = Boolean(result?.data?.success);
 
-      return Boolean(result?.data?.success);
+      if (stored) {
+        // The cached sheet is what a return visit mounts from, and it is served
+        // without a refetch while it is fresh. Carrying the patch over means it
+        // can never hand the member back a snapshot from before their own edit.
+        patchPlayerDetailsCache(queryClient, playerName, patch);
+      }
+
+      return stored;
     },
-    [playerName],
+    [playerName, queryClient],
   );
 
   // A failed write is the only thing worth interrupting for. Success is

@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { queryOptions, useQuery } from '@tanstack/react-query';
 import { useWatch } from 'react-hook-form';
 import { Rank } from '@/config/enums';
 import type { RankPace } from '@/app/data-sources/fetch-rank-pace';
@@ -15,15 +15,12 @@ type RankPaceResponse =
   | { success: false; error: string };
 
 /**
- * How long the player has held `rank`, against the clan's median for it.
- * Recomputed locally when the rank changes — the history is fetched once.
+ * Shared with the dashboard preloader, which warms this alongside the sheet
+ * itself — the hero draws its time-at-rank field from it, so fetching it only
+ * once the calculator has mounted means a field that pops in late.
  */
-export function useRankPace(rank: Rank): RankPaceResult | null {
-  const playerName = useWatch<RankCalculatorSchema, 'playerName'>({
-    name: 'playerName',
-  });
-
-  const { data } = useQuery({
+export function rankPaceQueryOptions(playerName: string) {
+  return queryOptions({
     queryKey: ['rank-pace', playerName],
     async queryFn(): Promise<RankPaceResponse> {
       const response = await fetch(
@@ -34,6 +31,18 @@ export function useRankPace(rank: Rank): RankPaceResult | null {
     },
     staleTime: 5 * 60 * 1000,
   });
+}
+
+/**
+ * How long the player has held `rank`, against the clan's median for it.
+ * Recomputed locally when the rank changes — the history is fetched once.
+ */
+export function useRankPace(rank: Rank): RankPaceResult | null {
+  const playerName = useWatch<RankCalculatorSchema, 'playerName'>({
+    name: 'playerName',
+  });
+
+  const { data } = useQuery(rankPaceQueryOptions(playerName));
 
   if (!data?.success) {
     return null;

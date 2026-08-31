@@ -930,3 +930,111 @@
   padding: 2.5rem 0;
   text-align: center;
 }
+
+/* ==========================================================================
+   Loading skeleton
+
+   Only seen on a cold load — arriving from the dashboard the sheet is already
+   in the query cache and the real form mounts on the first paint. It holds the
+   page's own shapes (scoreboard, four tiles, workbench) so nothing shifts when
+   the data lands, and it is hairline + surface only: no colour, because
+   nothing here is interactive.
+   ========================================================================== */
+
+.skeleton {
+  background: rgb(var(--ig-surface) / 0.55);
+  border: 1px solid var(--rc-hairline);
+  border-radius: 8px;
+  animation: skeletonPulse 1.6s ease-in-out infinite;
+}
+
+@keyframes skeletonPulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+
+  50% {
+    opacity: 0.85;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}
+
+.skeletonScore {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.skeletonBadge {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.skeletonIdentity {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.skeletonName {
+  width: min(240px, 60%);
+  height: 20px;
+}
+
+.skeletonTrack {
+  width: min(180px, 45%);
+  height: 12px;
+}
+
+.skeletonTotal {
+  width: 96px;
+  height: 34px;
+  flex: none;
+}
+
+.skeletonMeter {
+  margin-top: 0.9rem;
+  height: 6px;
+  border-radius: 3px;
+}
+
+.skeletonTile {
+  height: 104px;
+  border-radius: 12px;
+}
+
+.skeletonWorkbench {
+  margin-top: 1.25rem;
+  height: 340px;
+  border-radius: 12px;
+}
+
+.loadError {
+  font-size: 13px;
+  color: rgb(var(--ig-text-muted));
+  padding: 3rem 1.5rem;
+  text-align: center;
+}
+
+/* Names the wait for a screen reader; the shapes above say nothing to one. */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
