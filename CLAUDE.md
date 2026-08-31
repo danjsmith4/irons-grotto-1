@@ -136,6 +136,25 @@ The page (`[player]/rank-calculator.tsx`, shared with the readonly moderator vie
 
 **Edit player is a modal on a route.** `players/edit/[player]` has to stay a route — `fetchPlayerDetails` redirects to it when a player's name stops resolving — but it renders as an always-open dialog using the same `rank-calculator.module.css` modal chrome as the category panels and the account-type prompt. Dismissing it navigates to `/dashboard`, same as its Back button. There is deliberately **no "Edit player" entry in the nav bar**: from inside the calculator a changed name already redirects you there. The pencil in `player-list.tsx` stays, because that list disables the calculator link for an invalid name and would otherwise strand the player.
 
+### The sheet is preloaded, not fetched on the click
+
+`fetchPlayerDetails` is the most expensive read in the app — a hiscores check, a TempleOSRS `add_datapoint` push, then WikiSync / Temple stats / Temple collection log / Discord roles in parallel, then the write-back. It used to be `await`ed inside `[player]/page.tsx`, so every visit paid all of it *after* the click with nothing on screen but `loading.tsx`.
+
+That work does not get cheaper by being deferred, so it is started earlier instead. It now runs behind **`GET /api/player-details?name=`** and is read from the browser's React Query cache, which is a module singleton and therefore survives soft navigation:
+
+| | |
+|---|---|
+| `app/player/hooks/use-player-details.ts` | the query key, its options, and `patchPlayerDetailsCache` |
+| `app/components/preload-calculator-data.tsx` | mounted on `/dashboard`; warms the sheet for each of the viewer's accounts |
+| `[player]/calculator-loader.tsx` | reads the cache, renders the skeleton or mounts `FormWrapper` |
+
+- **The page component still runs server-side, and still hydrates `['drop-rates']` and `['items']`.** Those two are `unstable_cache`d and shared by every player, so they are genuinely cheap there — and `useDropRates` / `useGetItems` call the server functions directly and would break without the seeding. Don't remove the `HydrationBoundary`.
+- ⚠️ **Autosave patches the cache** (`patchPlayerDetailsCache`, spec'd). A fresh cache entry is served without a refetch, so a write that did not reach it would hand the member back a snapshot from before their own edit. Invalidating instead would be worse: the calculator is an active observer, so marking the query stale mid-edit refetches — a full Temple sync per 800ms autosave.
+- ⚠️ **A stale cache hit waits like a cold one.** `useForm` reads `defaultValues` once, so anything mounted from a stale snapshot is never corrected. `CalculatorLoader` mounts the form only while the data is fresh, and latches once it has — the form owns the member's in-progress edits from then on and must never be unmounted for a loading state.
+- **Nothing refetches behind a mounted form** (`refetchOnWindowFocus` / `refetchOnReconnect` off), for the same reason: it could not change anything on screen, and would spend another Temple datapoint to do it.
+- **The preload is sequential and uses `prefetchQuery`.** One datapoint per account against Temple's ~10/min, and a no-op while the data is still fresh — so bouncing between the dashboard and the sheet does not re-run the sync.
+- ⚠️ **The name-no-longer-resolves redirect is now data.** `fetchPlayerDetails` answers that case with `redirect()`, which a route handler would turn into a 307 and an HTML body; `app/api/player-details/route.ts` catches it by digest and returns `redirectTo`, which the loader navigates.
+
 Three things to preserve when touching this page:
 - **The `aria-label`s are the test contract.** Both the Jest specs and the Cypress e2e suite query by label (`total combat points`, `combat points remaining`, `point scaling`, …). Rename a label and you break both.
 - **Category inputs live in modals, so tests must open them first.** Jest specs click the tile and await the dialog; the Cypress helper `generateScalingTests` takes an `openCategory` regex for the same reason. Totals stay on the tile, so only per-input assertions need the modal.

@@ -11,6 +11,7 @@ import { RecentClogUpdatesTable } from '@/app/components/recent-clog-updates-tab
 import { RecentAccomplishmentsTable } from '@/app/components/recent-accomplishments-table';
 import { Leaderboard } from '@/app/components/leaderboard';
 import { NavBar } from '@/app/components/nav-bar';
+import { PreloadCalculatorData } from '@/app/components/preload-calculator-data';
 import { TotalLevelGraceNotice } from '@/app/components/total-level-grace-notice';
 import { hasAccountsBelowMinimum } from '@/app/utils/resolve-total-level-grace';
 
@@ -74,6 +75,17 @@ export default async function DashboardPage() {
         userCalculators={userCalculators}
         viewerStaffRole={viewer.staffRole}
         events={viewer.events}
+      />
+
+      {/*
+        Starts fetching the viewer's rank sheet now, while they read this page.
+        It is the app's most expensive read and it does not get cheaper by being
+        deferred — so it runs against the time they were going to spend here
+        anyway, and the calculator opens from cache instead of from a spinner.
+        Renders nothing.
+      */}
+      <PreloadCalculatorData
+        playerNames={Object.values(userCalculators).map(({ rsn }) => rsn)}
       />
 
       {/* Main content */}
