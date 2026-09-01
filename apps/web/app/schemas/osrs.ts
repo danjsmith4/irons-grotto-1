@@ -1797,6 +1797,7 @@ export const CollectionLogItemName = z.enum([
   'Maggot marquess',
   'Hallowfell',
   'Aggy',
+  'Mr McGroot',
 ]);
 
 export type CollectionLogItemName = z.infer<typeof CollectionLogItemName>;
@@ -1826,5 +1827,5 @@ export const AllPetItemIds = [
   13321, 13322, 13324, 20659, 20661, 20663, 20665, 21509, 13071, 23495, 23760,
   23757, 24491, 25348, 25602, 26348, 26901, 27352, 27590, 28246, 28250, 28248,
   28252, 28801, 28960, 28962, 29836, 30152, 30154, 30622, 30888, 31130, 31283,
-  31285,
+  31285, 34040,
 ];

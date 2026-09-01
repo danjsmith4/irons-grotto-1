@@ -119,6 +119,11 @@ export const petEhcRates = {
   Beaver: 111.3,
   'Giant squirrel': 132.8,
   Heron: 84.3,
+  // Too new for Temple to have published an EHC, so self-calculated: the pet
+  // rolls once per goat at 1/37,525 at 99 Hunter, and goat hunting processes
+  // ~900 goats/hour with Telekinetic Grab.
+  // https://oldschool.runescape.wiki/w/Mr_McGroot#Item_sources
+  'Mr McGroot': 41.7,
   Phoenix: 85.4,
   'Rift guardian': 67.9,
   'Rock golem': 118.3,
