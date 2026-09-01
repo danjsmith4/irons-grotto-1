@@ -23,6 +23,9 @@ export const skillingPets: ItemCategory = {
     Heron: {
       points: calculateXpOrTimeBasedItemPoints(petEhcRates.Heron),
     },
+    'Mr McGroot': {
+      points: calculateXpOrTimeBasedItemPoints(petEhcRates['Mr McGroot']),
+    },
     Phoenix: {
       points: calculateXpOrTimeBasedItemPoints(petEhcRates.Phoenix),
     },

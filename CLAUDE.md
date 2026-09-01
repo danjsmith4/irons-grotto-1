@@ -168,6 +168,15 @@ Three activity feeds sit in one `auto-fit` grid (`minmax(320px, 1fr)`, gap 2rem)
 
 Data-source convention: return `{ success: true, data } | { success: false, error }`; filter to `players.isActive`; `isMaxed = totalLevel === 2376`; pets = `playerAcquiredItems.itemId in AllPetItemIds`; infernal = `tzhaarCape === 'Infernal cape'`.
 
+## Pets are counted in one place and scored in another
+
+Adding a pet means **two independent edits**, and neither implies the other. Membership isn't even symmetric: **Beef** is counted but scores nothing (Brutus isn't in the item list at all), and a scored pet added only to a category counts for nobody.
+
+- **The count** is `AllPetItemIds` (`app/schemas/osrs.ts`) — item ids, read by `fetch-leaderboard`, `fetch-clan-stats` and `fetch-player-profile`. ⚠️ It mirrors TempleOSRS' `all_pets` **by hand**, and a pet missing from it is not an error anywhere — it silently undercounts every member who has it. Diff it against `https://templeosrs.com/api/collection-log/categories.php` → `other.all_pets`, with `collection-log/items.php` to name the ids.
+- **The points** are the notable-item list. A **skilling pet is not a boss drop** — the `add-osrs-content` skill covers only the boss/EHB/drop-rate path. Skilling pets live in `data/item-categories/skilling-pets.ts` on `collectionLogCategory: 'all_pets'`, with **preset** points from `calculateXpOrTimeBasedItemPoints(petEhcRates[name])`. `buildNotableItemList` returns early on any item that already has points, so these never hit the wiki and never drift to a red `-` — but the hours are ours to justify, so comment where they came from. Temple's published EHC covers established pets; anything recent has to be calculated from the wiki's drop rate ÷ actions per hour.
+
+⚠️ **The collection-log match is by name, and the name is Temple's, verbatim.** `stripEntityName` only removes `'` and `.`, so `CollectionLogItemName` has to carry Temple's exact casing. Check `collection-log/items.php` rather than the wiki — the two drift apart (the wiki renamed `Mr mcgroot` → `Mr McGroot` in August 2026). This is the pet-side twin of the `DroppedItemResponse` re-casing above.
+
 ## Accomplishments feed
 
 The third activity feed, alongside rank ups and collection log — the notable things a member does that are not a promotion and not a single drop. It runs **full width above** the other two on both the homepage and the dashboard.
