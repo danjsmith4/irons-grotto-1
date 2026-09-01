@@ -1820,6 +1820,21 @@ export const ClueScrollTier = z.enum([
 
 export type ClueScrollTier = z.infer<typeof ClueScrollTier>;
 
+/**
+ * Every pet's item id — the pet count on the leaderboard, the clan stats and
+ * player profiles is `player_acquired_items.item_id in (…)` against this list.
+ *
+ * ⚠️ It mirrors TempleOSRS' `all_pets` category and has to be kept level with
+ * it by hand, which is the whole hazard: a pet missing here is not an error
+ * anywhere, it just silently undercounts every member who has it. Adding a pet
+ * to the notable-item list does **not** add it here, and the reverse is also
+ * true — Beef is a pet nobody scores points for, because Brutus isn't in the
+ * item list at all.
+ *
+ * To check, diff this against
+ * `https://templeosrs.com/api/collection-log/categories.php` → `other.all_pets`
+ * (`collection-log/items.php` names the ids). Last levelled 2026-09-01.
+ */
 export const AllPetItemIds = [
   13262, 22746, 13178, 13247, 11995, 12651, 12816, 12644, 12643, 12645, 13225,
   12650, 12646, 21748, 21291, 12647, 12653, 12655, 12649, 12652, 13181, 21273,
@@ -1827,5 +1842,5 @@ export const AllPetItemIds = [
   13321, 13322, 13324, 20659, 20661, 20663, 20665, 21509, 13071, 23495, 23760,
   23757, 24491, 25348, 25602, 26348, 26901, 27352, 27590, 28246, 28250, 28248,
   28252, 28801, 28960, 28962, 29836, 30152, 30154, 30622, 30888, 31130, 31283,
-  31285, 34040,
+  31285, 33124, 33642, 34040, 34042,
 ];
