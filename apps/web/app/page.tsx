@@ -22,6 +22,8 @@ import { RecentClogUpdatesTable } from './components/recent-clog-updates-table';
 import { RecentAccomplishmentsTable } from './components/recent-accomplishments-table';
 import { Leaderboard } from './components/leaderboard';
 import { FadeInOnScroll } from './components/fade-in-on-scroll';
+import { ClanEventHighlight } from './components/clan-event-highlight';
+import { fetchPublicClanEventFacts } from './data-sources/fetch-public-clan-event';
 
 const inter = Inter({
   weight: ['300', '400', '500', '600'],
@@ -69,6 +71,13 @@ export default async function HomePage() {
   const clogInsights = clogInsightsResult.success
     ? clogInsightsResult.data
     : null;
+
+  // One query, no TempleOSRS — the entrant count is filled in client-side so a
+  // slow third party can never hold up the landing page.
+  const clanEventResult = await fetchPublicClanEventFacts();
+  const clanEvents = clanEventResult.success
+    ? clanEventResult.data
+    : { active: null, next: null };
 
   const handleSubmit = async () => {
     'use server';
@@ -153,6 +162,12 @@ export default async function HomePage() {
             Bingo Events
           </Link>
         </div>
+
+        {/* The running competition, directly under the hero. This is the only
+            page with no nav bar — and signed-in visitors are redirected away
+            from it — so it is the one place the event indicator never reached
+            the audience it is most useful to. Renders nothing between events. */}
+        <ClanEventHighlight events={clanEvents} />
 
         {/* What's happening in Grotto section with fade-in */}
         <div

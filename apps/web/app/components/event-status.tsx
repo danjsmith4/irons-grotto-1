@@ -9,6 +9,7 @@ import type {
   ClanEventStatus,
 } from '@/app/data-sources/fetch-clan-event-status';
 import type { SessionEvents } from '@/app/data-sources/fetch-session-context';
+import { formatEventWhen } from '@/app/utils/format-event-when';
 import { ItemImageWithFallback } from './item-image-with-fallback';
 import { PlayerNameButton } from './player-name-button';
 import styles from './event-status.module.css';
@@ -94,7 +95,7 @@ export function EventStatus({ events }: EventStatusProps) {
           aria-label={
             active
               ? `${active.name} is running — open event standings`
-              : `${headline.name} starts ${formatWhen(headline.startsAt)} — open event details`
+              : `${headline.name} starts ${formatEventWhen(headline.startsAt)} — open event details`
           }
         >
           <span className={styles.pulse} aria-hidden />
@@ -102,7 +103,9 @@ export function EventStatus({ events }: EventStatusProps) {
             {active ? active.metricName : 'Next event'}
           </span>
           <span className={styles.triggerMeta}>
-            {active ? active.type.toUpperCase() : formatWhen(headline.startsAt)}
+            {active
+              ? active.type.toUpperCase()
+              : formatEventWhen(headline.startsAt)}
           </span>
         </button>
       </Dialog.Trigger>
@@ -124,7 +127,7 @@ export function EventStatus({ events }: EventStatusProps) {
             </Dialog.Title>
             <span className={styles.subtitle}>
               {headline.typeLabel}
-              {active ? ` · ends ${formatWhen(active.endsAt)}` : ''}
+              {active ? ` · ends ${formatEventWhen(active.endsAt)}` : ''}
             </span>
           </div>
         </div>
@@ -190,8 +193,8 @@ export function EventStatus({ events }: EventStatusProps) {
           </>
         ) : (
           <p className={styles.note}>
-            Starts {formatWhen(headline.startsAt)} and runs until{' '}
-            {formatWhen(headline.endsAt)}.
+            Starts {formatEventWhen(headline.startsAt)} and runs until{' '}
+            {formatEventWhen(headline.endsAt)}.
           </p>
         )}
 
@@ -199,33 +202,10 @@ export function EventStatus({ events }: EventStatusProps) {
         {active && next && (
           <p className={styles.nextUp}>
             <span className={styles.nextUpLabel}>Up next</span>
-            {next.name} — {next.typeLabel}, {formatWhen(next.startsAt)}.
+            {next.name} — {next.typeLabel}, {formatEventWhen(next.startsAt)}.
           </p>
         )}
       </Dialog.Content>
     </Dialog.Root>
   );
-}
-
-/**
- * "in 3 days", "in 5 hours", "2 hours ago" — coarse on purpose. The exact
- * instant is on Temple; what a member wants from the nav bar is whether there
- * is still time.
- */
-function formatWhen(iso: string): string {
-  const target = new Date(iso).getTime();
-  const deltaMinutes = Math.round((target - Date.now()) / 60_000);
-  const absolute = Math.abs(deltaMinutes);
-
-  const relative = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
-
-  if (absolute < 60) {
-    return relative.format(deltaMinutes, 'minute');
-  }
-
-  if (absolute < 60 * 24) {
-    return relative.format(Math.round(deltaMinutes / 60), 'hour');
-  }
-
-  return relative.format(Math.round(deltaMinutes / (60 * 24)), 'day');
 }

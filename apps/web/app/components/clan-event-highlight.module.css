@@ -1,0 +1,159 @@
+/* ==========================================================================
+   Homepage clan-event strip
+
+   The public counterpart to the nav bar's event indicator, and it borrows that
+   component's one licence to move: a competition runs for a week and then it
+   is gone, so it gets the pulse and the accent while it is live, and the same
+   shape with the motion taken away while it is only queued.
+
+   Everything else stays data-desk — a hairline, the tokens, and type doing the
+   work. It sits directly under the hero buttons, so it must read as part of
+   the page rather than as a banner stuck on top of it.
+   ========================================================================== */
+
+.strip {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  width: 100%;
+  max-width: 560px;
+  margin: 1.75rem auto 0;
+  padding: 0.75rem 1.125rem;
+  border: 1px solid rgb(var(--ig-text-muted) / 0.14);
+  border-radius: 10px;
+  background: rgb(var(--ig-surface-2) / 0.45);
+  text-align: left;
+}
+
+.stripLive {
+  border-color: rgb(var(--ig-secondary) / 0.32);
+  background: rgb(var(--ig-secondary) / 0.07);
+}
+
+/* -- the pulse ------------------------------------------------------------ */
+
+.pulse {
+  position: relative;
+  width: 7px;
+  height: 7px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: rgb(var(--ig-text-muted));
+}
+
+.stripLive .pulse {
+  background: rgb(var(--ig-secondary));
+}
+
+/* The halo is a second, expanding copy — animating the dot itself would shift
+   the text beside it. */
+.stripLive .pulse::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: rgb(var(--ig-secondary) / 0.45);
+  animation: clanEventPulse 2s ease-out infinite;
+}
+
+@keyframes clanEventPulse {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.8;
+  }
+
+  100% {
+    transform: scale(2.1);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stripLive .pulse::after {
+    animation: none;
+    opacity: 0.35;
+  }
+}
+
+/* -- content -------------------------------------------------------------- */
+
+.icon {
+  flex-shrink: 0;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.eyebrow {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(var(--ig-text-muted));
+}
+
+.headline {
+  margin: 0;
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  color: rgb(var(--ig-text));
+}
+
+/* The metric is the part a passer-by actually reads — which boss, which skill
+   — so it takes the accent and the event type stays supporting text. */
+.stripLive .metric {
+  color: rgb(var(--ig-secondary));
+}
+
+.separator {
+  padding: 0 0.4rem;
+  color: rgb(var(--ig-text-muted) / 0.6);
+}
+
+.meta {
+  margin: 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  color: rgb(var(--ig-text-muted));
+}
+
+.link {
+  flex-shrink: 0;
+  font-size: 0.8125rem;
+  color: rgb(var(--ig-secondary));
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.link:focus-visible {
+  outline: 2px solid rgb(var(--ig-secondary) / 0.6);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+/* On a narrow screen the link drops below rather than squeezing the name it
+   sits next to — the metric is the thing that has to stay readable. */
+@media (max-width: 520px) {
+  .strip {
+    flex-wrap: wrap;
+    row-gap: 0.5rem;
+  }
+
+  .link {
+    width: 100%;
+    padding-left: 1.5rem;
+  }
+}
