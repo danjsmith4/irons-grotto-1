@@ -1,201 +1,16 @@
 import { auth } from '@/auth';
 import { db } from '@/lib/db';
+import { players } from '@/lib/db/schema';
+import { sql } from 'drizzle-orm';
 import {
-  Player,
-  players,
-  playerAcquiredItems,
-  playerAchievementDiaries,
-  playerItemOverrides,
-} from '@/lib/db/schema';
-import { inArray, sql } from 'drizzle-orm';
-import { ItemCategoryMap } from '@/app/schemas/items';
-import {
-  ClueScrollTier,
-  CombatAchievementTier,
-  DiaryLocation,
-  DiaryTier,
-  TzHaarCape,
-} from '@/app/schemas/osrs';
-import { AchievementDiaryMap } from '@/app/schemas/rank-calculator';
-import { isItemAcquired } from '@/app/player/data-sources/fetch-player-details/utils/is-item-acquired';
-import {
-  fetchItemDropRates,
-  generateRequiredItemList,
-} from '@/app/player/data-sources/fetch-dropped-item-info';
-import { buildNotableItemList } from '@/app/player/utils/build-notable-item-list';
-import { getDerivedItemsForPlayers } from '@/lib/db/derived-item-operations';
-import { buildPointsBreakdown } from '@/app/player/utils/build-points-breakdown';
-import { stripEntityName } from '@/app/player/utils/strip-entity-name';
+  buildScoringItemList,
+  loadStoredPlayerInputs,
+  scorePlayerFromRecord,
+} from './score-players-from-record';
 import {
   buildPointsComparison,
   PointsComparison,
 } from '@/app/utils/build-points-comparison';
-
-/** Ascending, so the highest completed tier per location wins. */
-const diaryTierOrder: DiaryTier[] = ['None', 'Easy', 'Medium', 'Hard', 'Elite'];
-
-function toAchievementDiaryMap(
-  rows: { location: string; tier: string; completed: boolean }[],
-): AchievementDiaryMap {
-  return rows.reduce<AchievementDiaryMap>((acc, row) => {
-    if (!row.completed) {
-      return acc;
-    }
-
-    const location = DiaryLocation.safeParse(row.location);
-    const tier = DiaryTier.safeParse(row.tier);
-
-    if (!location.success || !tier.success) {
-      return acc;
-    }
-
-    const current = acc[location.data] ?? 'None';
-
-    return diaryTierOrder.indexOf(tier.data) > diaryTierOrder.indexOf(current)
-      ? { ...acc, [location.data]: tier.data }
-      : acc;
-  }, {});
-}
-
-/**
- * Which notable items a player holds, according to what has been *stored* for
- * them.
- *
- * Three sources, in increasing order of authority:
- *
- * 1. the collection log (`player_acquired_items`), which settles every notable
- *    item that occupies a log slot;
- * 2. `player_derived_items`, which settles the six that do not — the quest
- *    items, 6 Jads and Music cape, whose only source is a WikiSync read;
- * 3. the player's own overrides, which win over both, exactly as they do in
- *    the calculator.
- *
- * With (2) in place this arrives at the same answer the calculator does,
- * without a live round-trip per player — which is what lets two arbitrary
- * members be scored against each other from the database at all.
- */
-export function buildStoredAcquiredItems(
-  notableItemList: ItemCategoryMap,
-  collectionLogCounts: Record<string, number>,
-  derivedItems: Record<string, boolean>,
-  overrides: Record<string, boolean>,
-): Record<string, boolean> {
-  return Object.values(notableItemList)
-    .flatMap(({ items }) => items)
-    .reduce<Record<string, boolean>>((acc, item) => {
-      const key = stripEntityName(item.name);
-      // `??` rather than `||` throughout: a stored `false` is a real answer and
-      // must not fall through to the next source.
-      const stored =
-        derivedItems[key] ??
-        isItemAcquired(item, { acquiredItems: collectionLogCounts });
-
-      return { ...acc, [key]: overrides[key] ?? stored };
-    }, {});
-}
-
-async function loadPlayerInputs(playerNames: string[]) {
-  const [items, diaries, overrides, derivedItems] = await Promise.all([
-    db
-      .select({
-        playerName: playerAcquiredItems.playerName,
-        itemName: playerAcquiredItems.itemName,
-        count: playerAcquiredItems.count,
-      })
-      .from(playerAcquiredItems)
-      .where(inArray(playerAcquiredItems.playerName, playerNames)),
-    db
-      .select({
-        playerName: playerAchievementDiaries.playerName,
-        location: playerAchievementDiaries.location,
-        tier: playerAchievementDiaries.tier,
-        completed: playerAchievementDiaries.completed,
-      })
-      .from(playerAchievementDiaries)
-      .where(inArray(playerAchievementDiaries.playerName, playerNames)),
-    db
-      .select({
-        playerName: playerItemOverrides.playerName,
-        itemName: playerItemOverrides.itemName,
-        isAcquired: playerItemOverrides.isAcquired,
-      })
-      .from(playerItemOverrides)
-      .where(inArray(playerItemOverrides.playerName, playerNames)),
-    getDerivedItemsForPlayers(playerNames),
-  ]);
-
-  return (playerName: string) => ({
-    collectionLogCounts: items
-      .filter((row) => row.playerName === playerName)
-      .reduce<Record<string, number>>(
-        (acc, { itemName, count }) => ({
-          ...acc,
-          [stripEntityName(itemName)]: count,
-        }),
-        {},
-      ),
-    achievementDiaries: toAchievementDiaryMap(
-      diaries.filter((row) => row.playerName === playerName),
-    ),
-    overrides: overrides
-      .filter((row) => row.playerName === playerName)
-      .reduce<Record<string, boolean>>(
-        (acc, { itemName, isAcquired }) => ({ ...acc, [itemName]: isAcquired }),
-        {},
-      ),
-    derivedItems: derivedItems[playerName] ?? {},
-  });
-}
-
-function breakdownFor(
-  player: Player,
-  stored: {
-    collectionLogCounts: Record<string, number>;
-    achievementDiaries: AchievementDiaryMap;
-    overrides: Record<string, boolean>;
-    derivedItems: Record<string, boolean>;
-  },
-  notableItemList: ItemCategoryMap,
-) {
-  return buildPointsBreakdown(
-    {
-      joinDate: player.joinDate ? new Date(player.joinDate) : null,
-      ehb: player.ehb,
-      ehp: player.ehp,
-      totalLevel: player.totalLevel,
-      combatAchievementTier: CombatAchievementTier.catch('None').parse(
-        player.combatAchievementTier,
-      ),
-      tzhaarCape: TzHaarCape.catch('None').parse(player.tzhaarCape),
-      hasBloodTorva: player.hasBloodTorva,
-      hasRadiantOathplate: player.hasRadiantOathplate,
-      hasDizanasQuiver: player.hasDizanasQuiver,
-      hasAchievementDiaryCape: player.hasAchievementDiaryCape,
-      collectionLogCount: player.collectionLogCount,
-      collectionLogTotal: player.collectionLogTotal,
-      clueScrollCounts: {
-        Beginner: player.clueCountBeginner,
-        Easy: player.clueCountEasy,
-        Medium: player.clueCountMedium,
-        Hard: player.clueCountHard,
-        Elite: player.clueCountElite,
-        Master: player.clueCountMaster,
-      } satisfies Record<ClueScrollTier, number>,
-      achievementDiaries: stored.achievementDiaries,
-      acquiredItems: buildStoredAcquiredItems(
-        notableItemList,
-        stored.collectionLogCounts,
-        stored.derivedItems,
-        stored.overrides,
-      ),
-      combatBonusPoints: player.combatBonusPoints,
-      skillingBonusPoints: player.skillingBonusPoints,
-      collectionLogBonusPoints: player.collectionLogBonusPoints,
-      notableItemsBonusPoints: player.notableItemsBonusPoints,
-    },
-    notableItemList,
-  );
-}
 
 /**
  * Why one member's total is what it is, measured against one of the viewer's
@@ -253,20 +68,17 @@ export async function fetchPlayerComparison(
       return { success: false, error: 'Pick a different account to compare' };
     }
 
-    const dropRates = await fetchItemDropRates([...generateRequiredItemList()]);
-    const notableItemList = await buildNotableItemList(dropRates);
-
-    const storedFor = await loadPlayerInputs([
-      subject.playerName,
-      viewer.playerName,
+    const [notableItemList, storedFor] = await Promise.all([
+      buildScoringItemList(),
+      loadStoredPlayerInputs([subject.playerName, viewer.playerName]),
     ]);
 
-    const subjectBreakdown = breakdownFor(
+    const subjectBreakdown = scorePlayerFromRecord(
       subject,
       storedFor(subject.playerName),
       notableItemList,
     );
-    const viewerBreakdown = breakdownFor(
+    const viewerBreakdown = scorePlayerFromRecord(
       viewer,
       storedFor(viewer.playerName),
       notableItemList,

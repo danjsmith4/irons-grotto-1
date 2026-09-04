@@ -44,8 +44,10 @@ import {
   getDerivedItems,
   syncDerivedItems,
 } from '@/lib/db/derived-item-operations';
+import { getStoredCollectionLogCounts } from '@/lib/db/stored-collection-log';
 import { getSourceDerivedItemNames } from '@/app/player/utils/get-source-derived-item-names';
 import { resolveDerivedItemWrite } from './utils/resolve-derived-item-write';
+import { buildPreviouslyAcquiredItems } from './utils/build-previously-acquired-items';
 import {
   resolveTempleAccountType,
   TempleOSRSCollectionLogItem,
@@ -339,16 +341,44 @@ export async function fetchPlayerDetails(
       ? {}
       : await getDerivedItems(playerRecord.playerName);
 
-    const previouslyAcquiredItems = Object.keys({
-      ...storedOverrides,
-      ...storedDerivedItems,
-      ...(savedData?.acquiredItems ?? {}),
-    }).filter(
-      (key) =>
-        savedData?.acquiredItems?.[key] ??
-        storedOverrides[key] ??
-        storedDerivedItems[key],
+    /**
+     * The floor under the collection log itself.
+     *
+     * `player_acquired_items` holds every logged item any sync has ever seen,
+     * and a collection log slot cannot be un-earned — so anything in it is
+     * still owned, whatever this particular Temple response happens to say.
+     * Without this the live read was treated as the whole truth, and it is
+     * routinely not: Temple's item names drift, responses come back partial,
+     * and the endpoint can be down. Measured on a live member, Temple returned
+     * 543 items while 17 notable items they own — a Tombs of Amascut set,
+     * three pets, Soulreaper axe — existed only in the stored rows, leaving
+     * their sheet 654 points below their own record and below the leaderboard.
+     *
+     * Unlike `storedDerivedItems` this is applied **whether or not the source
+     * answered**, because a collection log answer is only ever additive: an
+     * item missing from the response means the response did not mention it,
+     * never that it was given back.
+     */
+    const storedCollectionLogCounts = await getStoredCollectionLogCounts(
+      playerRecord.playerName,
     );
+
+    const storedCollectionLogItems = Object.values(itemList)
+      .flatMap(({ items }) => items)
+      .filter((item) =>
+        isItemAcquired(item, { acquiredItems: storedCollectionLogCounts }),
+      )
+      .reduce<Record<string, boolean>>(
+        (acc, { name }) => ({ ...acc, [stripEntityName(name)]: true }),
+        {},
+      );
+
+    const previouslyAcquiredItems = buildPreviouslyAcquiredItems({
+      savedAcquiredItems: savedData?.acquiredItems,
+      storedOverrides,
+      storedDerivedItems,
+      storedCollectionLogItems,
+    });
 
     const allCurrentNotableItemNames = new Set(
       Object.values(itemList)

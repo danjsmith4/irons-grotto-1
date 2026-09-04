@@ -9,7 +9,7 @@ import {
 } from 'discord-api-types/v10';
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchPlayerDetails } from '@/app/player/data-sources/fetch-player-details/fetch-player-details';
-import { calculatePlayerPoints } from '@/app/player/utils/calculate-player-points';
+import { scoreStoredPlayer } from '@/app/data-sources/score-players-from-record';
 import { getRankName } from '@/app/player/utils/get-rank-name';
 import { isRankUp } from '@/app/player/utils/is-rank-up';
 import { canApplyForRank } from '@/config/ranks';
@@ -18,7 +18,10 @@ import { clientConstants } from '@/config/constants.client';
 import { rankUpMessagesKey } from '@/config/redis';
 import { discordBotClient } from '@/discord';
 import { redis } from '@/redis';
-import { processPlayerData } from '@/lib/db/player-operations';
+import {
+  getPlayerByName,
+  processPlayerData,
+} from '@/lib/db/player-operations';
 
 export async function GET(request: NextRequest) {
   try {
@@ -52,11 +55,23 @@ export async function GET(request: NextRequest) {
     }
 
     // Only the prospective rank is wanted here — `processPlayerData` above has
-    // already recalculated and stored the points total. This runs the same
-    // calculation a second time rather than plumbing a return value through,
-    // which is cheap: the one expensive input, the wiki drop rates, is behind
+    // already recalculated and stored the points total. This scores the record
+    // a second time rather than plumbing a return value through, which is
+    // cheap: the one expensive input, the wiki drop rates, is behind
     // `unstable_cache`, and the rest is arithmetic.
-    const { rank } = await calculatePlayerPoints(playerDetails.data);
+    //
+    // It scores the *stored* record, not the response, so the rank this nudges
+    // someone towards is the one the leaderboard and the calculator will show
+    // them when they act on it.
+    const storedPlayer = await getPlayerByName(playerName);
+
+    if (!storedPlayer) {
+      throw new Error(`Player ${playerName} was not found after syncing`);
+    }
+
+    const {
+      rankData: { rank },
+    } = await scoreStoredPlayer(storedPlayer);
 
     // Same rule as the calculator's rank-up dialog: only a genuine promotion up
     // the ladder this account is scored against, and only for an account that
