@@ -1,0 +1,105 @@
+name: Refresh players
+
+# Keeps member stats and point totals current.
+#
+# The schedule lives here rather than in `apps/web/vercel.json` because the
+# project is on Vercel's **Hobby** plan, where a cron may run at most once per
+# day and any finer expression is *rejected at deploy time*. One daily run
+# refreshes ten players; the roster is two hundred. So Vercel keeps a pair of
+# daily entries as a backstop and this workflow does the real work.
+#
+# Both endpoints are idempotent and choose their own work — the refresh takes
+# the players with the oldest `updated_at` — so an hourly poke is all the
+# scheduling they need, and a delayed or skipped run costs nothing but
+# freshness: the same players are still the stalest next hour. That is also why
+# GitHub's scheduler being approximate does not matter here.
+on:
+  schedule:
+    # Hourly. GitHub delays scheduled runs under load and can drop them
+    # entirely, which is survivable here precisely because a missed run leaves
+    # the backlog for the next one rather than losing it.
+    - cron: '0 * * * *'
+  # So a run can be forced after an outage without waiting for the hour.
+  workflow_dispatch:
+
+# Nothing here touches the repository.
+permissions:
+  contents: read
+
+# A slow refresh must never have a second one started on top of it: they would
+# both claim the same stalest players and spend Temple's rate limit twice.
+concurrency:
+  group: refresh-players
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Refresh the stalest players
+        id: refresh
+        env:
+          # The public domain, so it is a default rather than required setup.
+          # `vars.SITE_URL` overrides it for a staging host.
+          SITE_URL: ${{ vars.SITE_URL || 'https://ironsgrotto.xyz' }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${CRON_SECRET:-}" ]; then
+            echo "::error::CRON_SECRET is not set. Both endpoints fail closed and will return 401 until it matches the value in the Vercel project env."
+            exit 1
+          fi
+
+          # --max-time is generous: the endpoint budgets itself to 240s and
+          # returns a report, so a request that outlives this is a real hang.
+          status=$(curl -sS --max-time 600 -o response.json -w '%{http_code}' \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            "${SITE_URL%/}/api/update-all-players")
+
+          echo "status=${status}" >> "$GITHUB_OUTPUT"
+          cat response.json
+
+          if [ "${status}" != "200" ]; then
+            echo "::error::Player refresh returned HTTP ${status}"
+            exit 1
+          fi
+
+      - name: Reconcile point totals
+        env:
+          # The public domain, so it is a default rather than required setup.
+          # `vars.SITE_URL` overrides it for a staging host.
+          SITE_URL: ${{ vars.SITE_URL || 'https://ironsgrotto.xyz' }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          set -euo pipefail
+
+          status=$(curl -sS --max-time 300 -o reconcile.json -w '%{http_code}' \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            "${SITE_URL%/}/api/reconcile-points")
+
+          cat reconcile.json
+
+          if [ "${status}" != "200" ]; then
+            echo "::error::Points reconciliation returned HTTP ${status}"
+            exit 1
+          fi
+
+      - name: Tell Discord the job could not be reached
+        # Only for the case the endpoints cannot report themselves: they alert
+        # on their own failures, but neither can say anything if the whole site
+        # is unreachable or the secret is wrong. Skipped when no webhook is
+        # configured, so the workflow still works without one.
+        if: failure() && env.WEBHOOK_URL != ''
+        env:
+          WEBHOOK_URL: ${{ secrets.DISCORD_OPS_WEBHOOK }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+
+          jq -n --arg content "⚠️ **Player refresh** could not reach the site. Member stats and point totals are not updating. Run: ${RUN_URL}" \
+            '{content: $content}' > payload.json
+
+          curl -sS --max-time 30 -X POST -H 'Content-Type: application/json' \
+            -d @payload.json "${WEBHOOK_URL}"

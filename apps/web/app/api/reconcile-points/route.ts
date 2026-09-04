@@ -8,9 +8,17 @@ import {
   scorePlayersFromRecords,
 } from '@/app/data-sources/score-players-from-record';
 import {
+  claimJobLease,
   isScheduledRequest,
+  releaseJobLease,
   reportScheduledJobFailure,
 } from '@/app/api/utils/scheduled-job';
+import {
+  jobLeaseSeconds,
+  reconcileJobId,
+  reconcileSkipAlertJobId,
+  skipAlertIntervalSeconds,
+} from '@/config/scheduled-jobs';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,6 +51,13 @@ export async function GET(request: NextRequest) {
   }
 
   const startedAt = Date.now();
+
+  // Less costly to double-run than the refresh — it spends no rate limit and
+  // writes the same values twice — but two passes issuing the same few hundred
+  // updates against a pooled connection is still pointless work.
+  if (!(await claimJobLease(reconcileJobId, jobLeaseSeconds))) {
+    return NextResponse.json({ success: true, skipped: 'already-running' });
+  }
 
   try {
     const roster = await db.select().from(players);
@@ -120,10 +135,19 @@ export async function GET(request: NextRequest) {
     // Skips are reported rather than logged and forgotten: each one is a record
     // that needs a person, and a count that grows run over run is the signal
     // that renames are stranding collection log rows again.
-    if (skipped.length > 0) {
+    //
+    // ⚠️ **At most once a day, though.** An unscorable record stays unscorable
+    // until somebody fixes it, so an hourly job would post the same four names
+    // every hour forever — which does not inform anyone, it just teaches the
+    // channel to ignore this alert. The daily claim is the same lease
+    // primitive, used here as a rate limiter rather than a mutex.
+    if (
+      skipped.length > 0 &&
+      (await claimJobLease(reconcileSkipAlertJobId, skipAlertIntervalSeconds))
+    ) {
       await reportScheduledJobFailure(
         'Points reconciliation',
-        `${skipped.length} record(s) could not be scored and kept their stored total.`,
+        `${skipped.length} record(s) could not be scored and kept their stored total. This repeats until they are fixed; you will only be told once a day.`,
         skipped.map(({ playerName, reason }) => `${playerName} (${reason})`),
       );
     }
@@ -143,7 +167,7 @@ export async function GET(request: NextRequest) {
 
     await reportScheduledJobFailure(
       'Points reconciliation',
-      'The nightly job that keeps leaderboard totals in step with the stored records did not finish. Totals will be stale until it next succeeds.',
+      'The job that keeps leaderboard totals in step with the stored records did not finish. Totals will be stale until it next succeeds.',
       [message],
     );
 
@@ -151,5 +175,7 @@ export async function GET(request: NextRequest) {
       { success: false, error: message },
       { status: 500 },
     );
+  } finally {
+    await releaseJobLease(reconcileJobId, jobLeaseSeconds);
   }
 }

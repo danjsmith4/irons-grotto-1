@@ -5,11 +5,15 @@ import { asc, lt, sql } from 'drizzle-orm';
 import { fetchPlayerDetails } from '@/app/player/data-sources/fetch-player-details/fetch-player-details';
 import { syncPlayerAccountType } from '@/app/player/utils/sync-player-account-type';
 import {
+  claimJobLease,
   isScheduledRequest,
+  releaseJobLease,
   reportScheduledJobFailure,
 } from '@/app/api/utils/scheduled-job';
 import {
+  jobLeaseSeconds,
   refreshBatchSize,
+  refreshJobId,
   refreshStaleAfterHours,
   refreshTimeBudgetMs,
   templeRateLimitDelayMs,
@@ -68,6 +72,17 @@ export async function GET(request: NextRequest) {
   const staleBefore = new Date(
     Date.now() - refreshStaleAfterHours * 60 * 60 * 1000,
   );
+
+  // Two schedulers reach this route (hourly Actions, daily Vercel backstop) and
+  // once a day they overlap. Without the lease the second run selects the same
+  // stalest players the first is still working through, and spends Temple's
+  // rate limit twice on them.
+  if (!(await claimJobLease(refreshJobId, jobLeaseSeconds))) {
+    return NextResponse.json({
+      success: true,
+      skipped: 'already-running',
+    });
+  }
 
   try {
     const [{ backlog }] = await db
@@ -190,5 +205,9 @@ export async function GET(request: NextRequest) {
       { success: false, error: message },
       { status: 500 },
     );
+  } finally {
+    // In a `finally` so a thrown run does not hold the lease for its full
+    // expiry — the next scheduled run should be free to start on time.
+    await releaseJobLease(refreshJobId, jobLeaseSeconds);
   }
 }
