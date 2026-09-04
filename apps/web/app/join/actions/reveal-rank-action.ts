@@ -4,8 +4,8 @@ import { z } from 'zod';
 import { authActionClient } from '@/app/safe-action';
 import { PlayerName } from '@/app/schemas/player';
 import { fetchPlayerDetails } from '@/app/player/data-sources/fetch-player-details/fetch-player-details';
-import { calculatePlayerPoints } from '@/app/player/utils/calculate-player-points';
-import { calculateRank } from '@/app/player/utils/calculators/calculate-rank';
+import { scoreStoredPlayer } from '@/app/data-sources/score-players-from-record';
+import { getPlayerByName } from '@/lib/db/player-operations';
 import { canApplyForRank, rankThresholdsFor } from '@/config/ranks';
 import { ActionError } from '@/app/action-error';
 import type { Rank } from '@/config/enums';
@@ -52,17 +52,22 @@ export const revealRankAction = authActionClient
         throw new ActionError('Could not read your stats just now.');
       }
 
-      const { totalPoints } = await calculatePlayerPoints(details.data);
-      const { acquiredItems, combatAchievementTier, accountType } =
-        details.data;
-      const { rank, nextRank, throttleReason } = calculateRank(
-        acquiredItems,
-        combatAchievementTier,
-        totalPoints,
-        accountType,
-      );
+      // Scored from the stored record, which `fetchPlayerDetails` has just
+      // written through `processPlayerData` — so the number in the reveal is
+      // the same number the leaderboard is about to show them, rather than a
+      // second opinion computed from the live response.
+      const storedPlayer = await getPlayerByName(details.data.playerName);
 
-      const thresholds = rankThresholdsFor(accountType);
+      if (!storedPlayer) {
+        throw new ActionError('Could not read your stats just now.');
+      }
+
+      const {
+        totalPoints,
+        rankData: { rank, nextRank, throttleReason },
+      } = await scoreStoredPlayer(storedPlayer);
+
+      const thresholds = rankThresholdsFor(storedPlayer.accountType);
 
       return {
         rank,
@@ -70,7 +75,7 @@ export const revealRankAction = authActionClient
         points: totalPoints,
         rankThreshold: thresholds[rank] ?? 0,
         nextRankThreshold: nextRank ? (thresholds[nextRank] ?? null) : null,
-        canApply: canApplyForRank(accountType),
+        canApply: canApplyForRank(storedPlayer.accountType),
         throttleReason,
       };
     },

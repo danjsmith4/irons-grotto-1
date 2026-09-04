@@ -116,12 +116,12 @@ const clueScrollTiers: ClueScrollTier[] = [
 ];
 
 /**
- * The same arithmetic as {@link calculatePlayerPoints}, itemised.
+ * The whole point calculation, itemised.
  *
- * It does not re-implement any of it: every category total below is the value
- * returned by the very calculator that produces it for the leaderboard, so the
- * two can only agree. The lines are the calculators' *inputs*, which is what
- * makes the breakdown an explanation rather than a second opinion.
+ * `totalPoints` here **is** what gets stored in `players.points` — there is no
+ * separate calculation for the leaderboard any more, so the headline and the
+ * ledger cannot disagree. The lines are the calculators' *inputs*, which is
+ * what makes the breakdown an explanation rather than a second opinion.
  *
  * Line points are raw — unrounded, and without the `Math.floor` each category
  * applies to its own sum — so a category's lines can come to a fraction of a

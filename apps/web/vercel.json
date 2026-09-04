@@ -3,6 +3,14 @@
     {
       "path": "/api/check-all-players",
       "schedule": "0 0 * * 1"
+    },
+    {
+      "path": "/api/update-all-players",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/reconcile-points",
+      "schedule": "40 * * * *"
     }
   ]
 }

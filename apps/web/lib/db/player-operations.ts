@@ -15,7 +15,7 @@ import {
   type PlayerAchievementDiary,
 } from './schema';
 import { getCategoryFromItemName } from './item-mapping-utils';
-import { calculatePlayerPoints } from '@/app/player/utils/calculate-player-points';
+import { scoreStoredPlayer } from '@/app/data-sources/score-players-from-record';
 import { upsertItemOverrides } from './item-override-operations';
 import { syncPlayerAccomplishments } from './accomplishment-operations';
 import type { PlayerDetailsResponse } from '@/app/player/data-sources/fetch-player-details/fetch-player-details';
@@ -860,14 +860,18 @@ export async function processPlayerData(
       : // Player doesn't exist - create new record (no ownership validation needed for new players)
         await createPlayerWithFullData(playerData, discordUserId);
 
-    // Points are a function of the record, so they are computed from it rather
-    // than accepted from a caller. This is the only place they are written.
+    // Points are a function of the record, so they are computed from the
+    // record — the one that was just written, not the response it was written
+    // from. Those are not the same thing: the response is a live blend that
+    // exists for the length of this call, while the record is what every other
+    // reader scores. Scoring the response is what let `players.points` and the
+    // comparison ledger disagree for 84 of 136 active members.
     //
-    // On failure, leave the stored value alone. `calculatePlayerPoints` needs
-    // live wiki drop rates, and a stale total is a cosmetic lag on the
-    // leaderboard where a zero would be a visible catastrophe.
+    // On failure, leave the stored value alone. Scoring needs live wiki drop
+    // rates, and a stale total is a cosmetic lag on the leaderboard where a
+    // zero would be a visible catastrophe.
     try {
-      const { totalPoints } = await calculatePlayerPoints(playerData);
+      const { totalPoints } = await scoreStoredPlayer(player);
 
       player = (await updatePlayerPoints(playerName, totalPoints)) ?? player;
     } catch (error) {

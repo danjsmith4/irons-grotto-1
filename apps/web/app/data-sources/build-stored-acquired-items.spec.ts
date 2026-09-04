@@ -1,5 +1,5 @@
 import { ItemCategoryMap } from '@/app/schemas/items';
-import { buildStoredAcquiredItems } from './fetch-player-comparison';
+import { buildStoredAcquiredItems } from './score-players-from-record';
 
 /**
  * A clog item and an unlogged one, which are the two cases that resolve
