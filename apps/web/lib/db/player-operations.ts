@@ -539,6 +539,12 @@ export async function bulkUpsertCollectionLogItems(
       target: [playerAcquiredItems.playerName, playerAcquiredItems.itemId],
       set: {
         count: sql`excluded.count`,
+        // The name is matched against, not just displayed — `isItemAcquired`
+        // reads this table through `getStoredCollectionLogCounts`. Refreshing
+        // it is what lets a row written under an older spelling converge on
+        // the canonical one, rather than sitting there unmatchable forever.
+        itemName: sql`excluded.item_name`,
+        itemCategory: sql`excluded.item_category`,
       },
     });
   console.log(res);

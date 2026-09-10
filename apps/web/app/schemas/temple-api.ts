@@ -1,5 +1,7 @@
 import { z } from 'zod';
+import { stripEntityName } from '@/app/player/utils/strip-entity-name';
 import { AccountType, isMainAccount } from './staff';
+import { CollectionLogItemName } from './osrs';
 
 const MemberInfo = z.object({
   player: z.string(),
@@ -208,10 +210,45 @@ const sqlDateStringToDate = z.string().transform((value, ctx) => {
   return date;
 });
 
+/**
+ * Temple's collection log item names, re-cased back to ours.
+ *
+ * ⚠️ **The collection log match is by name**, and `stripEntityName` only
+ * removes `'` and `.` — so a casing change at Temple's end silently unmatches
+ * the item. Temple has since title-cased a swathe of them (`Ikkle Hydra`,
+ * `Pet Zilyana`, `Jar of Spirits`, `Remnant of Akkha`, `Tome of Fire (empty)`,
+ * and it drops the apostrophe in `Skull of Vetion` / `Lil Zik`), while our
+ * `CollectionLogItemName` and every item config use the in-game casing.
+ *
+ * This is the exact twin of the re-casing `DroppedItemResponse` does for the
+ * wiki's `Dropped item`, and it exists for the same reason: normalise at
+ * ingestion so every lookup downstream — `isItemAcquired`, the stored
+ * collection log, the accomplishment item matches — stays stable across drift.
+ * Matching on the stripped, lowercased name is what makes it cover the
+ * apostrophe drift as well as the casing.
+ *
+ * Anything Temple returns that we have no canonical name for passes through
+ * untouched; the enum only covers items the calculator scores.
+ */
+const canonicalCollectionLogNameByLookup = new Map(
+  CollectionLogItemName.options.map((name) => [
+    stripEntityName(name).toLowerCase(),
+    name,
+  ]),
+);
+
+export function toCanonicalCollectionLogItemName(name: string) {
+  return (
+    canonicalCollectionLogNameByLookup.get(
+      stripEntityName(name).toLowerCase(),
+    ) ?? name
+  );
+}
+
 const TempleOSRSCollectionLogItem = z.object({
   count: z.number().nonnegative(),
   id: z.number().nonnegative(),
-  name: z.string().min(1),
+  name: z.string().min(1).transform(toCanonicalCollectionLogItemName),
   date: sqlDateStringToDate,
 });
 
