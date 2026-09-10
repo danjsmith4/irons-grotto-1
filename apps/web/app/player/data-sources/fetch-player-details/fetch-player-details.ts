@@ -48,6 +48,7 @@ import { getStoredCollectionLogCounts } from '@/lib/db/stored-collection-log';
 import { getSourceDerivedItemNames } from '@/app/player/utils/get-source-derived-item-names';
 import { resolveDerivedItemWrite } from './utils/resolve-derived-item-write';
 import { buildPreviouslyAcquiredItems } from './utils/build-previously-acquired-items';
+import { buildSourceAcquiredItems } from './utils/build-source-acquired-items';
 import {
   resolveTempleAccountType,
   TempleOSRSCollectionLogItem,
@@ -83,6 +84,22 @@ export interface PlayerDetailsResponse extends Omit<
    */
   sourceValues?: {
     achievementDiaries: RankCalculatorSchema['achievementDiaries'] | null;
+    /**
+     * ⚠️ **Not the live read alone.** This is everything a *source* has ever
+     * settled: today's response unioned with `player_acquired_items`, the
+     * durable copy of what Temple said on previous syncs. Only the player's
+     * own ticks (`player_item_overrides`) are held back, and those are exactly
+     * what the diff exists to surface.
+     *
+     * A single response is not the evidence — a collection log slot cannot be
+     * un-earned, so a partial response, an outage or a name drift at Temple's
+     * end means "this response did not mention it", never "the member does not
+     * own it". Scoring already knows that (`buildPreviouslyAcquiredItems`
+     * floors the live read with the same rows); leaving the diff to compare
+     * against one response is what turned a Temple casing change into 23
+     * fabricated "unverified claims" on a real application, blocking its
+     * auto-approval.
+     */
     acquiredItems: string[];
     combatAchievementTier: RankCalculatorSchema['combatAchievementTier'] | null;
     collectionLogCount: number;
@@ -560,7 +577,16 @@ export async function fetchPlayerDetails(
         // player's own claim into it.
         sourceValues: {
           achievementDiaries,
-          acquiredItems,
+          // The stored collection log belongs on this side of the diff: it is
+          // Temple's own past answers, not the member's word. Which rows count
+          // as evidence is `buildSourceAcquiredItems`' decision rather than a
+          // union here, for the same reason `resolveDerivedItemWrite` is a
+          // function — an expression at the call site is one careless edit from
+          // silently accusing members of claims they never made.
+          acquiredItems: buildSourceAcquiredItems({
+            liveAcquiredItems: acquiredItems,
+            storedCollectionLogItems,
+          }),
           combatAchievementTier,
           collectionLogCount: Math.max(
             templeCollectionLogCount ?? 0,
