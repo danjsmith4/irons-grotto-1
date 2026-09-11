@@ -53,7 +53,6 @@ export function buildRankUpMessage({
     `/player/${encodeURIComponent(playerName)}`,
     publicUrl,
   ).toString();
-  const newRankThreshold = rankThresholds[newRank];
   const nextRankThreshold = nextRank ? rankThresholds[nextRank] : undefined;
 
   const points =
@@ -77,9 +76,7 @@ export function buildRankUpMessage({
         title: `Rank up: ${rankName}`,
         url: calculatorUrl,
         description: [
-          newRankThreshold !== undefined
-            ? `Your latest stats just pushed **${playerName}** past **${formatNumber(newRankThreshold)} points**, which makes you eligible for **${rankName}**.`
-            : `Your latest stats just made **${playerName}** eligible for **${rankName}**.`,
+          `Hey **${playerName}**, you are now eligible for **${rankName}**!`,
           'Apply from your rank calculator to claim it.',
         ].join('\n\n'),
         thumbnail: {

@@ -179,6 +179,17 @@ Three consequences worth keeping:
 
 ⚠️ **The live read is floored by what is already stored.** `buildPreviouslyAcquiredItems` unions the response with the player's draft, their overrides, their derived items **and the stored collection log**. The log was missing from that list, and a Temple response whose item names had drifted then dropped items off a member's own sheet — 17 items and 654 points on a real account, whose calculator disagreed with the leaderboard. A collection log slot cannot be un-earned, so an item's absence from a response means the response did not mention it, never that it was given back.
 
+### Rank-up DMs
+
+The hourly refresh DMs a member when **that refresh** pushes them over a rank threshold. `update-all-players` scores the record before (`scoreRankBeforeRefresh`) and after (`announceRankUpIfEarned`, `app/player/utils/announce-rank-up.ts`); `rankUpToAnnounce` (pure, spec'd) decides, `buildRankUpMessage` (pure, spec'd) is the embed.
+
+- ⚠️ **It announces a crossing, not a standing.** The calculated rank must have risen during this refresh *and* be above `players.rank`. Eligibility alone is deliberately not enough: at ship time 24 active members were already eligible and had not applied, and a standing trigger would have DM'd all of them on day one. Don't "simplify" it to `isRankUp(held, calculated)`.
+- Deduped per account in the Redis hash `rankUpMessagesKey` (`<discordId>:<lowercased rsn>` → last rank announced), shared with the dormant `check-auto-rank` nudge, which renders the same message.
+- Never mains, staff ranks, inactive members, or an unscorable "before" record (a stub's first sync would read as a leap). `scoreStoredPlayer` returns `unscorable` for this.
+- Never fails the refresh: a closed DM inbox (Discord `50007`) comes back as `rankUpAnnouncementFailures` in the response, not a job failure.
+- The thumbnail is `public/icons/large/<rank>.png` — the 13px rank icons at 6x nearest-neighbour, because Discord doesn't scale a small thumbnail up. A spec fails if a ladder rank has no large icon; regenerate with `sharp` (`kernel: 'nearest'`).
+- Known gap: a member who crosses a threshold by opening their calculator is rescored there first, so the next refresh sees no crossing and sends nothing. They see the calculator's rank-up dialog instead.
+
 ### Feeds on the homepage and dashboard
 
 Three activity feeds sit in one `auto-fit` grid (`minmax(320px, 1fr)`, gap 2rem) on both pages: **Rank Ups**, **Accomplishments**, **Collection Log**. Three across when there's room, collapsing to two then one with no breakpoint arithmetic. Grid's default `align-items: stretch` keeps the cards level, which the fixed `max-height: 420px` on `.list` in `activity-feed.module.css` already assumes. Accomplishments renders conditionally — with nothing to show it would leave an empty grid cell, and a column of whitespace reads worse than two columns.

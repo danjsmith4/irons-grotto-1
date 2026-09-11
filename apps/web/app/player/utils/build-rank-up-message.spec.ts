@@ -35,8 +35,9 @@ describe('buildRankUpMessage', () => {
     const { embed } = render();
 
     expect(embed.title).toBe('Rank up: General');
-    expect(embed.description).toContain('**Iron Man**');
-    expect(embed.description).toContain('**16,000 points**');
+    expect(embed.description).toContain(
+      'Hey **Iron Man**, you are now eligible for **General**!',
+    );
   });
 
   it('shows the move from the held rank', () => {
