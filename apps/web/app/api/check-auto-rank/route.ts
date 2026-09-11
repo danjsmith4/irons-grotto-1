@@ -1,22 +1,14 @@
 import * as Sentry from '@sentry/nextjs';
 import { z } from 'zod';
-import dedent from 'dedent';
-import {
-  APIDMChannel,
-  ButtonStyle,
-  ComponentType,
-  Routes,
-} from 'discord-api-types/v10';
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchPlayerDetails } from '@/app/player/data-sources/fetch-player-details/fetch-player-details';
 import { scoreStoredPlayer } from '@/app/data-sources/score-players-from-record';
-import { getRankName } from '@/app/player/utils/get-rank-name';
 import { isRankUp } from '@/app/player/utils/is-rank-up';
 import { canApplyForRank } from '@/config/ranks';
-import { sendDiscordMessage } from '@/app/player/utils/send-discord-message';
+import { sendDiscordDirectMessage } from '@/app/player/utils/send-discord-message';
+import { buildRankUpMessage } from '@/app/player/utils/build-rank-up-message';
 import { clientConstants } from '@/config/constants.client';
 import { rankUpMessagesKey } from '@/config/redis';
-import { discordBotClient } from '@/discord';
 import { redis } from '@/redis';
 import {
   getPlayerByName,
@@ -70,7 +62,8 @@ export async function GET(request: NextRequest) {
     }
 
     const {
-      rankData: { rank },
+      rankData: { rank, nextRank },
+      totalPoints,
     } = await scoreStoredPlayer(storedPlayer);
 
     // Same rule as the calculator's rank-up dialog: only a genuine promotion up
@@ -88,33 +81,19 @@ export async function GET(request: NextRequest) {
 
       // Send a message if the user has not been notified of this rank in the past
       if (previousMessageRank !== rank) {
-        const { id: dmChannelId } = (await discordBotClient.post(
-          Routes.userChannels(),
-          { body: { recipient_id: discordId } },
-        )) as APIDMChannel;
-
-        await sendDiscordMessage(
-          {
-            content: dedent`
-              Congratulations, you are eligible for the ${getRankName(rank)} rank on ${playerName}!
-              
-              Click the button below to go to the rank calculator and apply.
-            `,
-            components: [
-              {
-                components: [
-                  {
-                    label: 'Apply for rank',
-                    url: `${clientConstants.publicUrl}/player/${encodeURIComponent(player)}`,
-                    style: ButtonStyle.Link,
-                    type: ComponentType.Button,
-                  },
-                ],
-                type: ComponentType.ActionRow,
-              },
-            ],
-          },
-          dmChannelId,
+        // The same message the scheduled refresh sends, so a member never sees
+        // two designs for one event.
+        await sendDiscordDirectMessage(
+          buildRankUpMessage({
+            playerName,
+            heldRank: currentRank,
+            newRank: rank,
+            totalPoints,
+            nextRank,
+            publicUrl: clientConstants.publicUrl,
+            sentAt: new Date(),
+          }),
+          discordId,
         );
 
         await redis.hset(rankUpMessagesKey, { [hashKey]: rank });

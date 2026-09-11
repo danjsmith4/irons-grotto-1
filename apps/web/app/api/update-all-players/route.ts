@@ -5,6 +5,10 @@ import { asc, lt, sql } from 'drizzle-orm';
 import { fetchPlayerDetails } from '@/app/player/data-sources/fetch-player-details/fetch-player-details';
 import { syncPlayerAccountType } from '@/app/player/utils/sync-player-account-type';
 import {
+  announceRankUpIfEarned,
+  scoreRankBeforeRefresh,
+} from '@/app/player/utils/announce-rank-up';
+import {
   claimJobLease,
   isScheduledRequest,
   releaseJobLease,
@@ -104,6 +108,8 @@ export async function GET(request: NextRequest) {
 
     const failures: string[] = [];
     const playersNeedingAccountType: string[] = [];
+    const rankUpsAnnounced: string[] = [];
+    const rankUpAnnouncementFailures: string[] = [];
     let processed = 0;
     let accountTypesResolved = 0;
     let stoppedForTime = false;
@@ -137,6 +143,14 @@ export async function GET(request: NextRequest) {
           accountTypesResolved += 1;
         }
 
+        // What the record scores to before the refresh overwrites it, so a
+        // rank the refresh itself earned can be told apart from one the member
+        // has been sitting on. Best effort: without it nobody is messaged this
+        // run, which is the safe way to fail.
+        const before = await scoreRankBeforeRefresh(player.playerName).catch(
+          () => null,
+        );
+
         // Writes the record and, through `processPlayerData`, rescores it.
         const result = await fetchPlayerDetails(
           player.playerName,
@@ -145,6 +159,25 @@ export async function GET(request: NextRequest) {
 
         if (result.success) {
           processed += 1;
+
+          if (before) {
+            const announcement = await announceRankUpIfEarned(
+              player.playerName,
+              before,
+            );
+
+            if (announcement.outcome === 'announced') {
+              rankUpsAnnounced.push(
+                `${player.playerName}: ${announcement.rank}`,
+              );
+            } else if (announcement.outcome === 'failed') {
+              // Reported in the response, never as a job failure: most of
+              // these will be members who have closed their DMs.
+              rankUpAnnouncementFailures.push(
+                `${player.playerName}: ${announcement.error}`,
+              );
+            }
+          }
         } else {
           failures.push(
             `${player.playerName}: ${typeof result.error === 'string' ? result.error : 'failed to fetch player details'}`,
@@ -187,6 +220,8 @@ export async function GET(request: NextRequest) {
       stoppedForTime,
       accountTypesResolved,
       playersNeedingAccountType,
+      rankUpsAnnounced,
+      rankUpAnnouncementFailures,
       failures,
       durationMs: Date.now() - startedAt,
     });
