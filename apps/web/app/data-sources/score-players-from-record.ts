@@ -31,6 +31,10 @@ import {
   RankData,
 } from '@/app/player/utils/calculators/calculate-rank';
 import { stripEntityName } from '@/app/player/utils/strip-entity-name';
+import {
+  UnscorableReason,
+  unscorableReason,
+} from '@/app/utils/is-record-scorable';
 
 /**
  * Scoring a player from what is *stored* about them.
@@ -284,6 +288,8 @@ export async function scoreStoredPlayer(player: Player): Promise<{
   totalPoints: number;
   rankData: RankData;
   breakdown: PointsBreakdown;
+  /** Set when the record is not one a score can be trusted from — see {@link unscorableReason}. */
+  unscorable: UnscorableReason | null;
 }> {
   const [notableItemList, storedFor] = await Promise.all([
     buildScoringItemList(),
@@ -304,7 +310,19 @@ export async function scoreStoredPlayer(player: Player): Promise<{
     player.accountType,
   );
 
-  return { totalPoints: breakdown.totalPoints, rankData, breakdown };
+  return {
+    totalPoints: breakdown.totalPoints,
+    rankData,
+    breakdown,
+    unscorable: unscorableReason({
+      totalLevel: player.totalLevel,
+      totalXp: player.totalXp,
+      collectionLogCount: player.collectionLogCount,
+      // Keyed by stripped name, so two rows could in principle collapse into
+      // one — which cannot matter, since the rule only asks whether any exist.
+      storedCollectionLogRows: Object.keys(stored.collectionLogCounts).length,
+    }),
+  };
 }
 
 /**
