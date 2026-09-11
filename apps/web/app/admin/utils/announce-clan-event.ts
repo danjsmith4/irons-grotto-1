@@ -1,61 +1,85 @@
 import 'server-only';
 import { sendDiscordMessage } from '@/app/player/utils/send-discord-message';
+import { updateSheetCell } from '@/app/data-sources/google-sheets';
+import { buildClanEventSheetMessage } from '@/app/utils/build-clan-event-sheet-message';
 import {
   clanEventAnnouncementChannelId,
-  clanEventBotCommand,
+  clanEventSheetCell,
+  clanEventSheetId,
   type ClanEventType,
 } from '@/config/clan-events';
+import { staffRoleDiscordRoles } from '@/config/discord-roles';
 import { clientConstants } from '@/config/constants.client';
 
-export type AnnounceClanEventStatus = 'sent' | 'failed';
+export interface ClanEventHandoff {
+  sheet: 'updated' | 'failed';
+  discord: 'sent' | 'failed';
+}
+
+/** The Discord role named "Staff" — who runs the events sheet. */
+const staffRoleId = staffRoleDiscordRoles.admin;
 
 /**
- * Hands a newly created competition to the clan Discord bot.
+ * Records a newly created competition on the clan's events sheet, then tells
+ * staff in `#sotw-and-botw`.
  *
- * This is not a human-readable announcement — it is a **command for the bot**,
- * which takes it from there. The form is fixed by the bot, not by us:
+ * This used to post `.botw <url> <key>` for Grotto Bot to act on, but the bot
+ * is a discord.py `commands.Bot`, which ignores every message written by
+ * another bot — so the command landed and nothing ever ran it. The site now
+ * makes the bot's single-cell write itself.
  *
- *     .botw <competition url> <edit key>
- *
- * The edit key goes over Discord because the bot needs it to manage the
- * competition. That makes the destination channel as sensitive as the key —
- * anyone who can read it can edit or delete the competition — which is why the
- * channel is pinned in config rather than passed in by a caller.
+ * The message is posted whether or not the write landed: on failure it tells
+ * staff so, with the bot command that does the same job by hand.
  */
 export async function announceClanEvent({
   type,
   competitionId,
-  competitionKey,
+  eventName,
 }: {
   type: ClanEventType;
   competitionId: number;
-  competitionKey: string | null;
-}): Promise<AnnounceClanEventStatus> {
-  // Without the key the command is incomplete, and posting half of it would
-  // leave the bot to fail on a message nobody is watching.
-  if (!competitionKey) {
+  eventName: string;
+}): Promise<ClanEventHandoff> {
+  let sheet: ClanEventHandoff['sheet'] = 'updated';
+
+  try {
+    await updateSheetCell({
+      spreadsheetId: clanEventSheetId,
+      range: clanEventSheetCell[type],
+      value: competitionId,
+    });
+  } catch (error) {
     console.error(
-      `Clan event ${competitionId} has no edit key, so the Discord command was not sent.`,
+      `Failed to write clan event ${competitionId} to the events sheet:`,
+      error,
     );
-
-    return 'failed';
+    sheet = 'failed';
   }
-
-  const url = `${clientConstants.temple.baseUrl}/competitions/standings.php?id=${competitionId}`;
 
   try {
     await sendDiscordMessage(
-      { content: `${clanEventBotCommand[type]} ${url} ${competitionKey}` },
+      {
+        content: buildClanEventSheetMessage({
+          type,
+          eventName,
+          competitionUrl: `${clientConstants.temple.baseUrl}/competitions/standings.php?id=${competitionId}`,
+          sheetUpdated: sheet === 'updated',
+          staffRoleId,
+        }),
+        // The name is typed by staff and echoed by Temple; nothing in it gets
+        // to ping anyone. Only the staff role is allowed through.
+        allowed_mentions: { parse: [], roles: [staffRoleId] },
+      },
       clanEventAnnouncementChannelId,
     );
 
-    return 'sent';
+    return { sheet, discord: 'sent' };
   } catch (error) {
     console.error(
-      `Failed to send the Discord command for clan event ${competitionId}:`,
+      `Failed to tell staff about clan event ${competitionId}:`,
       error,
     );
 
-    return 'failed';
+    return { sheet, discord: 'failed' };
   }
 }

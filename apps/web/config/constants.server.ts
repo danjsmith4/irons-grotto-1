@@ -20,6 +20,12 @@ const ServerConfigSchema = z.object({
     channelId: z.string().nonempty(),
     reviewRoleId: z.string().optional(),
   }),
+  /**
+   * The Google service account's JSON key file, pasted whole. Optional so the
+   * app still boots without it — only writing to the events sheet needs it,
+   * and that step reports its own failure.
+   */
+  googleServiceAccountKey: z.string().optional(),
 });
 
 export const serverConstants = ServerConfigSchema.parse({
@@ -41,4 +47,5 @@ export const serverConstants = ServerConfigSchema.parse({
     channelId: process.env.DISCORD_CHANNEL_ID,
     reviewRoleId: process.env.DISCORD_RANK_SUBMISSION_ROLE_ID,
   },
+  googleServiceAccountKey: process.env.GOOGLE_SERVICE_ACCOUNT_KEY,
 });

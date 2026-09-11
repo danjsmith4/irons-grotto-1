@@ -126,9 +126,9 @@ export const createClanEventAction = authActionClient
           type: existing.type,
           alreadyRecorded: true,
           hasCompetitionKey: !!existing.competitionKey,
-          // Not re-sent: the bot was handed this competition when it was first
-          // recorded, and a second command would have it set the event up twice.
-          discord: 'skipped' as const,
+          // Not re-sent: the sheet and staff were told when it was first
+          // recorded.
+          handoff: null,
         };
       }
 
@@ -149,13 +149,13 @@ export const createClanEventAction = authActionClient
         createdByDiscordId: userId,
       });
 
-      // The competition exists and is recorded; handing it to the Discord bot
-      // is the last step and is reported rather than rolled back, matching the
-      // staff-role convention. A failed command can be re-sent by hand.
-      const discord = await announceClanEvent({
+      // The competition exists and is recorded; writing it to the events sheet
+      // and telling staff are the last steps, reported rather than rolled back,
+      // matching the staff-role convention. Either can be done by hand.
+      const handoff = await announceClanEvent({
         type,
         competitionId: event.id,
-        competitionKey: event.competitionKey,
+        eventName: event.name,
       });
 
       revalidatePath('/admin');
@@ -167,7 +167,7 @@ export const createClanEventAction = authActionClient
         type: event.type,
         alreadyRecorded: false,
         hasCompetitionKey: !!event.competitionKey,
-        discord,
+        handoff,
       };
     },
   );
