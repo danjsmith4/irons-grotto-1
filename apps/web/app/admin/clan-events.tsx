@@ -167,12 +167,18 @@ export function ClanEvents({ data, error }: ClanEventsProps) {
           );
         }
 
-        // The bot needs the command to set the event up on Discord. If it did
-        // not land, say so — nobody would otherwise find out until the event
-        // failed to appear there.
-        if (result.discord === 'failed') {
+        // The events sheet reads the competition id from one cell. If either
+        // the write or the staff message did not land, say so — nobody would
+        // otherwise find out until the event failed to appear.
+        if (result.handoff?.sheet === 'failed') {
           toast.warn(
-            'The competition was created, but the Discord command could not be sent. Post it in the events channel by hand.',
+            'The competition was created, but the events sheet could not be updated. Run the .sotw / .botw command in #sotw-and-botw by hand.',
+          );
+        }
+
+        if (result.handoff?.discord === 'failed') {
+          toast.warn(
+            'The competition was created, but #sotw-and-botw could not be posted to. Let staff know yourself.',
           );
         }
 

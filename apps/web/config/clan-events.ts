@@ -29,23 +29,46 @@ export const clanEventGainLabel: Record<ClanEventType, string> = {
 };
 
 /**
- * Where a newly created competition is handed to the clan Discord bot.
- *
- * ⚠️ The message carries the competition's **edit key**, so whoever can read
- * this channel can edit or delete the competition. Point it somewhere staff
- * already trust with that.
+ * `#sotw-and-botw` — where staff are told a newly created competition has been
+ * written to the events sheet (or that it could not be, and what to run
+ * instead). Staff-only in Discord.
  */
 export const clanEventAnnouncementChannelId = '1058503652672819260';
 
 /**
- * Where the "you have been rolled onto event duty" message goes.
+ * The clan's events spreadsheet — the same one Grotto Bot's `.sotw` / `.botw`
+ * commands write to. The sheet reads the competition id from one cell per
+ * event type, so recording an event is a single-cell write.
+ */
+export const clanEventSheetId = '1zwYdTFH29sqGYAw0HDUDI6IfB-7kJz3W1MkEDq9b3fg';
+
+/**
+ * The cell each event type's competition id goes in. Grotto Bot's, verbatim —
+ * the two must agree, since staff can still run the bot command by hand.
+ * (`Links!B11` is the bot's second raid BOTW slot, which the site never
+ * creates.)
+ */
+export const clanEventSheetCell: Record<ClanEventType, string> = {
+  sotw: 'Links!B10',
+  botw: 'Links!B9',
+};
+
+/**
+ * `#staff-chat` — where the "you have been rolled onto event duty" message
+ * goes, so every member of staff sees who is on the hook, which is most of
+ * what makes the rota work.
  *
- * A general clan channel, not the bot's command channel: the point is that
- * everyone sees who is on the hook, which is most of what makes the rota work.
+ * ⚠️ The bot's role needs **View Channel** here as well as Send Messages. The
+ * channel denies View to @everyone, and a send to a channel the bot cannot see
+ * fails with `50001 Missing Access` — which is how this message went missing.
  */
 export const clanEventDutyChannelId = '697877519730213010';
 
-/** The bot's command for each event type — its syntax, not ours. */
+/**
+ * Grotto Bot's command for each event type — its syntax, not ours. The site no
+ * longer sends it (the bot ignores messages from other bots, so it never ran);
+ * it is what staff are told to run by hand when the sheet write fails.
+ */
 export const clanEventBotCommand: Record<ClanEventType, string> = {
   sotw: '.sotw',
   botw: '.botw',
